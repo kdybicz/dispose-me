@@ -1,35 +1,41 @@
-import { S3EventRecord, S3Handler } from 'aws-lambda';
+/* eslint-disable no-console */
+import { SESHandler } from 'aws-lambda';
+
 import 'source-map-support/register';
-import { S3 } from 'aws-sdk';
-import simpleParser from 'mailparser';
 
-const s3 = new S3({
-  apiVersion: '2006-03-01',
-  region: 'eu-central-1' // process.env.AWSREGION,
-});
+import { S3FileSystem } from './tools/S3FileSystem';
+import { EmailParser } from './tools/EmailParser';
+import { normalizeUsername } from './tools/utils';
 
-export const handler: S3Handler = async (event, _context) => {
-    console.log('Received event:', JSON.stringify(event, null, 2));
+const fileSystem = new S3FileSystem();
+const parser = new EmailParser();
 
-    const record: S3EventRecord = event.Records[0];
-    // Retrieve the email from your bucket
-    const request = {
-      Bucket: record.s3.bucket.name,
-      Key: record.s3.object.key,
-    };
-  
-    try {
-      const data = await s3.getObject(request).promise();
-      // console.log('Raw email:' + data.Body);
-      const email = await simpleParser(data.Body);
-      console.log('date:', email.date);
-      console.log('subject:', email.subject);
-      console.log('body:', email.text);
-      console.log('from:', email.from.text);
-      console.log('attachments:', email.attachments);
-      return { status: 'success' };
-    } catch (Error) {
-      console.log(Error, Error.stack);
-      return Error;
-    }
-}
+const { BUCKET_NAME } = process.env;
+
+export const handler: SESHandler = async (event) => {
+  console.debug('Processing SES event...');
+
+  const record = event.Records[0];
+  const { messageId } = record.ses.mail;
+
+  try {
+    const emailData = await fileSystem.getObject(BUCKET_NAME, messageId);
+
+    const email = await parser.parseEmail(emailData.Body.toString());
+
+    const senderEmails = email.from;
+    const recipientEmails = email.to;
+
+    console.debug(`Processing emails sent from ${senderEmails.map((e) => e.address).join(', ')} to ${recipientEmails.map((e) => e.address).join(', ')} at ${email.date.toString()}`);
+
+    const normalizedRecipientName = normalizeUsername(recipientEmails[0].user);
+    const targetFile = `${normalizedRecipientName}/${email.date.getTime()}`;
+
+    await fileSystem.moveObject(BUCKET_NAME, messageId, targetFile);
+
+    return { status: 'success' };
+  } catch (err) {
+    console.error('Failed to process email', err);
+    return err;
+  }
+};
