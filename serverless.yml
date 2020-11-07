@@ -61,6 +61,11 @@ functions:
           method: get
           cors: true
           private: false
+      - http:
+          path: email/latest
+          method: get
+          cors: true
+          private: false
   processor:
     handler: src/email-processor.handler
 
