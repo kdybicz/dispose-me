@@ -1,7 +1,9 @@
 /* eslint-disable no-console */
 
 import { AWSError, S3 } from 'aws-sdk';
-import { CopyObjectRequest, GetObjectRequest, DeleteObjectRequest } from 'aws-sdk/clients/s3';
+import {
+  CopyObjectRequest, GetObjectRequest, DeleteObjectRequest, ListObjectsV2Request,
+} from 'aws-sdk/clients/s3';
 import { PromiseResult } from 'aws-sdk/lib/request';
 
 export class S3FileSystem {
@@ -49,5 +51,19 @@ export class S3FileSystem {
   async moveObject(bucket: string, sourcePath: string, destinationPath: string): Promise<void> {
     await this.copyObject(bucket, sourcePath, destinationPath);
     await this.deleteObject(bucket, sourcePath);
+  }
+
+  // eslint-disable-next-line max-len
+  async listObjects(bucket: string, path: string): Promise<PromiseResult<S3.Types.ListObjectsV2Output, AWSError>> {
+    const listRequest: ListObjectsV2Request = {
+      Bucket: bucket,
+      MaxKeys: 10,
+      Delimiter: '/',
+      Prefix: path,
+    };
+
+    console.log('Listing Object:', JSON.stringify(listRequest, null, 2));
+
+    return this.client.listObjectsV2(listRequest).promise();
   }
 }
