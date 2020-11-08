@@ -15,20 +15,20 @@ export const handler: APIGatewayProxyHandler = async (event) => {
   const username = decodeURIComponent(event.queryStringParameters.username);
   const normalizedUsername = normalizeUsername(username);
 
+  // eslint-disable-next-line max-len
+  const sentAfter = event.queryStringParameters.sentAfter ? decodeURIComponent(event.queryStringParameters.sentAfter) : null;
+
   let response;
   switch (event.path) {
     case '/email/latest':
       console.log('Getting latest email for user', username);
 
-      response = await controller.latestEmail(normalizedUsername);
+      response = await controller.latestEmail(normalizedUsername, sentAfter);
       break;
     case '/email':
       console.log('Getting list of emails for user', username);
 
-      // eslint-disable-next-line max-len
-      const startAfter = event.queryStringParameters.startAfter ? decodeURIComponent(event.queryStringParameters.startAfter) : null;
-
-      const emails = await controller.listEmails(normalizedUsername, startAfter, 50);
+      const emails = await controller.listEmails(normalizedUsername, sentAfter, 10);
 
       response = { emails };
       break;

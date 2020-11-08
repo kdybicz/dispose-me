@@ -20,6 +20,7 @@
     "deploy": "sls deploy --stage"
   },
   "dependencies": {
+    "@types/mailparser": "^2.7.4",
     "address-rfc2822": "^2.0.5",
     "aws-sdk": "^2.785.0",
     "email-addresses": "^3.1.0",
