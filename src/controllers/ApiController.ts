@@ -1,6 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-len */
-import { Email, EmailParser } from '../tools/EmailParser';
+import { Request, Response } from 'express';
+import { validationResult } from 'express-validator';
+
+import { EmailParser } from '../tools/EmailParser';
 import { S3FileSystem } from '../tools/S3FileSystem';
+import { normalizeUsername } from '../tools/utils';
 
 export class ApiController {
   protected fileSystem: S3FileSystem;
@@ -13,13 +18,25 @@ export class ApiController {
     this.fileSystem = new S3FileSystem();
     this.emailParser = new EmailParser();
     this.bucketName = bucketName;
+
+    this.latestEmail = this.latestEmail.bind(this);
+    this.listEmails = this.listEmails.bind(this);
   }
 
-  async latestEmail(username: string, sentAfter?: string): Promise<Email | null> {
+  async latestEmail(req: Request, res: Response): Promise<Response<any>> {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: errors.array()[0] });
+    }
+
+    const { username, sentAfter } = req.query;
+
+    const normalizedUsername = normalizeUsername(username as string);
     const listEmailsAfter = sentAfter ? `${username}/${sentAfter}` : null;
-    const emailsList = await this.fileSystem.listObjects(this.bucketName, username, listEmailsAfter, 1000);
+
+    const emailsList = await this.fileSystem.listObjects(this.bucketName, normalizedUsername, listEmailsAfter, 1000);
     if (emailsList.KeyCount === 0) {
-      return null;
+      return res.json({});
     }
 
     const latestFilePath = emailsList.Contents.slice(-1).pop().Key;
@@ -27,15 +44,30 @@ export class ApiController {
 
     const email = await this.emailParser.parseEmail(latestEmail.Body.toString());
 
-    return email;
+    return res.json({ email });
   }
 
-  async listEmails(username: string, sentAfter?: string, limit = 10): Promise<Email[]> {
+  async listEmails(req: Request, res: Response): Promise<Response<any>> {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: errors.array()[0] });
+    }
+
+    const { username, sentAfter, limit = 10 } = req.query;
+
+    const normalizedUsername = normalizeUsername(username as string);
     const listEmailsAfter = sentAfter ? `${username}/${sentAfter}` : null;
-    const emailObjectsList = await this.fileSystem.listObjects(this.bucketName, username, listEmailsAfter, limit);
+
+    const emailObjectsList = await this.fileSystem.listObjects(this.bucketName, normalizedUsername, listEmailsAfter, limit as number);
+    if (emailObjectsList.KeyCount === 0) {
+      return res.json({});
+    }
 
     const emailNamesList = emailObjectsList.Contents.map((item) => item.Key);
-    const emails = await Promise.all(emailNamesList.map(async (name) => this.fileSystem.getObject(this.bucketName, name)));
-    return Promise.all(emails.map(async (email) => this.emailParser.parseEmail(email.Body.toString())));
+    const emailObjects = await Promise.all(emailNamesList.map(async (name) => this.fileSystem.getObject(this.bucketName, name)));
+
+    const emails = await Promise.all(emailObjects.map(async (email) => this.emailParser.parseEmail(email.Body.toString())));
+
+    return res.json({ emails });
   }
 }
