@@ -36,7 +36,7 @@ export class ApiController {
 
     const emailsList = await this.fileSystem.listObjects(this.bucketName, normalizedUsername, listEmailsAfter, 1000);
     if (emailsList.KeyCount === 0) {
-      return res.json({});
+      return res.status(204).send();
     }
 
     const latestFilePath = emailsList.Contents.slice(-1).pop().Key;
@@ -60,7 +60,7 @@ export class ApiController {
 
     const emailObjectsList = await this.fileSystem.listObjects(this.bucketName, normalizedUsername, listEmailsAfter, limit as number);
     if (emailObjectsList.KeyCount === 0) {
-      return res.json({});
+      return res.status(204).send();
     }
 
     const emailNamesList = emailObjectsList.Contents.map((item) => item.Key);
