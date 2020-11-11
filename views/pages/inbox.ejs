@@ -10,17 +10,9 @@
 </header>
 
 <main role="main" class="container">
-  <div class="row">
-    <div class="col-sm-12">
-        public inbox: <%= query.username %><br/>
+  <h5><b>public inbox:</b> <%= query.username %></h5>
 
-        <% if (emails && emails.length > 0) { %>
-          <%- include('../partials/email/list', { emails }); %>
-        <% } else { %>
-          Nothing to see...
-        <% } %>
-    </div>
-  </div>
+  <%- include('../partials/email/list', { emails }); %>
 </main>
 
 <footer class="footer">
