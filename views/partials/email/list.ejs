@@ -1,0 +1,15 @@
+<table><tbody>
+  <tr>
+    <th>From</th>
+    <th>Subject</th>
+    <th>Received</th>
+  </tr>
+
+  <% for(var i = 0; i < emails.length; i++) { %>
+    <tr>
+      <td><%= emails[i].from[0].address %></td>
+      <td><%= emails[i].subject %></td>
+      <td><%= emails[i].date %></td>
+    </tr>
+  <% } %>
+</tbody></table>

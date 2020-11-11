@@ -1,0 +1,23 @@
+<table><tbody>
+  <tr>
+    <td>Subject:</td>
+    <td><b><%= email.subject %></b></td>
+  </tr>
+  <tr>
+    <td>To:</td>
+    <td><b><%= email.to[0].address %></b></td>
+  </tr>
+  <tr>
+    <td>From:</td>
+    <td><b><%= email.from[0].address %></b></td>
+  </tr>
+  <tr>
+    <td>Received:</td>
+    <td><b><%= email.date.toString() %></b></td>
+  </tr>
+</tbody></table>
+
+<div class="well">
+  <iframe id="msg_body" style="border: 0;overflow: hidden;" title="Email Message Body" width="100%" height="550" name="msg_body" marginheight="0" srcdoc="<%= email.body %>">
+  </iframe>
+</div>
