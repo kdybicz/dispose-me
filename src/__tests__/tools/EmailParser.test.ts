@@ -13,7 +13,7 @@ describe('EmailParser tests', () => {
     const result = await parser.parseEmail(data);
     // then:
     expect(result.body).toEqual('Hello world!');
-    expect(result.date).toEqual(new Date('Sun, 8 Jan 2017 20:37:44 +0200'));
+    expect(result.received).toEqual(new Date('Sun, 8 Jan 2017 20:37:44 +0200'));
     expect(result.from).toEqual([{
       address: 'john.doe@disposeme.de',
       user: 'john.doe',
@@ -32,7 +32,7 @@ describe('EmailParser tests', () => {
     const result = await parser.parseEmail(data);
     // then:
     expect(result.body).toMatch('<p><b>Hello</b> to myself <img src=');
-    expect(result.date).toEqual(new Date('Thu, 13 Oct 2016 13:39:48 +0200'));
+    expect(result.received).toEqual(new Date('Thu, 13 Oct 2016 13:39:48 +0200'));
     expect(result.from).toEqual([
       {
         address: 'andris@kreata.ee',

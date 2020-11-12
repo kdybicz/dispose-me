@@ -9,11 +9,12 @@ export type EmailAddress = {
 }
 
 export type Email = {
+  id?: string;
   from: EmailAddress[];
   to: EmailAddress[];
   subject: string;
   body: string;
-  date: Date;
+  received: Date;
 }
 
 export class EmailParser {
@@ -31,7 +32,7 @@ export class EmailParser {
       to: recipientEmails.map((item) => ({ address: item.address, user: item.user() })),
       subject: email.subject,
       body: email.html !== false ? email.html : email.text,
-      date: email.date,
+      received: email.date,
     };
   }
 }

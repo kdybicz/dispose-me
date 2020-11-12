@@ -26,10 +26,10 @@ export const handler: SESHandler = async (event) => {
     const senderEmails = email.from;
     const recipientEmails = email.to;
 
-    console.debug(`Processing emails sent from ${senderEmails.map((e) => e.address).join(', ')} to ${recipientEmails.map((e) => e.address).join(', ')} at ${email.date.toString()}`);
+    console.debug(`Processing emails sent from ${senderEmails.map((e) => e.address).join(', ')} to ${recipientEmails.map((e) => e.address).join(', ')} at ${email.received.toString()}`);
 
     const normalizedRecipientName = normalizeUsername(recipientEmails[0].user);
-    const targetFile = `${normalizedRecipientName}/${email.date.getTime()}`;
+    const targetFile = `${normalizedRecipientName}/${email.received.getTime()}`;
 
     await fileSystem.moveObject(BUCKET_NAME, messageId, targetFile);
 

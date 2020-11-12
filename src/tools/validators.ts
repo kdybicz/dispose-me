@@ -3,9 +3,9 @@ import { Schema } from 'express-validator';
 import { normalizeUsername } from '../tools/utils';
 
 export const requestSchema: Schema = {
-  username: {
+  query: {
     in: ['query'],
-    errorMessage: 'Username is missing',
+    errorMessage: 'Query is missing',
     isString: true,
     notEmpty: true,
     customSanitizer: {

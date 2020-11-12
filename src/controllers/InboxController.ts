@@ -3,13 +3,12 @@
 /* eslint-disable max-len */
 import ejs from 'ejs';
 import { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
 
-import { EmailParser } from '../tools/EmailParser';
+import { Email, EmailParser } from '../tools/EmailParser';
 import { S3FileSystem } from '../tools/S3FileSystem';
 import { normalizeUsername } from '../tools/utils';
 
-console.log(ejs.VERSION);
+console.debug('EJS version:', ejs.VERSION);
 
 export class InboxController {
   protected fileSystem: S3FileSystem;
@@ -23,33 +22,56 @@ export class InboxController {
     this.emailParser = new EmailParser();
     this.bucketName = bucketName;
 
+    this.show = this.show.bind(this);
     this.latest = this.latest.bind(this);
     this.list = this.list.bind(this);
   }
 
-  async latest(req: Request, res: Response): Promise<Response<any> | void> {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ error: errors.array()[0] });
+  async show(req: Request, res: Response): Promise<Response<any> | void> {
+    const {
+      query,
+      type = 'html',
+    } = req.query;
+    const {
+      id = '',
+    } = req.params;
+
+    const filePath = `${query}/${id}`;
+
+    const emailObject = await this.fileSystem.getObject(this.bucketName, filePath);
+
+    let email: Email;
+    if (emailObject) {
+      email = await this.emailParser.parseEmail(emailObject.Body.toString());
+      email.id = id;
     }
 
+    if (type === 'html') {
+      return res.render('pages/email', { email });
+    }
+
+    return res.json({ email });
+  }
+
+  async latest(req: Request, res: Response): Promise<Response<any> | void> {
     const {
-      username,
+      query,
       sentAfter,
       type = 'html',
     } = req.query;
 
-    const normalizedUsername = normalizeUsername(username as string);
-    const listEmailsAfter = sentAfter ? `${username}/${sentAfter}` : null;
+    const normalizedUsername = normalizeUsername(query as string);
+    const listEmailsAfter = sentAfter ? `${query}/${sentAfter}` : null;
 
     const emailsList = await this.fileSystem.listObjects(this.bucketName, normalizedUsername, listEmailsAfter, 1000);
 
-    let email;
+    let email: Email;
     if (emailsList.KeyCount !== 0) {
       const latestFilePath = emailsList.Contents.slice(-1).pop().Key;
       const latestEmail = await this.fileSystem.getObject(this.bucketName, latestFilePath);
 
       email = await this.emailParser.parseEmail(latestEmail.Body.toString());
+      email.id = latestFilePath.split('/')[-1];
     }
 
     if (type === 'html') {
@@ -60,32 +82,30 @@ export class InboxController {
   }
 
   async list(req: Request, res: Response): Promise<Response<any> | void> {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ error: errors.array()[0] });
-    }
-
     const {
-      username,
+      query,
       sentAfter,
       limit = 10,
       type = 'html',
     } = req.query;
 
-    const normalizedUsername = normalizeUsername(username as string);
-    const listEmailsAfter = sentAfter ? `${username}/${sentAfter}` : null;
+    const normalizedUsername = normalizeUsername(query as string);
+    const listEmailsAfter = sentAfter ? `${query}/${sentAfter}` : null;
 
     const emailObjectsList = await this.fileSystem.listObjects(this.bucketName, normalizedUsername, listEmailsAfter, limit as number);
 
     const emailNamesList = emailObjectsList.Contents.map((item) => item.Key);
-    const emailObjects = await Promise.all(emailNamesList.map(async (name) => this.fileSystem.getObject(this.bucketName, name)));
-
-    const emails = await Promise.all(emailObjects.map(async (email) => this.emailParser.parseEmail(email.Body.toString())));
+    const emails = await Promise.all(emailNamesList.map(async (name) => {
+      const emailObject = await this.fileSystem.getObject(this.bucketName, name);
+      const email: Email = await this.emailParser.parseEmail(emailObject.Body.toString());
+      email.id = name.split('/').pop();
+      return email;
+    }));
 
     if (type === 'html') {
-      return res.render('pages/inbox', { emails });
+      return res.render('pages/inbox', { emails: emails.reverse() });
     }
 
-    return res.json({ emails });
+    return res.json({ emails: emails.reverse() });
   }
 }

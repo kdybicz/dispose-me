@@ -10,7 +10,7 @@ import { requestSchema } from './tools/validators';
 
 import 'source-map-support/register';
 
-const controller = new InboxController(process.env.BUCKET_NAME);
+const inboxController = new InboxController(process.env.BUCKET_NAME);
 const app = express();
 
 // Since Express doesn't support error handling of promises out of the box,
@@ -30,6 +30,7 @@ app.use(express.urlencoded({
 
 app.use((req, res, next) => {
   res.locals.query = req.query;
+  res.locals.params = req.params;
   res.locals.url = req.originalUrl;
   res.locals.req = req;
 
@@ -38,9 +39,11 @@ app.use((req, res, next) => {
 
 app.set('view engine', 'ejs');
 
-app.get('/inbox/latest', checkSchema(requestSchema), asyncHandler(controller.latest));
+app.get('/', (_req, res) => res.render('pages/index'));
 
-app.get('/inbox', checkSchema(requestSchema), asyncHandler(controller.list));
+app.get('/inbox/latest', asyncHandler(inboxController.latest));
+app.get('/inbox/:id', asyncHandler(inboxController.show));
+app.get('/inbox', asyncHandler(inboxController.list));
 
 app.use((_req, res, _next) => {
   res.status(404).render('pages/404');
