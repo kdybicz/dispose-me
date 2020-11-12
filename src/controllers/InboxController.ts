@@ -36,9 +36,10 @@ export class InboxController {
       id = '',
     } = req.params;
 
-    const filePath = `${query}/${id}`;
+    const normalizedUsername = normalizeUsername(query as string);
+    const emailObjectPath = `${normalizedUsername}/${id}`;
 
-    const emailObject = await this.fileSystem.getObject(this.bucketName, filePath);
+    const emailObject = await this.fileSystem.getObject(this.bucketName, emailObjectPath);
 
     let email: Email;
     if (emailObject) {
@@ -61,7 +62,7 @@ export class InboxController {
     } = req.query;
 
     const normalizedUsername = normalizeUsername(query as string);
-    const listEmailsAfter = sentAfter ? `${query}/${sentAfter}` : null;
+    const listEmailsAfter = sentAfter ? `${normalizedUsername}/${sentAfter}` : null;
 
     const emailsList = await this.fileSystem.listObjects(this.bucketName, normalizedUsername, listEmailsAfter, 1000);
 
@@ -90,7 +91,7 @@ export class InboxController {
     } = req.query;
 
     const normalizedUsername = normalizeUsername(query as string);
-    const listEmailsAfter = sentAfter ? `${query}/${sentAfter}` : null;
+    const listEmailsAfter = sentAfter ? `${normalizedUsername}/${sentAfter}` : null;
 
     const emailObjectsList = await this.fileSystem.listObjects(this.bucketName, normalizedUsername, listEmailsAfter, limit as number);
 

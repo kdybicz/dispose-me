@@ -2,11 +2,9 @@
 /* eslint-disable no-console */
 
 import express, { NextFunction, Request, Response } from 'express';
-import { checkSchema } from 'express-validator';
 import serverless from 'serverless-http';
 
 import { InboxController } from './controllers/InboxController';
-import { requestSchema } from './tools/validators';
 
 import 'source-map-support/register';
 
@@ -45,11 +43,11 @@ app.get('/inbox/latest', asyncHandler(inboxController.latest));
 app.get('/inbox/:id', asyncHandler(inboxController.show));
 app.get('/inbox', asyncHandler(inboxController.list));
 
-app.use((_req, res, _next) => {
+app.use((_req, res, _) => {
   res.status(404).render('pages/404');
 });
 
-app.use((err, _req, res, _next) => {
+app.use((err, _req, res, _) => {
   console.error(err.stack);
   res.status(500).render('pages/error', { error: err });
 });
