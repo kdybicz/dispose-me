@@ -4,12 +4,12 @@ frameworkVersion: '1'
 
 custom:
   customDomain:
-    domainName: 'api.disposeme.de'
+    domainName: 'www.disposeme.de'
     autoDomain: true
     endpointType: 'regional'
     stage: ${self:provider.stage}
     createRoute53Record: true
-  buckerName: dispose-me-emails
+  buckerName: ${self:service}-emails
   webpack:
     webpackConfig: './webpack.config.js'
     includeModules: true
@@ -28,9 +28,12 @@ provider:
   memorySize: 512
   apiGateway:
     minimumCompressionSize: 1024
-  environment:
-    AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
-    BUCKET_NAME: ${self:custom.buckerName}
+    apiKeySourceType: AUTHORIZER
+  logs:
+    restApi:
+      level: ERROR
+      accessLogging: false
+      fullExecutionData: false
   apiKeys:
     - 'Postman'
     - 'Appium tests'
@@ -65,19 +68,38 @@ provider:
 functions:
   api:
     handler: src/api.handler
+    environment:
+      AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
+      BUCKET_NAME: ${self:custom.buckerName}
     events:
       - http:
           path: /
           method: get
           cors: true
-          private: false
+          private: true
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
+            identitySource: '' # needed to get rid of default: method.request.header.Authorizer
+            type: request
       - http:
           path: /{proxy+}
           method: get
           cors: true
-          private: false
+          private: true
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
+            identitySource: ''
+            type: request
   processor:
     handler: src/email-processor.handler
+    environment:
+      BUCKET_NAME: ${self:custom.buckerName}
+  authorizer:
+    handler: src/authorizer.handler
+    environment:
+      AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
 
 plugins:
   - serverless-domain-manager

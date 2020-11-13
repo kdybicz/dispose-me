@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable no-console */
 
 import { AWSError, S3 } from 'aws-sdk';
@@ -27,12 +28,17 @@ export class S3FileSystem {
     return this.client.getObject(getRequest).promise();
   }
 
-  async copyObject(bucket: string, sourcePath: string, destinationPath: string): Promise<void> {
+  async copyObject(bucket: string, sourcePath: string, destinationPath: string, expiredInMinutes: number): Promise<void> {
     const copyRequest: CopyObjectRequest = {
       CopySource: `${bucket}/${sourcePath}`,
       Bucket: bucket,
       Key: destinationPath,
     };
+
+    if (expiredInMinutes) {
+      copyRequest.Expires = new Date(new Date().getTime() + (expiredInMinutes * 60000));
+    }
+
     console.debug('Copying Object:', JSON.stringify(copyRequest, null, 2));
 
     await this.client.copyObject(copyRequest).promise();
@@ -48,8 +54,8 @@ export class S3FileSystem {
     await this.client.deleteObject(deleteRequest).promise();
   }
 
-  async moveObject(bucket: string, sourcePath: string, destinationPath: string): Promise<void> {
-    await this.copyObject(bucket, sourcePath, destinationPath);
+  async moveObject(bucket: string, sourcePath: string, destinationPath: string, expiredInMinutes?: number): Promise<void> {
+    await this.copyObject(bucket, sourcePath, destinationPath, expiredInMinutes);
     await this.deleteObject(bucket, sourcePath);
   }
 
