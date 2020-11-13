@@ -28,15 +28,15 @@ export class S3FileSystem {
     return this.client.getObject(getRequest).promise();
   }
 
-  async copyObject(bucket: string, sourcePath: string, destinationPath: string, expiredInMinutes: number): Promise<void> {
+  async copyObject(bucket: string, sourcePath: string, destinationPath: string, expires?: Date): Promise<void> {
     const copyRequest: CopyObjectRequest = {
       CopySource: `${bucket}/${sourcePath}`,
       Bucket: bucket,
       Key: destinationPath,
     };
 
-    if (expiredInMinutes) {
-      copyRequest.Expires = new Date(new Date().getTime() + (expiredInMinutes * 60000));
+    if (expires) {
+      copyRequest.Expires = expires;
     }
 
     console.debug('Copying Object:', JSON.stringify(copyRequest, null, 2));
@@ -54,8 +54,8 @@ export class S3FileSystem {
     await this.client.deleteObject(deleteRequest).promise();
   }
 
-  async moveObject(bucket: string, sourcePath: string, destinationPath: string, expiredInMinutes?: number): Promise<void> {
-    await this.copyObject(bucket, sourcePath, destinationPath, expiredInMinutes);
+  async moveObject(bucket: string, sourcePath: string, destinationPath: string, expires?: Date): Promise<void> {
+    await this.copyObject(bucket, sourcePath, destinationPath, expires);
     await this.deleteObject(bucket, sourcePath);
   }
 
