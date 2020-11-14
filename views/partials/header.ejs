@@ -5,10 +5,10 @@
   </button>
   <div class="collapse navbar-collapse" id="navbarCollapse">
     <ul class="navbar-nav mr-auto">
-      <li class="nav-item active">
+      <li class="nav-item <%= req.path === '/inbox' ? 'active' : '' %>">
         <a class="nav-link" href="/inbox?<%= new URLSearchParams(query) %>">Inbox</a>
       </li>
-      <li class="nav-item">
+      <li class="nav-item <%= req.path === '/inbox/latest' ? 'active' : '' %>">
         <a class="nav-link" href="/inbox/latest?<%= new URLSearchParams(query) %>">Latest</a>
       </li>
     </ul>
