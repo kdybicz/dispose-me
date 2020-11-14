@@ -109,7 +109,7 @@ Be sure to change your **Region** to the one chosen in a previous step.
 
 **Note:** Verify you're in the right **Region**!
 
-Then go to _AWS > Certificate Manager_ and _Request a public certificate_. I recommend choosing a wildcard certificate (ie. `*.disposeme.de`), as it would allow you to easily setup other services in the future under same domain without need of requesting a new certificates.
+Then go to _AWS > Certificate Manager_ and _Request a public certificate_. I recommend choosing a wildcard certificate (ie. `*.example.com`), as it would allow you to easily setup other services in the future under same domain without need of requesting a new certificates.
 
 **Note:** Again keep in mind that this process can take some time.
 
@@ -149,14 +149,15 @@ Now that all of the AWS services are configured, you should be able to deploy th
   ```
   EMAIL_BUCKET_NAME=dispose-me-email-bucket
   ```
-- Subdomain under which web interface / API would be accessible. It should be a subdomain of a domain that was bought in one of the first steps.
+- Domain to which emails should be sent and a subdomain under which web interface / API would be accessible. It should be the same subdomain of a domain that was bought in one of the first steps.
   ```
+  EMAIL_DOMAIN=example.com
   INTERFACE_SUBDOMAIN=www.example.com
   ```
 
 ## Costs breakdown
 
-This is just an example of a potential costs breakdown, it would differ in your individual case, so please BE WARNED (prices doesn't include TAX):
+This is just an example of a potential costs breakdown. Keep in mind that it could be different in your individual case, so please BE WARNED (prices doesn't include TAX):
 - `.de` domain: $9.00 per year
 - Hosted Zones and Records: $0.50 per hosted zone / month
 - Public SSL Certificate: _"Public SSL/TLS certificates provisioned through AWS Certificate Manager are free. You pay only for the AWS resources you create to run your application."_
