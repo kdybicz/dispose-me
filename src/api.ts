@@ -8,7 +8,7 @@ import { InboxController } from './controllers/InboxController';
 
 import 'source-map-support/register';
 
-const inboxController = new InboxController(process.env.BUCKET_NAME);
+const inboxController = new InboxController(process.env.EMAIL_BUCKET_NAME);
 const app = express();
 
 // Since Express doesn't support error handling of promises out of the box,
