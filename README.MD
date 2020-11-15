@@ -4,7 +4,7 @@ Dispose Me is a simple AWS-based self-hosted disposable email service.
 
 ## Tech Stack
 
-### Framework used
+### Frameworks
 - [Node.js](https://github.com/nodejs/node)
 - [express.js](https://github.com/expressjs/express)
 - [EJS](https://github.com/mde/ejs)
@@ -12,13 +12,14 @@ Dispose Me is a simple AWS-based self-hosted disposable email service.
   - [Serverless Offline](https://github.com/dherault/serverless-offline)
 - [webpack](https://github.com/webpack/webpack)
 
-### AWS Services used
+### AWS Services
 - Api Gateway
+- CloudFormation
 - Lambda
   - with custom Authorizer
-- Simple Storage Service
-- Simple Email Service
 - Route53
+- Simple Email Service
+- Simple Storage Service
 
 ## Setup process
 
@@ -38,9 +39,9 @@ v12.19.0
 
 Now go ahead and download the project source code:
 - using `git`:
-  ```
-  $ git clone https://github.com/kdybicz/dispose-me.git
-  ```
+```
+$ git clone https://github.com/kdybicz/dispose-me.git
+```
 - or as a `zip` file from https://github.com/kdybicz/dispose-me/archive/master.zip
   and unpack it into a folder of your choosing.
 
@@ -176,6 +177,6 @@ This is just an example of a potential costs breakdown. Keep in mind that it cou
 ### TODO
 * [x] Emails breakdown by email account name and named after a receiving timestamp
 * [x] TTL on S3 items - set to 1 day
-* [ ] CloudWatch log retention?
-* [ ] Drop a log file next to email unsuccessfully processed?
-* [ ] Include RSS?
+* [x] CloudWatch log retention?
+* [ ] ~~Drop a log file next to email unsuccessfully processed?~~
+* [ ] Include RSS support?

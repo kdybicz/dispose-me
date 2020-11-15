@@ -44,6 +44,7 @@ provider:
       fullExecutionData: false
   environment:
     LOG_LEVEL: 2
+  logRetentionInDays: 14
   apiKeys:
     - 'Postman'
     - 'Appium tests'
