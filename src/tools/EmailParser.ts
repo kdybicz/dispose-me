@@ -1,7 +1,7 @@
-/* eslint-disable no-console */
-
 import { parse as parseEmailAddress } from 'address-rfc2822';
 import { simpleParser as parseEmail } from 'mailparser';
+
+import log from '../tools/log';
 
 export type EmailAddress = {
   address: string;
@@ -20,10 +20,10 @@ export type Email = {
 export class EmailParser {
   // eslint-disable-next-line class-methods-use-this
   async parseEmail(emailContent: string): Promise<Email> {
-    console.debug('Parsing original email to get recipient information');
+    log.debug('Parsing email content to get sender and recipient information');
     const email = await parseEmail(emailContent);
 
-    console.debug('Parsing sender and recipient email addresses');
+    log.debug('Parsing sender and recipient email addresses');
     const senderEmails = parseEmailAddress(email.from.text);
     const recipientEmails = parseEmailAddress(email.to.text);
 
