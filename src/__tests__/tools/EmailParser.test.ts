@@ -7,7 +7,7 @@ describe('EmailParser tests', () => {
 
   test('Parse simple email', async () => {
     // given:
-    const data = await fs.readFileSync(`${__dirname}/simple.eml`).toString();
+    const data = await fs.readFileSync(`${__dirname}/../data/simple.eml`).toString();
 
     // when:
     const result = await parser.parseEmail(data);
@@ -15,18 +15,18 @@ describe('EmailParser tests', () => {
     expect(result.body).toEqual('Hello world!');
     expect(result.received).toEqual(new Date('Sun, 8 Jan 2017 20:37:44 +0200'));
     expect(result.from).toEqual([{
-      address: 'john.doe@disposeme.de',
+      address: 'john.doe@example.com',
       user: 'john.doe',
     }]);
     expect(result.to).toEqual([{
-      address: 'jane.doe@disposeme.de',
+      address: 'jane.doe@example.com',
       user: 'jane.doe',
     }]);
   });
 
   test('Parse complex email', async () => {
     // given:
-    const data = await fs.readFileSync(`${__dirname}/complex.eml`).toString();
+    const data = await fs.readFileSync(`${__dirname}/../data/complex.eml`).toString();
 
     // when:
     const result = await parser.parseEmail(data);
@@ -35,18 +35,18 @@ describe('EmailParser tests', () => {
     expect(result.received).toEqual(new Date('Thu, 13 Oct 2016 13:39:48 +0200'));
     expect(result.from).toEqual([
       {
-        address: 'andris@kreata.ee',
-        user: 'andris',
+        address: 'john.doe@example.com',
+        user: 'john.doe',
       },
     ]);
     expect(result.to).toEqual([
       {
-        address: 'andris+123@kreata.ee',
-        user: 'andris+123',
+        address: 'john.doe+123@example.com',
+        user: 'john.doe+123',
       },
       {
-        address: 'andris.reinman@gmail.com',
-        user: 'andris.reinman',
+        address: 'jane.doe@example.com',
+        user: 'jane.doe',
       },
     ]);
   });

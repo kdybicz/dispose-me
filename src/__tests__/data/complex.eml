@@ -1,19 +1,19 @@
-Delivered-To: andris.reinman@gmail.com
+Delivered-To: jane.doe@example.com
 Received: by 10.28.50.2 with SMTP id y2csp233403wmy;
         Thu, 13 Oct 2016 04:39:49 -0700 (PDT)
 X-Received: by 10.25.37.18 with SMTP id l18mr9511740lfl.88.1476358789184;
         Thu, 13 Oct 2016 04:39:49 -0700 (PDT)
-Return-Path: <SRS0=63fc=V7=kreata.ee=andris@srs1.zonevs.eu>
+Return-Path: <SRS0=63fc=V7=example.com=john.doe@srs1.zonevs.eu>
 Received: from srs1.zonevs.eu (srs1.zonevs.eu. [217.146.68.191])
         by mx.google.com with ESMTPS id l202si1012799lfg.293.2016.10.13.04.39.49
-        for <andris.reinman@gmail.com>
+        for <jane.doe@example.com>
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
         Thu, 13 Oct 2016 04:39:49 -0700 (PDT)
-Received-SPF: pass (google.com: best guess record for domain of srs0=63fc=v7=kreata.ee=andris@srs1.zonevs.eu designates 217.146.68.191 as permitted sender) client-ip=217.146.68.191;
+Received-SPF: pass (google.com: best guess record for domain of srs0=63fc=v7=example.com=john.doe@srs1.zonevs.eu designates 217.146.68.191 as permitted sender) client-ip=217.146.68.191;
 Authentication-Results: mx.google.com;
        dkim=pass header.i=@srs1.zonevs.eu;
-       spf=pass (google.com: best guess record for domain of srs0=63fc=v7=kreata.ee=andris@srs1.zonevs.eu designates 217.146.68.191 as permitted sender) smtp.mailfrom=SRS0=63fc=V7=kreata.ee=andris@srs1.zonevs.eu;
-       dmarc=fail (p=NONE dis=NONE) header.from=kreata.ee
+       spf=pass (google.com: best guess record for domain of srs0=63fc=v7=example.com=john.doe@srs1.zonevs.eu designates 217.146.68.191 as permitted sender) smtp.mailfrom=SRS0=63fc=V7=example.com=john.doe@srs1.zonevs.eu;
+       dmarc=fail (p=NONE dis=NONE) header.from=example.com
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=srs1.zonevs.eu;
  q=dns/txt; s=oct2016; bh=xKHKChGY0vTH8NsecmXwA0OqbinKOXeQbaC2UYp2BAM=;
  h=from:subject:date:message-id:to:mime-version:content-type;
@@ -24,16 +24,16 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=srs1.zonevs.eu;
  pYpUFd6bZehCF0ipTOgA7IJ7ZPafaH0YTU8wRntXOwbg==
 Received: from host29.guest.zone.eu [217.146.66.6]
  by srs1.zonevs.eu (ZoneMTA Forwarder) with ESMTP id 157bdd754f70005750.002
- for <andris.reinman@gmail.com>;
+ for <jane.doe@example.com>;
  Thu, 13 Oct 2016 11:39:48 +0000
 Content-Type: multipart/mixed;
  boundary="----sinikael-?=_1-14763587882000.8241290969717285"
 X-Laziness-Level: 1000
-From: Andris Kreata <andris@kreata.ee>
-To: Andris Reinman <andris+123@kreata.ee>, andris.reinman@gmail.com
+From: John Doe <john.doe@example.com>
+To: john.doe+123@example.com, Jane Doe <jane.doe@example.com>
 Subject: Nodemailer is unicode friendly =?UTF-8?Q?=E2=9C=94?=
  (1476358788189)
-Message-ID: <012d606e-3550-2d94-b566-6cd996de88e3@kreata.ee>
+Message-ID: <012d606e-3550-2d94-b566-6cd996de88e3@example.com>
 X-Mailer: nodemailer (2.6.0; +http://nodemailer.com/;
  SMTP/2.7.2[client:2.12.0])
 Date: Thu, 13 Oct 2016 11:39:48 +0000
@@ -42,9 +42,9 @@ X-Zone-Spam-Resolution: no action
 X-Zone-Spam-Status: No, score=0.408099, required=15, tests=[MIME_GOOD=-0.1,
  R_MISSING_CHARSET=2.5, DMARC_POLICY_SOFTFAIL=0.1, MIME_UNKNOWN=0.1,
  R_DKIM_NA=0, BAYES_HAM=-2.1919]
-X-Original-Sender: andris@kreata.ee
-X-Zone-Forwarded-For: andris@kreata.ee
-X-Zone-Forwarded-To: andris.reinman@gmail.com
+X-Original-Sender: john.doe@example.com
+X-Zone-Forwarded-For: john.doe@example.com
+X-Zone-Forwarded-To: jane.doe@example.com
 
 ------sinikael-?=_1-14763587882000.8241290969717285
 Content-Type: multipart/alternative;
