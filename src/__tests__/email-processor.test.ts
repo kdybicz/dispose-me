@@ -8,12 +8,12 @@ import { parse as parseEmailAddress } from 'address-rfc2822';
 describe('Email Processor', () => {
   test('Parse email body', async () => {
     // given:
-    const email = await fs.readFileSync(`${__dirname}/simple.eml`).toString();
+    const email = await fs.readFileSync(`${__dirname}/data/simple.eml`).toString();
 
     // when:
     const result = await simpleParser(email);
     // then:
-    expect(result.from.text).toEqual('Kamil Dybicz <kamil@secretescapes.com>');
+    expect(result.from.text).toEqual('John Doe <john.doe@example.com>');
   });
 
   test('Parse single email', () => {
