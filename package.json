@@ -1,6 +1,6 @@
 {
   "name": "dispose-me",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Dispose Me is a simple AWS-hosted disposable email service.",
   "author": "Kamil Dybicz",
   "license": "MIT",
@@ -28,7 +28,7 @@
     "address-rfc2822": "^2.0.5",
     "aws-sdk": "^2.792.0",
     "ejs": "^3.1.5",
-    "email-addresses": "^3.1.0",
+    "email-addresses": "^4.0.0",
     "express": "^4.17.1",
     "mailparser": "^3.0.0",
     "serverless-http": "^2.6.0",
@@ -37,12 +37,13 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.17",
     "@types/express": "^4.17.9",
+    "@types/jest": "^26.0.23",
     "@types/mailparser": "^3.0.0",
     "@types/node": "^12.19.3",
     "@types/serverless": "^1.78.9",
     "@typescript-eslint/eslint-plugin": "^4.8.0",
     "@typescript-eslint/parser": "^4.8.0",
-    "copy-webpack-plugin": "^6.3.1",
+    "copy-webpack-plugin": "^8.1.1",
     "eslint": "^7.13.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
@@ -53,13 +54,13 @@
     "serverless": "^2.11.1",
     "serverless-domain-manager": "^5.1.0",
     "serverless-dotenv-plugin": "^3.1.0",
-    "serverless-offline": "6.6.0",
+    "serverless-offline": "7.0.0",
     "serverless-webpack": "^5.2.0",
     "ts-jest": "^26.4.4",
-    "ts-loader": "^8.0.11",
+    "ts-loader": "^9.1.1",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.5",
     "webpack": "^5.4.0",
-    "webpack-node-externals": "^2.5.2"
+    "webpack-node-externals": "^3.0.0"
   }
 }
