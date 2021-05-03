@@ -1,5 +1,5 @@
 import { parse as parseEmailAddress } from 'address-rfc2822';
-import { simpleParser as parseEmail } from 'mailparser';
+import { simpleParser as parseEmail, AddressObject } from 'mailparser';
 
 import log from '../tools/log';
 
@@ -17,6 +17,14 @@ export type Email = {
   received: Date;
 }
 
+const parseEmailAddresses = (addresses: AddressObject | AddressObject[]) => {
+  if (Array.isArray(addresses)) {
+    return addresses.map((address) => parseEmailAddress(address.text));
+  }
+
+  return parseEmailAddress(addresses.text);
+};
+
 export class EmailParser {
   // eslint-disable-next-line class-methods-use-this
   async parseEmail(emailContent: string): Promise<Email> {
@@ -24,8 +32,8 @@ export class EmailParser {
     const email = await parseEmail(emailContent);
 
     log.debug('Parsing sender and recipient email addresses');
-    const senderEmails = parseEmailAddress(email.from.text);
-    const recipientEmails = parseEmailAddress(email.to.text);
+    const senderEmails = parseEmailAddresses(email.from);
+    const recipientEmails = parseEmailAddresses(email.to);
 
     return {
       from: senderEmails.map((item) => ({ address: item.address, user: item.user() })),
