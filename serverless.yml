@@ -1,6 +1,7 @@
 service: dispose-me
 
 frameworkVersion: '2'
+useDotenv: true
 
 custom:
   customDomain:
@@ -17,15 +18,6 @@ custom:
         - ejs
     packager: 'yarn'
     webpackConfig: './webpack.config.js'
-  dotenv:
-    logging: false
-    required:
-      file: true
-    exclude:
-      - AWS_ACCESS_KEY_ID
-      - AWS_SECRET_ACCESS_KEY
-      - AWS_REGION
-      - INTERFACE_SUBDOMAIN
 
 provider:
   name: aws
@@ -82,7 +74,7 @@ functions:
           path: /
           method: get
           cors: true
-          private: true
+          private: ${env:PRIVATE_ACCESS, true}
           authorizer:
             name: authorizer
             resultTtlInSeconds: 0
@@ -92,7 +84,7 @@ functions:
           path: /{proxy+}
           method: get
           cors: true
-          private: true
+          private: ${env:PRIVATE_ACCESS, true}
           authorizer:
             name: authorizer
             resultTtlInSeconds: 0
@@ -110,7 +102,6 @@ package:
 
 plugins:
   - serverless-domain-manager
-  - serverless-dotenv-plugin
   - serverless-webpack
   - serverless-offline
 

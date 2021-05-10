@@ -1,4 +1,6 @@
 import { Request, Response } from 'express';
+import { validationResult } from 'express-validator';
+import QueryString from 'qs';
 
 import { Email, EmailParser } from '../tools/EmailParser';
 import { S3FileSystem } from '../tools/S3FileSystem';
@@ -33,6 +35,11 @@ export class InboxController {
       id = '',
     } = req.params;
 
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return this.render403Response(req, res);
+    }
+
     const normalizedUsername = normalizeUsername(query as string);
     const emailObjectPath = `${normalizedUsername}/${id}`;
 
@@ -57,6 +64,11 @@ export class InboxController {
       sentAfter,
       type = 'html',
     } = req.query;
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return this.render403Response(req, res);
+    }
 
     const normalizedUsername = normalizeUsername(query as string);
     const listEmailsAfter = sentAfter ? `${normalizedUsername}/${sentAfter}` : null;
@@ -87,6 +99,11 @@ export class InboxController {
       type = 'html',
     } = req.query;
 
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return this.render403Response(req, res);
+    }
+
     const normalizedUsername = normalizeUsername(query as string);
     const listEmailsAfter = sentAfter ? `${normalizedUsername}/${sentAfter}` : null;
 
@@ -110,5 +127,29 @@ export class InboxController {
     }
 
     return res.json({ emails: emails.reverse() });
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  render403Response(req: Request, res: Response): void {
+    const { type = 'html' } = req.query;
+
+    if (type === 'html') {
+      res.status(403).render('pages/403');
+      return;
+    }
+
+    res.status(403).json({ message: 'You are not allowed to visit that page.' });
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  render404Response(req: Request, res: Response): void {
+    const { type = 'html' } = req.query;
+
+    if (type === 'html') {
+      res.status(404).render('pages/404');
+      return;
+    }
+
+    res.status(404).json({ message: 'The page you are looking for was not found.' });
   }
 }
