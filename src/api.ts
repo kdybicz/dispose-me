@@ -2,7 +2,6 @@ import express, { NextFunction, Request, Response } from 'express';
 import { query } from 'express-validator';
 import serverless from 'serverless-http';
 
-import { INBOX_BLACKLIST } from './config';
 import { InboxController } from './controllers/InboxController';
 import log from './tools/log';
 
@@ -20,7 +19,17 @@ const asyncHandler = (fn) => (req: Request, res: Response, next: NextFunction) =
     res.json({ error: error.message || 'Unknown error' });
   });
 
-const buildInboxRequestValidator = () => query('query').not().isIn(INBOX_BLACKLIST);
+const buildInboxRequestValidator = () => {
+  let blacklist = [];
+  try {
+    if (process.env.INBOX_BLACKLIST) {
+      blacklist = process.env.INBOX_BLACKLIST.split(',');
+    }
+  } catch (err) {
+    log.error('Unable to parse INBOX_BLACKLIST', err);
+  }
+  return query('query').not().isIn(blacklist);
+};
 
 app.use(express.json());
 

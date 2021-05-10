@@ -69,6 +69,8 @@ functions:
     handler: src/api.handler
     environment:
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
+      PRIVATE_ACCESS: ${env:PRIVATE_ACCESS, true}
+      INBOX_BLACKLIST: ${env:INBOX_BLACKLIST}
     events:
       - http:
           path: /
