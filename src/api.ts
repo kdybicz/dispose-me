@@ -2,10 +2,9 @@ import express, { NextFunction, Request, Response } from 'express';
 import { query } from 'express-validator';
 import serverless from 'serverless-http';
 
+import { INBOX_BLACKLIST } from './config';
 import { InboxController } from './controllers/InboxController';
 import log from './tools/log';
-
-import { INBOX_BLACKLIST } from './config';
 
 import 'source-map-support/register';
 
@@ -21,7 +20,7 @@ const asyncHandler = (fn) => (req: Request, res: Response, next: NextFunction) =
     res.json({ error: error.message || 'Unknown error' });
   });
 
-const getInboxBlacklistValidator = () => query('query').not().isIn(INBOX_BLACKLIST);
+const buildInboxRequestValidator = () => query('query').not().isIn(INBOX_BLACKLIST);
 
 app.use(express.json());
 
@@ -40,17 +39,17 @@ app.use((req, res, next) => {
 
 app.set('view engine', 'ejs');
 
-app.get('/', (_req, res) => res.render('pages/index'));
+app.get('/', asyncHandler(inboxController.index));
 
-app.get('/inbox/latest', getInboxBlacklistValidator(), asyncHandler(inboxController.latest));
-app.get('/inbox/:id', getInboxBlacklistValidator(), asyncHandler(inboxController.show));
-app.get('/inbox', getInboxBlacklistValidator(), asyncHandler(inboxController.list));
+app.get('/inbox/latest', buildInboxRequestValidator(), asyncHandler(inboxController.latest));
+app.get('/inbox/:id', buildInboxRequestValidator(), asyncHandler(inboxController.show));
+app.get('/inbox', buildInboxRequestValidator(), asyncHandler(inboxController.list));
 
 app.use((req, res, _) => inboxController.render404Response(req, res));
 
-app.use((err, _req, res, _) => {
+app.use((err, req, res, _) => {
   log.error(err.stack);
-  res.status(500).render('pages/error', { error: err });
+  inboxController.render500Response(err, req, res);
 });
 
 export const handler = serverless(app);

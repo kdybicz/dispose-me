@@ -1,6 +1,6 @@
+/* eslint-disable class-methods-use-this */
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import QueryString from 'qs';
 
 import { Email, EmailParser } from '../tools/EmailParser';
 import { S3FileSystem } from '../tools/S3FileSystem';
@@ -24,6 +24,18 @@ export class InboxController {
     this.show = this.show.bind(this);
     this.latest = this.latest.bind(this);
     this.list = this.list.bind(this);
+  }
+
+  async index(req: Request, res: Response): InboxResponse {
+    const {
+      type = 'html',
+    } = req.query;
+
+    if (type === 'html') {
+      return res.render('pages/index');
+    }
+
+    return res.json({});
   }
 
   async show(req: Request, res: Response): InboxResponse {
@@ -129,7 +141,6 @@ export class InboxController {
     return res.json({ emails: emails.reverse() });
   }
 
-  // eslint-disable-next-line class-methods-use-this
   render403Response(req: Request, res: Response): void {
     const { type = 'html' } = req.query;
 
@@ -141,7 +152,6 @@ export class InboxController {
     res.status(403).json({ message: 'You are not allowed to visit that page.' });
   }
 
-  // eslint-disable-next-line class-methods-use-this
   render404Response(req: Request, res: Response): void {
     const { type = 'html' } = req.query;
 
@@ -151,5 +161,16 @@ export class InboxController {
     }
 
     res.status(404).json({ message: 'The page you are looking for was not found.' });
+  }
+
+  render500Response(err: Error, req: Request, res: Response): void {
+    const { type = 'html' } = req.query;
+
+    if (type === 'html') {
+      res.status(500).render('pages/error', { error: err });
+      return;
+    }
+
+    res.status(500).json({ message: err.stack });
   }
 }
