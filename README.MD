@@ -169,6 +169,60 @@ Go to _AWS > Simple Email Service_ and choose the _Create a New Rule Set_ from t
 
 Go to: https://INTERFACE_SUBDOMAIN/?x-api-key=ACCESS_TOKEN
 
+**Note:** You can also send the `ACCESS_TOKEN` in the `x-api-key` request Header.
+
+
+## Opening to public
+
+Some of you may want to open the service to public. At first glance this seems to be great idea, but you should be aware of what are you
+doing and what potential risk could be involved. I'm not the right person to give you any advice on this topic, though I can share a
+suggestion left by @shokinn.
+
+
+### The Suggestion
+
+There are some email addresses that have more power than others, just like an administrator account on your local machine is more powerful
+than a regular user. It's pretty important that you don't open those addresses to public, because you can miss adminstration messages being
+sent to you or even loose the domain, because someone would be able to impersonate himself as its owner just by being able to read emails
+sent to some of those inboxes.
+
+List of such inboxes is shared by [Google](https://support.google.com/a/answer/6093413?hl=en) and it seems to be based an old 
+[RFC 2142](https://www.ietf.org/rfc/rfc2142.txt) with some additions.
+
+
+### Setting it up
+
+It's pretty simple to open the service to public. The bare minimum to do so is just to copy and uncomment two lines from the `.env.example`:
+
+```
+PRIVATE_ACCESS=false
+
+INBOX_BLACKLIST=hostmaster,postmaster,webmaster,admin,administrator,abuse,root,ssl-admin,majordomo
+```
+
+
+### Next step
+
+A step beyond bare minimum, would be to ensure that anything sent to emails in question would never be processed by Lambda, so that even
+if someone would find a way to bypass the `INBOX_BLACKLIST` he would found nothing there.
+
+Unfortunately, as for now I didn't managed to find an easy way of setting this part automatically, so you will need to do it manually. So,
+please go back to _AWS > Simple Email Service_ and choose the _View Active Rule Set_ from the _Rule Set (Email Receiving)_ section. Then
+hit _Create Rule_. In the _Step 1: Recipients_ add all email addresses following the scheme:
+* hostmaster@`INTERFACE_SUBDOMAIN`
+* postmaster@`INTERFACE_SUBDOMAIN`
+* webmaster@`INTERFACE_SUBDOMAIN`
+* admin@`INTERFACE_SUBDOMAIN`
+* administrator@`INTERFACE_SUBDOMAIN`
+* abuse@`INTERFACE_SUBDOMAIN`
+* root@`INTERFACE_SUBDOMAIN`
+* ssl-admin@`INTERFACE_SUBDOMAIN`
+* majordomo@`INTERFACE_SUBDOMAIN`
+
+Where the `INTERFACE_SUBDOMAIN` is the name of your domain.
+
+TBC...
+
 
 ## Costs simulation
 
