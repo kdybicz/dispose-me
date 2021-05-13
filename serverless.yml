@@ -96,11 +96,12 @@ functions:
             type: request
   processor:
     handler: src/email-processor.handler
+    environment:
+      EMAIL_BUCKET_NAME: ${env:EMAIL_BUCKET_NAME}
   authorizer:
     handler: src/authorizer.handler
     environment:
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
-      EMAIL_BUCKET_NAME: ${env:EMAIL_BUCKET_NAME}
 
 package:
   individually: true
