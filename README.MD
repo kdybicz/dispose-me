@@ -204,7 +204,7 @@ INBOX_BLACKLIST=hostmaster,postmaster,webmaster,admin,administrator,abuse,root,s
 ### Next step
 
 A step beyond bare minimum, would be to ensure that anything sent to emails in question would never be processed by Lambda, so that even
-if someone would find a way to bypass the `INBOX_BLACKLIST` he would found nothing there.
+if someone would find a way to bypass the `INBOX_BLACKLIST` he would found nothing.
 
 Unfortunately, as for now I didn't managed to find an easy way of setting this part automatically, so you will need to do it manually. So,
 please go back to _AWS > Simple Email Service_ and choose the _View Active Rule Set_ from the _Rule Set (Email Receiving)_ section. Then

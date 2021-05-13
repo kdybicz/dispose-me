@@ -69,8 +69,10 @@ functions:
     handler: src/api.handler
     environment:
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
-      PRIVATE_ACCESS: ${env:PRIVATE_ACCESS, true}
+      EMAIL_BUCKET_NAME: ${env:EMAIL_BUCKET_NAME}
+      EMAIL_DOMAIN: ${env:EMAIL_DOMAIN}
       INBOX_BLACKLIST: ${env:INBOX_BLACKLIST}
+      PRIVATE_ACCESS: ${env:PRIVATE_ACCESS, true}
     events:
       - http:
           path: /
@@ -98,6 +100,7 @@ functions:
     handler: src/authorizer.handler
     environment:
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
+      EMAIL_BUCKET_NAME: ${env:EMAIL_BUCKET_NAME}
 
 package:
   individually: true
