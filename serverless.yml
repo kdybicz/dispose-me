@@ -1,6 +1,7 @@
 service: dispose-me
 
 frameworkVersion: '2'
+useDotenv: true
 
 custom:
   customDomain:
@@ -17,15 +18,6 @@ custom:
         - ejs
     packager: 'yarn'
     webpackConfig: './webpack.config.js'
-  dotenv:
-    logging: false
-    required:
-      file: true
-    exclude:
-      - AWS_ACCESS_KEY_ID
-      - AWS_SECRET_ACCESS_KEY
-      - AWS_REGION
-      - INTERFACE_SUBDOMAIN
 
 provider:
   name: aws
@@ -77,12 +69,16 @@ functions:
     handler: src/api.handler
     environment:
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
+      EMAIL_BUCKET_NAME: ${env:EMAIL_BUCKET_NAME}
+      EMAIL_DOMAIN: ${env:EMAIL_DOMAIN}
+      INBOX_BLACKLIST: ${env:INBOX_BLACKLIST}
+      PRIVATE_ACCESS: ${env:PRIVATE_ACCESS, true}
     events:
       - http:
           path: /
           method: get
           cors: true
-          private: true
+          private: ${env:PRIVATE_ACCESS, true}
           authorizer:
             name: authorizer
             resultTtlInSeconds: 0
@@ -92,7 +88,7 @@ functions:
           path: /{proxy+}
           method: get
           cors: true
-          private: true
+          private: ${env:PRIVATE_ACCESS, true}
           authorizer:
             name: authorizer
             resultTtlInSeconds: 0
@@ -100,6 +96,8 @@ functions:
             type: request
   processor:
     handler: src/email-processor.handler
+    environment:
+      EMAIL_BUCKET_NAME: ${env:EMAIL_BUCKET_NAME}
   authorizer:
     handler: src/authorizer.handler
     environment:
@@ -110,7 +108,6 @@ package:
 
 plugins:
   - serverless-domain-manager
-  - serverless-dotenv-plugin
   - serverless-webpack
   - serverless-offline
 

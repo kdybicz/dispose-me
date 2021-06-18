@@ -1,22 +1,19 @@
 {
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
   "configurations": [
     {
-      "name": "Lambda",
-      "type": "node",
-      "request": "launch",
-      "runtimeArgs": ["--inspect", "--debug-port=9229"],
-      "program": "${workspaceFolder}/node_modules/serverless/bin/serverless",
-      "args": ["offline"],
-      "port": 9229,
-      "console": "integratedTerminal"
-    },
-    {
-      "name": "Debug",
-      "type": "node",
+      "type": "pwa-node",
       "request": "attach",
+      "name": "Debug",
       "processId": "${command:PickProcess}",
       "restart": true,
-      "protocol": "inspector"
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ],
     }
   ]
 }

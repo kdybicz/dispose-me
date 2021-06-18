@@ -1,4 +1,5 @@
 import express, { NextFunction, Request, Response } from 'express';
+import { query } from 'express-validator';
 import serverless from 'serverless-http';
 
 import { InboxController } from './controllers/InboxController';
@@ -18,6 +19,18 @@ const asyncHandler = (fn) => (req: Request, res: Response, next: NextFunction) =
     res.json({ error: error.message || 'Unknown error' });
   });
 
+const buildInboxRequestValidator = () => {
+  let blacklist = [];
+  try {
+    if (process.env.INBOX_BLACKLIST) {
+      blacklist = process.env.INBOX_BLACKLIST.split(',');
+    }
+  } catch (err) {
+    log.error('Unable to parse INBOX_BLACKLIST', err);
+  }
+  return query('query').not().isIn(blacklist);
+};
+
 app.use(express.json());
 
 app.use(express.urlencoded({
@@ -35,19 +48,17 @@ app.use((req, res, next) => {
 
 app.set('view engine', 'ejs');
 
-app.get('/', (_req, res) => res.render('pages/index'));
+app.get('/', asyncHandler(inboxController.index));
 
-app.get('/inbox/latest', asyncHandler(inboxController.latest));
-app.get('/inbox/:id', asyncHandler(inboxController.show));
-app.get('/inbox', asyncHandler(inboxController.list));
+app.get('/inbox/latest', buildInboxRequestValidator(), asyncHandler(inboxController.latest));
+app.get('/inbox/:id', buildInboxRequestValidator(), asyncHandler(inboxController.show));
+app.get('/inbox', buildInboxRequestValidator(), asyncHandler(inboxController.list));
 
-app.use((_req, res, _) => {
-  res.status(404).render('pages/404');
-});
+app.use((req, res, _) => inboxController.render404Response(req, res));
 
-app.use((err, _req, res, _) => {
+app.use((err, req, res, _) => {
   log.error(err.stack);
-  res.status(500).render('pages/error', { error: err });
+  inboxController.render500Response(err, req, res);
 });
 
 export const handler = serverless(app);
