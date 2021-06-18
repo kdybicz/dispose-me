@@ -20,6 +20,7 @@
     "lint": "eslint src -c .eslintrc.json --ext ts",
     "test": "jest --watch",
     "test:coverage": "jest --all --coverage",
+    "test:ci": "yarn test:coverage --ci --maxWorkers=2  --reporters=default --reporters=jest-junit",
     "predeploy": "yarn && yarn lint && jest --all",
     "deploy": "sls deploy --stage"
   },
