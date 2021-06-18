@@ -14,7 +14,7 @@
     <div class="col-md-12 text-center">
         <span class="display-1 d-block">403</span>
         <div class="mb-4 lead">You are not allowed to visit that page.</div>
-        <a href="/#" class="btn btn-link">Back to Home</a>
+        <a href="/?<%= new URLSearchParams(query) %>" class="btn btn-link">Back to Home</a>
     </div>
   </div>
 </main>
