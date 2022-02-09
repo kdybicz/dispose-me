@@ -17,9 +17,18 @@ export type Email = {
   received: Date;
 }
 
-const parseEmailAddresses = (addresses: AddressObject | AddressObject[]) => {
+type ParsedEmailAddress = {
+  address: string;
+  user: () => string;
+}
+
+const parseEmailAddresses = (addresses: undefined | AddressObject | AddressObject[]): ParsedEmailAddress[] => {
+  if (!addresses) {
+    return [];
+  }
+
   if (Array.isArray(addresses)) {
-    return addresses.map((address) => parseEmailAddress(address.text));
+    return addresses.map((address) => parseEmailAddress(address.text)).flat();
   }
 
   return parseEmailAddress(addresses.text);
@@ -32,15 +41,15 @@ export class EmailParser {
     const email = await parseEmail(emailContent);
 
     log.debug('Parsing sender and recipient email addresses');
-    const senderEmails = parseEmailAddresses(email.from);
+    const senderEmails = parseEmailAddresses(email?.from);
     const recipientEmails = parseEmailAddresses(email.to);
 
     return {
       from: senderEmails.map((item) => ({ address: item.address, user: item.user() })),
       to: recipientEmails.map((item) => ({ address: item.address, user: item.user() })),
-      subject: email.subject,
-      body: email.html !== false ? email.html : email.text,
-      received: email.date,
+      subject: email.subject ?? '',
+      body: (email.html !== false ? email.html : email.text) ?? '',
+      received: email.date ?? new Date(0),
     };
   }
 }

@@ -13,7 +13,7 @@ describe('Email Processor', () => {
     // when:
     const result = await simpleParser(email);
     // then:
-    expect(result.from.text).toEqual('John Doe <john.doe@example.com>');
+    expect(result?.from?.text).toEqual('John Doe <john.doe@example.com>');
   });
 
   test('Parse single email', () => {

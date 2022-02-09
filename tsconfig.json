@@ -1,16 +1,6 @@
 {
-  "compilerOptions": {
-    "lib": ["es2017"],
-    "removeComments": true,
-    "moduleResolution": "node",
-    "noUnusedLocals": true,
-    "esModuleInterop": true,
-    "noUnusedParameters": true,
-    "sourceMap": true,
-    "target": "es2017",
-    "outDir": "lib"
-  },
-  "include": ["./**/*.ts"],
+  "extends": "@tsconfig/node14/tsconfig.json",
+  "include": ["src/**/*"],
   "exclude": [
     "node_modules/**/*",
     ".serverless/**/*",
