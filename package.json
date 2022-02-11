@@ -6,7 +6,7 @@
   "license": "MIT",
   "main": "src/handler.js",
   "engines": {
-    "node": ">=v14.17.0 <15.0.0"
+    "node": ">=v14.17.0"
   },
   "repository": {
     "type": "git",
