@@ -7,7 +7,8 @@ module.exports = {
   context: __dirname,
   mode: slsw.lib.options.stage !== 'production' ? 'development' : 'production',
   entry: slsw.lib.entries,
-  devtool: slsw.lib.options.stage !== 'production' ? 'eval-cheap-source-map' : 'source-map',
+  devtool: slsw.lib.options.stage !== 'production' ? 'eval-source-map' : 'source-map',
+  stats: slsw.lib.webpack.isLocal ? 'normal' : 'errors-warnings',
   resolve: {
     extensions: ['.mjs', '.json', '.ts'],
     symlinks: false,

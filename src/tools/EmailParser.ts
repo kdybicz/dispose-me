@@ -12,6 +12,8 @@ export type Email = {
   id?: string;
   from: EmailAddress[];
   to: EmailAddress[];
+  cc: EmailAddress[];
+  bcc: EmailAddress[];
   subject: string;
   body: string;
   received: Date;
@@ -27,11 +29,14 @@ const parseEmailAddresses = (addresses: undefined | AddressObject | AddressObjec
     return [];
   }
 
+  let parsedAddresses;
   if (Array.isArray(addresses)) {
-    return addresses.map((address) => parseEmailAddress(address.text)).flat();
+    parsedAddresses = addresses.map((address) => parseEmailAddress(address.text)).flat();
+  } else {
+    parsedAddresses = parseEmailAddress(addresses.text);
   }
 
-  return parseEmailAddress(addresses.text);
+  return parsedAddresses.filter((address: ParsedEmailAddress) => address.constructor.name === 'Address');
 };
 
 export class EmailParser {
@@ -43,10 +48,14 @@ export class EmailParser {
     log.debug('Parsing sender and recipient email addresses');
     const senderEmails = parseEmailAddresses(email?.from);
     const recipientEmails = parseEmailAddresses(email.to);
+    const carbonCopyEmails = parseEmailAddresses(email.cc);
+    const blindCarbonCopyEmails = parseEmailAddresses(email.bcc);
 
     return {
       from: senderEmails.map((item) => ({ address: item.address, user: item.user() })),
       to: recipientEmails.map((item) => ({ address: item.address, user: item.user() })),
+      cc: carbonCopyEmails.map((item) => ({ address: item.address, user: item.user() })),
+      bcc: blindCarbonCopyEmails.map((item) => ({ address: item.address, user: item.user() })),
       subject: email.subject ?? '',
       body: (email.html !== false ? email.html : email.text) ?? '',
       received: email.date ?? new Date(0),
