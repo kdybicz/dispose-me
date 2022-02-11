@@ -57,8 +57,8 @@ export class InboxController {
 
     const emailObject = await this.fileSystem.getObject(this.bucketName, emailObjectPath);
 
-    let email: Email;
-    if (emailObject) {
+    let email: Email | undefined;
+    if (emailObject.Body) {
       email = await this.emailParser.parseEmail(emailObject.Body.toString());
       email.id = id;
     }
@@ -83,17 +83,22 @@ export class InboxController {
     }
 
     const normalizedUsername = normalizeUsername(query as string);
-    const listEmailsAfter = sentAfter ? `${normalizedUsername}/${sentAfter}` : null;
+    const listEmailsAfter = sentAfter ? `${normalizedUsername}/${sentAfter}` : undefined;
 
     const emailsList = await this.fileSystem.listObjects(this.bucketName, normalizedUsername, listEmailsAfter, 1000);
 
-    let email: Email;
+    let email: Email | undefined;
     if (emailsList.KeyCount !== 0) {
-      const latestFilePath = emailsList.Contents.slice(-1).pop().Key;
-      const latestEmail = await this.fileSystem.getObject(this.bucketName, latestFilePath);
+      const latestFilePath = emailsList.Contents?.slice(-1).pop()?.Key;
 
-      email = await this.emailParser.parseEmail(latestEmail.Body.toString());
-      email.id = latestFilePath.split('/')[-1];
+      if (latestFilePath) {
+        const latestEmail = await this.fileSystem.getObject(this.bucketName, latestFilePath);
+
+        if (latestEmail.Body) {
+          email = await this.emailParser.parseEmail(latestEmail.Body.toString());
+          email.id = latestFilePath.split('/')[-1];
+        }
+      }
     }
 
     if (type === 'html') {
@@ -117,7 +122,7 @@ export class InboxController {
     }
 
     const normalizedUsername = normalizeUsername(query as string);
-    const listEmailsAfter = sentAfter ? `${normalizedUsername}/${sentAfter}` : null;
+    const listEmailsAfter = sentAfter ? `${normalizedUsername}/${sentAfter}` : undefined;
 
     const emailObjectsList = await this.fileSystem.listObjects(
       this.bucketName,
@@ -126,12 +131,19 @@ export class InboxController {
       limit as number,
     );
 
-    const emailNamesList = emailObjectsList.Contents.map((item) => item.Key);
+    const emailNamesList = emailObjectsList.Contents?.map((item) => item.Key) ?? [];
     const emails = await Promise.all(emailNamesList.map(async (name) => {
-      const emailObject = await this.fileSystem.getObject(this.bucketName, name);
-      const email: Email = await this.emailParser.parseEmail(emailObject.Body.toString());
-      email.id = name.split('/').pop();
-      return email;
+      if (name) {
+        const emailObject = await this.fileSystem.getObject(this.bucketName, name);
+
+        if (emailObject.Body) {
+          const email: Email = await this.emailParser.parseEmail(emailObject.Body.toString());
+          email.id = name.split('/').pop();
+          return email;
+        }
+      }
+
+      return null;
     }));
 
     if (type === 'html') {

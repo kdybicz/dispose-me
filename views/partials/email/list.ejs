@@ -9,11 +9,11 @@
   </thead>
   <tbody>
     <% for(var i = 0; i < emails.length; i++) { %>
-      <tr data-id="<%= emails[i].id %>" onclick="location.href = '/inbox/<%= emails[i].id %>?<%= new URLSearchParams(query) %>'">
+      <tr data-id="<%= emails[i].id %>" onclick="location.href = '/inbox/<%= emails[i].id %>?<%= new URLSearchParams(query) %>'" style="cursor: pointer">
         <th scope="row"><%= i + 1 %></th>
         <td><%= emails[i].from[0].address %></td>
         <td><%= emails[i].subject %></td>
-        <td><%= emails[i].received %></td>
+        <td><%= emails[i].received.toGMTString() %></td>
       </tr>
     <% } %>
   </tbody>

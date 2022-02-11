@@ -9,10 +9,10 @@ import log from '../tools/log';
 export class S3FileSystem {
   protected client: S3;
 
-  constructor(region: string = process.env.AWS_REGION) {
+  constructor(region?: string) {
     this.client = new S3({
       apiVersion: '2006-03-01',
-      region,
+      region: region ?? process.env.AWS_REGION,
     });
   }
 
