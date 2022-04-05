@@ -16,8 +16,7 @@ const app = express();
 const asyncHandler = (fn: any) => (req: Request, res: Response, next: NextFunction) => Promise
   .resolve(fn(req, res, next))
   .catch((error) => {
-    res.status(error.status || 500);
-    res.json({ error: error.message || 'Unknown error' });
+    next(error);
   });
 
 const buildInboxRequestValidator = () => {
@@ -55,7 +54,9 @@ app.get('/inbox/latest', buildInboxRequestValidator(), asyncHandler(inboxControl
 app.get('/inbox/:id', buildInboxRequestValidator(), asyncHandler(inboxController.show));
 app.get('/inbox', buildInboxRequestValidator(), asyncHandler(inboxController.list));
 
-app.use((req, res, _) => inboxController.render404Response(req, res));
+app.all('*', (req, res) => {
+  inboxController.render404Response(req, res);
+});
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 app.use((err: any, req: any, res: any, _: any) => {
