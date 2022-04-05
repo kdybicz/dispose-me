@@ -27,11 +27,18 @@ export class IncomingEmailProcessor {
       const carbonCopyEmails = emailContent.cc;
       const blindCarbonCopyEmails = emailContent.bcc;
 
-      log.debug('Processing emails sent from', senderEmails.map((e) => e.address).join(', '),
-        'to:', recipientEmails.map((e) => e.address).join(', '),
-        'cc:', carbonCopyEmails.map((e) => e.address).join(', '),
-        'bcc:', blindCarbonCopyEmails.map((e) => e.address).join(', '),
-        'at', emailContent.received.toString());
+      log.debug(
+        'Processing emails sent from',
+        senderEmails.map((e) => e.address).join(', '),
+        'to:',
+        recipientEmails.map((e) => e.address).join(', '),
+        'cc:',
+        carbonCopyEmails.map((e) => e.address).join(', '),
+        'bcc:',
+        blindCarbonCopyEmails.map((e) => e.address).join(', '),
+        'at',
+        emailContent.received.toString(),
+      );
 
       const allEmailAddresses = [
         ...recipientEmails,
