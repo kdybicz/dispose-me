@@ -1,6 +1,6 @@
 service: dispose-me
 
-frameworkVersion: '2'
+frameworkVersion: '3'
 useDotenv: true
 
 custom:
