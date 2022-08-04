@@ -905,6 +905,13 @@
   resolved "https://registry.yarnpkg.com/@types/json5/-/json5-0.0.29.tgz#ee28707ae94e11d2b827bcbe5270bcea7f3e71ee"
   integrity sha1-7ihweulOEdK4J7y+UnC86n8+ce4=
 
+"@types/mailparser@^2.7.4":
+  version "2.7.4"
+  resolved "https://registry.yarnpkg.com/@types/mailparser/-/mailparser-2.7.4.tgz#7faae72f874077fbb89c075ad898e6fd8a41119e"
+  integrity sha512-JGIV4RtcjBO1jsD0RTDoXOmm1zzHr07rWPmNREBBM1oAjjfy99Ne4Y7s/akVSZoksm/JWQMcFQ42LbsufHRVfg==
+  dependencies:
+    "@types/node" "*"
+
 "@types/node@*":
   version "14.14.6"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.6.tgz#146d3da57b3c636cc0d1769396ce1cfa8991147f"

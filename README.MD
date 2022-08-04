@@ -85,3 +85,4 @@ https://eu-west-1.console.aws.amazon.com/ses/home?region=eu-west-1#receipt-rules
 * [x] TTL on S3 items - set to 1 day
 * [ ] CloudWatch log retention?
 * [ ] Drop a log file next to email unsuccessfully processed?
+* [ ] Include RSS?
