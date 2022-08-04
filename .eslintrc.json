@@ -46,7 +46,8 @@
       "rules": {
           "node/no-unpublished-require": 0,
           "node/no-missing-require": 0,
-          "node/no-unpublished-import": 0
+          "node/no-unpublished-import": 0,
+          "@typescript-eslint/no-var-requires": 0
       }
     }
   ]
