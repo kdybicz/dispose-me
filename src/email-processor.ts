@@ -10,7 +10,7 @@ import { normalizeUsername } from './tools/utils';
 const fileSystem = new S3FileSystem();
 const parser = new EmailParser();
 
-const { BUCKET_NAME } = process.env;
+const { EMAIL_BUCKET_NAME } = process.env;
 
 export const handler: SESHandler = async (event) => {
   console.debug('Processing SES event...');
@@ -19,7 +19,7 @@ export const handler: SESHandler = async (event) => {
   const { messageId } = record.ses.mail;
 
   try {
-    const emailData = await fileSystem.getObject(BUCKET_NAME, messageId);
+    const emailData = await fileSystem.getObject(EMAIL_BUCKET_NAME, messageId);
 
     const email = await parser.parseEmail(emailData.Body.toString());
 
@@ -31,7 +31,7 @@ export const handler: SESHandler = async (event) => {
     const normalizedRecipientName = normalizeUsername(recipientEmails[0].user);
     const targetFile = `${normalizedRecipientName}/${email.received.getTime()}`;
 
-    await fileSystem.moveObject(BUCKET_NAME, messageId, targetFile);
+    await fileSystem.moveObject(EMAIL_BUCKET_NAME, messageId, targetFile);
 
     return { status: 'success' };
   } catch (err) {

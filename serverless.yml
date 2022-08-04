@@ -4,26 +4,29 @@ frameworkVersion: '1'
 
 custom:
   customDomain:
-    domainName: 'www.disposeme.de'
+    domainName: ${env:INTERFACE_SUBDOMAIN}
     autoDomain: true
     endpointType: 'regional'
     stage: ${self:provider.stage}
     createRoute53Record: true
-  buckerName: ${self:service}-emails
   webpack:
     webpackConfig: './webpack.config.js'
     includeModules: true
   dotenv:
     logging: false
+    required:
+      file: true
     exclude:
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
+      - AWS_REGION
+      - INTERFACE_SUBDOMAIN
 
 provider:
   name: aws
   runtime: nodejs12.x
   stage: ${opt:stage,'staging'}
-  region: eu-west-1	
+  region: ${env:AWS_REGION}
   timeout: 3
   memorySize: 512
   apiGateway:
@@ -70,7 +73,6 @@ functions:
     handler: src/api.handler
     environment:
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
-      BUCKET_NAME: ${self:custom.buckerName}
     events:
       - http:
           path: /
@@ -94,8 +96,6 @@ functions:
             type: request
   processor:
     handler: src/email-processor.handler
-    environment:
-      BUCKET_NAME: ${self:custom.buckerName}
   authorizer:
     handler: src/authorizer.handler
     environment:
@@ -112,7 +112,7 @@ resources:
     EmailBucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: ${self:custom.buckerName}
+        BucketName: ${env:EMAIL_BUCKET_NAME}
         LifecycleConfiguration:
           Rules:
           - Id: CleanUpRule
