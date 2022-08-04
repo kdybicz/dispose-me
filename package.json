@@ -1,12 +1,16 @@
 {
   "name": "dispose-me",
   "version": "1.0.0",
-  "description": "Serverless webpack example using Typescript",
+  "description": "Dispose Me is a simple AWS-based self-hosted disposable email service.",
   "author": "Kamil Dybicz",
   "license": "MIT",
   "main": "src/handler.js",
   "engines": {
     "node": ">=12.13.0"
+  },
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/kdybicz/dispose-me.git"
   },
   "scripts": {
     "prestart": "yarn",
