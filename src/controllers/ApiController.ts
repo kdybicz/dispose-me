@@ -15,7 +15,7 @@ export class ApiController {
   }
 
   async latestEmail(username: string): Promise<Email | null> {
-    const emailsList = await this.fileSystem.listObjects(this.bucketName, username, 1000);
+    const emailsList = await this.fileSystem.listObjects(this.bucketName, username, null, 1000);
     if (emailsList.KeyCount === 0) {
       return null;
     }

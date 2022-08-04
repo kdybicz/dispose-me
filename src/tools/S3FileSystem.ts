@@ -62,7 +62,7 @@ export class S3FileSystem {
       Prefix: `${path}/`,
     };
 
-    if (startAfter !== undefined) {
+    if (startAfter) {
       listRequest.StartAfter = startAfter;
     }
 
