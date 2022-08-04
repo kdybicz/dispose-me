@@ -10,15 +10,12 @@
 </header>
 
 <main role="main" class="container">
-  <div class="row">
-    <div class="col-sm-12">
-      <% if (email) { %>
-        <%- include('../partials/email/details', { email }); %>
-      <% } else { %>
-        Nothing to see...
-      <% } %>
-    </div>
-  </div>
+  <a class="nav-link" href="/inbox?<%= new URLSearchParams(query) %>">&lt;- Back to Inbox</a>
+  <% if (email) { %>
+    <%- include('../partials/email/details', { email }); %>
+  <% } else { %>
+    Nothing to see...
+  <% } %>
 </main>
 
 <footer class="footer">
