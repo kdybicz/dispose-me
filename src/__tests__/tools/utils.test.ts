@@ -8,6 +8,7 @@ describe('utils tests', () => {
       ['test+123', 'test'],
       ['te.st+123', 'test'],
       ['t.e.s.t+123', 'test'],
+      ['t.e.s.t%2B123', 'test'],
       ['t.e.s.t+123+234', 'test'],
     ])('normalizing %p and expecting %p', (input, expected) => {
       // when:

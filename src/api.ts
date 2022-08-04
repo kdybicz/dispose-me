@@ -1,46 +1,31 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable no-console */
-import { APIGatewayProxyHandler } from 'aws-lambda';
+
+import express, { NextFunction, Request, Response } from 'express';
+import { checkSchema } from 'express-validator';
+import serverless from 'serverless-http';
 
 import { ApiController } from './controllers/ApiController';
-import { normalizeUsername } from './tools/utils';
+import { requestSchema } from './tools/validators';
 
 import 'source-map-support/register';
 
 const controller = new ApiController(process.env.BUCKET_NAME);
+const app = express();
 
-export const handler: APIGatewayProxyHandler = async (event) => {
-  console.debug('Processing API call:', JSON.stringify(event, null, 2));
+// Since Express doesn't support error handling of promises out of the box,
+// this handler enables that
+const asyncHandler = (fn) => (req: Request, res: Response, next: NextFunction) => Promise
+  .resolve(fn(req, res, next))
+  .catch((error) => {
+    res.status(error.status || 500);
+    res.json({ error: error.message || 'Unknown error' });
+  });
 
-  const username = decodeURIComponent(event.queryStringParameters.username);
-  const normalizedUsername = normalizeUsername(username);
+app.use(express.json());
 
-  // eslint-disable-next-line max-len
-  const sentAfter = event.queryStringParameters.sentAfter ? decodeURIComponent(event.queryStringParameters.sentAfter) : null;
+app.get('/email/latest', checkSchema(requestSchema), asyncHandler(controller.latestEmail));
 
-  let response;
-  switch (event.path) {
-    case '/email/latest':
-      console.log('Getting latest email for user', username);
+app.get('/email', checkSchema(requestSchema), asyncHandler(controller.listEmails));
 
-      response = await controller.latestEmail(normalizedUsername, sentAfter);
-      break;
-    case '/email':
-      console.log('Getting list of emails for user', username);
-
-      const emails = await controller.listEmails(normalizedUsername, sentAfter, 10);
-
-      response = { emails };
-      break;
-    default:
-      response = {
-        message: 'Go Serverless Webpack (Typescript) v1.0! Your function executed successfully!',
-        input: event,
-      };
-  }
-
-  return {
-    statusCode: 200,
-    body: JSON.stringify(response, null, 2),
-  };
-};
+export const handler = serverless(app);
