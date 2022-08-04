@@ -9,8 +9,8 @@
     "node": ">=12.13.0"
   },
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/kdybicz/dispose-me.git"
+    "type": "git",
+    "url": "https://github.com/kdybicz/dispose-me.git"
   },
   "scripts": {
     "prestart": "yarn",
@@ -26,7 +26,7 @@
   "dependencies": {
     "@types/ejs": "^3.0.5",
     "address-rfc2822": "^2.0.5",
-    "aws-sdk": "^2.791.0",
+    "aws-sdk": "^2.792.0",
     "ejs": "^3.1.5",
     "email-addresses": "^3.1.0",
     "express": "^4.17.1",
@@ -50,6 +50,7 @@
     "eslint-plugin-node": "^11.1.0",
     "jest": "^26.6.3",
     "jest-junit": "^12.0.0",
+    "serverless": "^2.11.1",
     "serverless-domain-manager": "^5.1.0",
     "serverless-dotenv-plugin": "^3.1.0",
     "serverless-offline": "6.6.0",

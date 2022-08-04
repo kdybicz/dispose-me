@@ -1,6 +1,6 @@
 service: dispose-me
 
-frameworkVersion: '1'
+frameworkVersion: '2'
 
 custom:
   customDomain:
@@ -35,13 +35,9 @@ provider:
   timeout: 3
   memorySize: 512
   apiGateway:
-    minimumCompressionSize: 1024
     apiKeySourceType: AUTHORIZER
-  logs:
-    restApi:
-      level: ERROR
-      accessLogging: false
-      fullExecutionData: false
+    minimumCompressionSize: 1024
+    shouldStartNameWithService: true
   environment:
     LOG_LEVEL: 2
   logRetentionInDays: 14
