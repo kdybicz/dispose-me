@@ -54,13 +54,17 @@ export class S3FileSystem {
   }
 
   // eslint-disable-next-line max-len
-  async listObjects(bucket: string, path: string): Promise<PromiseResult<S3.Types.ListObjectsV2Output, AWSError>> {
+  async listObjects(bucket: string, path: string, startAfter?: string, limit = 50): Promise<PromiseResult<S3.Types.ListObjectsV2Output, AWSError>> {
     const listRequest: ListObjectsV2Request = {
       Bucket: bucket,
-      MaxKeys: 10,
+      MaxKeys: limit,
       Delimiter: '/',
-      Prefix: path,
+      Prefix: `${path}/`,
     };
+
+    if (startAfter !== undefined) {
+      listRequest.StartAfter = startAfter;
+    }
 
     console.log('Listing Object:', JSON.stringify(listRequest, null, 2));
 

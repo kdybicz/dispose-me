@@ -1,42 +1,46 @@
+/* eslint-disable no-case-declarations */
 /* eslint-disable no-console */
 import { APIGatewayProxyHandler } from 'aws-lambda';
 
-import 'source-map-support/register';
-import { S3FileSystem } from './tools/S3FileSystem';
+import { ApiController } from './controllers/ApiController';
 import { normalizeUsername } from './tools/utils';
 
-const fileSystem = new S3FileSystem();
+import 'source-map-support/register';
 
-const { BUCKET_NAME } = process.env;
+const controller = new ApiController(process.env.BUCKET_NAME);
 
 export const handler: APIGatewayProxyHandler = async (event) => {
   console.debug('Processing API call:', JSON.stringify(event, null, 2));
 
-  if (event.queryStringParameters.username) {
-    const username = decodeURIComponent(event.queryStringParameters.username);
-    const normalizedUsername = normalizeUsername(username);
+  const username = decodeURIComponent(event.queryStringParameters.username);
+  const normalizedUsername = normalizeUsername(username);
 
-    console.log(`${event.queryStringParameters.username}\n${username}\n${normalizedUsername}`);
+  let response;
+  switch (event.path) {
+    case '/email/latest':
+      console.log('Getting latest email for user', username);
 
-    const emails = await fileSystem.listObjects(BUCKET_NAME, normalizedUsername);
+      response = await controller.latestEmail(normalizedUsername);
+      break;
+    case '/email':
+      console.log('Getting list of emails for user', username);
 
-    console.log('Listed Objects:', JSON.stringify(emails, null, 3));
+      // eslint-disable-next-line max-len
+      const startAfter = event.queryStringParameters.startAfter ? decodeURIComponent(event.queryStringParameters.startAfter) : null;
 
-    const names = emails.Contents.map((item) => item.Key);
+      const emails = await controller.listEmails(normalizedUsername, startAfter, 50);
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        fileNames: names,
-      }, null, 2),
-    };
+      response = { emails };
+      break;
+    default:
+      response = {
+        message: 'Go Serverless Webpack (Typescript) v1.0! Your function executed successfully!',
+        input: event,
+      };
   }
 
   return {
     statusCode: 200,
-    body: JSON.stringify({
-      message: 'Go Serverless Webpack (Typescript) v1.0! Your function executed successfully!',
-      input: event,
-    }, null, 2),
+    body: JSON.stringify(response, null, 2),
   };
 };
