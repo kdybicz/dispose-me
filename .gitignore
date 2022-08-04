@@ -12,3 +12,7 @@ node_modules
 
 # VSC workspace
 *.code-workspace
+
+# jest
+coverage
+junit.xml

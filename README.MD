@@ -169,6 +169,84 @@ Go to _AWS > Simple Email Service_ and choose the _Create a New Rule Set_ from t
 
 Go to: https://INTERFACE_SUBDOMAIN/?x-api-key=ACCESS_TOKEN
 
+**Note:** You can also send the `ACCESS_TOKEN` in the `x-api-key` request Header.
+
+
+## Opening to public
+
+Some of you may want to open the service to public. At first glance this seems
+to be a great idea, but you should be aware that there is a real risk involved
+in doing that. You should be really sure that you know what you are doing!
+I'm not an security expert nor the right person to give you any advice on this
+topic, though I can share some suggestion left by @shokinn.
+
+
+### The Suggestion
+
+There are some email addresses that have more power than others, just like an
+administrator account on your local machine is more powerful than a regular
+user. It's pretty important that you don't open those addresses to public,
+because you can miss some warning, notice or adminstration messages being sent
+to you or even loose the domain, just because someone was be able to
+impersonate himself as its owner, by being able to read and act upon emails
+sent to some of those inboxes.
+
+Here is a list of such inbox names, also "restricted" in some of the
+[Google Services](https://support.google.com/a/answer/6093413?hl=en). It seems
+to be based on an old [RFC 2142](https://www.ietf.org/rfc/rfc2142.txt) with
+some new additions.
+
+
+### Setting it up
+
+The bare minimum you need to do to open the service to public is just to copy
+and uncomment two lines of code from the `.env.example`:
+
+```
+PRIVATE_ACCESS=false
+
+INBOX_BLACKLIST=hostmaster,postmaster,webmaster,admin,administrator,abuse,root,ssl-admin,majordomo
+```
+
+**Note:** I really encourage you to not ignore the importance of `INBOX_BLACKLIST`.
+
+Now just redeploy the service and voilà.
+
+
+### Beyond the bare minimum
+
+A step past the bare minimum, would be to ensure that anything sent to any of
+the power emails in question would never be processed by Lambda. Then even
+if someone would find a way to bypass the blacklist, would not found any emails
+in those inboxes.
+
+Unfortunately, so far I didn't managed to find an easy way of setting this
+part up automatically, so you will need to do it manually. Please go back
+to _AWS > Simple Email Service_ and choose the _View Active Rule Set_ from the
+_Rule Set (Email Receiving)_ section. Then hit _Create Rule_. In the
+_Step 1: Recipients_ add all email addresses following the scheme:
+* hostmaster@`INTERFACE_SUBDOMAIN`
+* postmaster@`INTERFACE_SUBDOMAIN`
+* webmaster@`INTERFACE_SUBDOMAIN`
+* admin@`INTERFACE_SUBDOMAIN`
+* administrator@`INTERFACE_SUBDOMAIN`
+* abuse@`INTERFACE_SUBDOMAIN`
+* root@`INTERFACE_SUBDOMAIN`
+* ssl-admin@`INTERFACE_SUBDOMAIN`
+* majordomo@`INTERFACE_SUBDOMAIN`
+
+Where the `INTERFACE_SUBDOMAIN` is the name of your domain.
+
+When you hit _Next Step_ button you will go to _Actions_ page. Select
+_Stop Rule Set_ to prevent previously entered emails from being processed.
+You can also setup an SNS topic which will be notified about any email
+that was sent for any of those blocked addresses. I would recommend setting
+that up. Here you can find [more details](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-action-stop.html).
+
+On _Rule Details_ screen be sure to set _Insert after rule_ to _\<Beginning\>_ and you're good to go.
+
+**Note:** Be sure to double check that newly created rule is first on the list!
+
 
 ## Costs simulation
 

@@ -1,4 +1,6 @@
+/* eslint-disable class-methods-use-this */
 import { Request, Response } from 'express';
+import { validationResult } from 'express-validator';
 
 import { Email, EmailParser } from '../tools/EmailParser';
 import { S3FileSystem } from '../tools/S3FileSystem';
@@ -24,6 +26,18 @@ export class InboxController {
     this.list = this.list.bind(this);
   }
 
+  async index(req: Request, res: Response): InboxResponse {
+    const {
+      type = 'html',
+    } = req.query;
+
+    if (type === 'html') {
+      return res.render('pages/index');
+    }
+
+    return res.json({});
+  }
+
   async show(req: Request, res: Response): InboxResponse {
     const {
       query,
@@ -32,6 +46,11 @@ export class InboxController {
     const {
       id = '',
     } = req.params;
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return this.render403Response(req, res);
+    }
 
     const normalizedUsername = normalizeUsername(query as string);
     const emailObjectPath = `${normalizedUsername}/${id}`;
@@ -57,6 +76,11 @@ export class InboxController {
       sentAfter,
       type = 'html',
     } = req.query;
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return this.render403Response(req, res);
+    }
 
     const normalizedUsername = normalizeUsername(query as string);
     const listEmailsAfter = sentAfter ? `${normalizedUsername}/${sentAfter}` : null;
@@ -87,6 +111,11 @@ export class InboxController {
       type = 'html',
     } = req.query;
 
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return this.render403Response(req, res);
+    }
+
     const normalizedUsername = normalizeUsername(query as string);
     const listEmailsAfter = sentAfter ? `${normalizedUsername}/${sentAfter}` : null;
 
@@ -110,5 +139,38 @@ export class InboxController {
     }
 
     return res.json({ emails: emails.reverse() });
+  }
+
+  render403Response(req: Request, res: Response): void {
+    const { type = 'html' } = req.query;
+
+    if (type === 'html') {
+      res.status(403).render('pages/403');
+      return;
+    }
+
+    res.status(403).json({ message: 'You are not allowed to visit that page.' });
+  }
+
+  render404Response(req: Request, res: Response): void {
+    const { type = 'html' } = req.query;
+
+    if (type === 'html') {
+      res.status(404).render('pages/404');
+      return;
+    }
+
+    res.status(404).json({ message: 'The page you are looking for was not found.' });
+  }
+
+  render500Response(err: Error, req: Request, res: Response): void {
+    const { type = 'html' } = req.query;
+
+    if (type === 'html') {
+      res.status(500).render('pages/error', { error: err });
+      return;
+    }
+
+    res.status(500).json({ message: err.stack });
   }
 }
