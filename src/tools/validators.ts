@@ -14,19 +14,26 @@ export const requestSchema: Schema = {
   },
   sentAfter: {
     in: ['query'],
-    errorMessage: 'Value is missing',
     optional: true,
     isString: true,
     isNumeric: true,
+    errorMessage: 'sentAfter is not a numeric date representation',
   },
   limit: {
     in: ['query'],
-    errorMessage: 'Value is missing',
     optional: true,
     isInt: {
       options: { gt: 0, lt: 50 },
       errorMessage: 'Value should be between 1 and 60',
     },
     toInt: true,
+  },
+  type: {
+    in: ['query'],
+    optional: true,
+    isString: true,
+    isIn: {
+      options: [['json', 'html']],
+    },
   },
 };

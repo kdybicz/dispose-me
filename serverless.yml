@@ -67,15 +67,10 @@ functions:
     handler: src/api.handler
     events:
       - http:
-          path: email
+          path: /{any+}
           method: get
           cors: true
-          private: true
-      - http:
-          path: email/latest
-          method: get
-          cors: true
-          private: true
+          private: false
   processor:
     handler: src/email-processor.handler
 
