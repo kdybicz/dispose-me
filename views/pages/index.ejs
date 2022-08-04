@@ -10,14 +10,19 @@
 </header>
 
 <main role="main" class="container">
-  <div class="row">
-    <div class="col-sm-12">
-      <% if (email) { %>
-        <%- include('../partials/email/details', { email }); %>
-      <% } else { %>
-        Nothing to see...
-      <% } %>
-    </div>
+  <div class="jumbotron">
+    <h1 class="display-4">📨 Dispose Me</h1>
+    <p class="lead">I'm a simple, disposable email service with an easy API access.</p>
+    <hr class="my-4">
+
+    <form method="GET" action="/inbox">
+      <div class="form-group row">
+        <label for="query" class="col-sm-1 col-form-label">Inbox:</label>
+        <div class="col-sm-4">
+          <input class="form-control" type="text" id="query" name="query" placeholder="Inbox name" aria-label="Inbox name">
+        </div>
+      </div>
+    </form>
   </div>
 </main>
 

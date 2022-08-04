@@ -23,7 +23,7 @@ export class S3FileSystem {
       Key: filePath,
     };
 
-    console.log('Getting Object:', JSON.stringify(getRequest, null, 2));
+    console.debug('Getting Object:', JSON.stringify(getRequest, null, 2));
     return this.client.getObject(getRequest).promise();
   }
 
@@ -33,7 +33,7 @@ export class S3FileSystem {
       Bucket: bucket,
       Key: destinationPath,
     };
-    console.log('Copying Object:', JSON.stringify(copyRequest, null, 2));
+    console.debug('Copying Object:', JSON.stringify(copyRequest, null, 2));
 
     await this.client.copyObject(copyRequest).promise();
   }
@@ -43,7 +43,7 @@ export class S3FileSystem {
       Bucket: bucket,
       Key: filePath,
     };
-    console.log('Deleting Object:', JSON.stringify(deleteRequest, null, 2));
+    console.debug('Deleting Object:', JSON.stringify(deleteRequest, null, 2));
 
     await this.client.deleteObject(deleteRequest).promise();
   }
@@ -66,7 +66,7 @@ export class S3FileSystem {
       listRequest.StartAfter = startAfter;
     }
 
-    console.log('Listing Object:', JSON.stringify(listRequest, null, 2));
+    console.debug('Listing Object:', JSON.stringify(listRequest, null, 2));
 
     return this.client.listObjectsV2(listRequest).promise();
   }

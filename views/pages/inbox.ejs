@@ -3,14 +3,20 @@
 <head>
   <%- include('../partials/head'); %>
 </head>
-<body>
+<body class="bg-light">
 
 <header>
   <%- include('../partials/header'); %>
 </header>
 
 <main role="main" class="container">
-  <h5><b>public inbox:</b> <%= query.username %></h5>
+  <h5><b>public inbox:</b> <%= query.query %></h5>
+
+  <% if (!query.query) { %>
+    <form class="form-inline mt-2 mt-md-0" method="GET" action="/inbox">
+      <input class="form-control mr-sm-2" type="text" name="query" value="<%= query.query %>" placeholder="Inbox name" aria-label="Inbox name">
+    </form>
+  <% } %>
 
   <%- include('../partials/email/list', { emails }); %>
 </main>
