@@ -8,7 +8,7 @@ Dispose Me is a simple AWS-hosted disposable email service.
 1. Own an Route53-manageable domain with a SSL certificate in a Region supporting SES incoming emails.
 2. Create project-dedicated AWS user for project deployment (optional).
 3. Download the code, create and fill out `.env` file - based on an `.env.example`.
-4. Run `yarn deploy` to install dependencies, run tests and deploy code.
+4. Run `yarn deploy production` to install dependencies, run tests and deploy code.
 5. Verify domain and setup catch-all Rule Set in the Simple Email Service, incl. actions setup:
    1. S3 with your email bucket
    2. Lambda `dispose-me-${stage}-processor`
@@ -136,7 +136,7 @@ Now it would be good time to refer to `.env.example` and create `.env` file. Use
 When done you should be able to deploy the code to AWS by running:
 
 ```
-$ yarn deploy
+$ yarn deploy production
 ```
 
 Keep and eye on API access tokens that would be generated while deployment.
