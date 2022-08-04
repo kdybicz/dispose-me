@@ -10,7 +10,16 @@
 </header>
 
 <main role="main" class="container">
-  <h5><b>public inbox:</b> <%= query.query %></h5>
+  <div class="row">
+    <div class="col-md">
+      <h5><b>public inbox:</b> <%= query.query %></h5>
+    </div>
+    <div class="col-md text-right">
+      <% if (query.query) { %>
+        <a href="<%= url %>&type=json">[JSON]</a>
+      <% } %>
+    </div>
+  </div>
 
   <% if (!query.query) { %>
     <form class="form-inline mt-2 mt-md-0" method="GET" action="/inbox">

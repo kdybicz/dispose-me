@@ -10,7 +10,17 @@
 </header>
 
 <main role="main" class="container">
-  <a class="nav-link" href="/inbox?<%= new URLSearchParams(query) %>">&lt;- Back to Inbox</a>
+  <div class="row">
+    <div class="col-md">
+      <a class="nav-link" href="/inbox?<%= new URLSearchParams(query) %>">&lt;- Back to Inbox</a>
+    </div>
+    <div class="col-md text-right">
+      <% if (query.query) { %>
+        <a href="<%= url %>&type=json">[JSON]</a>
+      <% } %>
+    </div>
+  </div>
+
   <% if (email) { %>
     <%- include('../partials/email/details', { email }); %>
   <% } else { %>
