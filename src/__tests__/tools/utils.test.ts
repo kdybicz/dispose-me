@@ -9,7 +9,6 @@ describe('utils tests', () => {
       ['te.st+123', 'test'],
       ['t.e.s.t+123', 'test'],
       ['t.e.s.t+123+234', 'test'],
-      ['te@st+123', 'te%40st'],
     ])('normalizing %p and expecting %p', (input, expected) => {
       // when:
       const result = normalizeUsername(input);
