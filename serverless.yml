@@ -76,8 +76,6 @@ functions:
           method: get
           cors: true
           private: false
-    environment:
-      # CATCHALL_ROUTE: '/{proxy+}'
   processor:
     handler: src/email-processor.handler
 
