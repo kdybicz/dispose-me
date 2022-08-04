@@ -42,8 +42,8 @@ provider:
       limit: 5000
       period: DAY
     throttle:
-      burstLimit: 3
-      rateLimit: 1
+      burstLimit: 5
+      rateLimit: 3
   iamRoleStatements:
     - Effect: 'Allow'
       Action:
