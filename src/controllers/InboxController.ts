@@ -1,14 +1,11 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-len */
-import ejs from 'ejs';
 import { Request, Response } from 'express';
 
 import { Email, EmailParser } from '../tools/EmailParser';
 import { S3FileSystem } from '../tools/S3FileSystem';
 import { normalizeUsername } from '../tools/utils';
-
-console.debug('EJS version:', ejs.VERSION);
 
 export class InboxController {
   protected fileSystem: S3FileSystem;
