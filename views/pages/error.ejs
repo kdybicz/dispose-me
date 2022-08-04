@@ -10,12 +10,11 @@
 </header>
 
 <main role="main" class="container">
-  <div class="row">
-    <div class="col-sm-12">
-      <div class="well">
-        <b>Error:</b>
-        <p><%= error %></p>
-      </div>
+  <div class="row justify-content-center">
+    <div class="col-md-12 text-center">
+        <span class="display-1 d-block">500</span>
+        <div class="mb-4 lead">Looks like you've just broken something...</div>
+        <a href="/?<%= new URLSearchParams(query) %>" class="btn btn-link">Pretend like nothing happened</a>
     </div>
   </div>
 </main>
