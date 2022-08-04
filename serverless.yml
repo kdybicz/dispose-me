@@ -67,10 +67,17 @@ functions:
     handler: src/api.handler
     events:
       - http:
-          path: /{any+}
+          path: /
           method: get
           cors: true
           private: false
+      - http:
+          path: /{proxy+}
+          method: get
+          cors: true
+          private: false
+    environment:
+      # CATCHALL_ROUTE: '/{proxy+}'
   processor:
     handler: src/email-processor.handler
 
