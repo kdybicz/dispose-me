@@ -178,5 +178,7 @@ This is just an example of a potential costs breakdown. Keep in mind that it cou
 * [x] Emails breakdown by email account name and named after a receiving timestamp
 * [x] TTL on S3 items - set to 1 day
 * [x] CloudWatch log retention?
-* [ ] ~~Drop a log file next to email unsuccessfully processed?~~
-* [ ] Include RSS support?
+* [ ] ~~Drop a log file next to email unsuccessfully processed?~~ - use CloudWatch instead
+* [ ] Include RSS support
+* [ ] Force HTTPS redirect
+* [ ] Should use google account name rules, incl. `.` and `+` support?
