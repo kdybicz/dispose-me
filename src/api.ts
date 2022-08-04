@@ -1,18 +1,19 @@
+import 'source-map-support/register';
+
 import express, { NextFunction, Request, Response } from 'express';
 import { query } from 'express-validator';
 import serverless from 'serverless-http';
 
-import { InboxController } from './controllers/InboxController';
+import { InboxController } from './api/InboxController';
 import log from './tools/log';
 
-import 'source-map-support/register';
-
-const inboxController = new InboxController(process.env.EMAIL_BUCKET_NAME);
+const inboxController = new InboxController(process.env.EMAIL_BUCKET_NAME ?? '');
 const app = express();
 
 // Since Express doesn't support error handling of promises out of the box,
 // this handler enables that
-const asyncHandler = (fn) => (req: Request, res: Response, next: NextFunction) => Promise
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const asyncHandler = (fn: any) => (req: Request, res: Response, next: NextFunction) => Promise
   .resolve(fn(req, res, next))
   .catch((error) => {
     res.status(error.status || 500);
@@ -20,7 +21,7 @@ const asyncHandler = (fn) => (req: Request, res: Response, next: NextFunction) =
   });
 
 const buildInboxRequestValidator = () => {
-  let blacklist = [];
+  let blacklist: string[] = [];
   try {
     if (process.env.INBOX_BLACKLIST) {
       blacklist = process.env.INBOX_BLACKLIST.split(',');
@@ -56,7 +57,8 @@ app.get('/inbox', buildInboxRequestValidator(), asyncHandler(inboxController.lis
 
 app.use((req, res, _) => inboxController.render404Response(req, res));
 
-app.use((err, req, res, _) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+app.use((err: any, req: any, res: any, _: any) => {
   log.error(err.stack);
   inboxController.render500Response(err, req, res);
 });

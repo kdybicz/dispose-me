@@ -5,16 +5,30 @@
       <td><%= email.subject %></td>
     </tr>
     <tr>
-      <th>To:</th>
-      <td><%= email.to[0].address %></td>
-    </tr>
-    <tr>
       <th>From:</th>
       <td><%= email.from[0].address %></td>
     </tr>
+    <% if (email.to.length > 0) { %>
+    <tr>
+      <th>To:</th>
+      <td><%= email.to.map((to) => to.address).join(', ') %></td>
+    </tr>
+    <% } %>
+    <% if (email.cc.length > 0) { %>
+    <tr>
+      <th>Cc:</th>
+      <td><%= email.cc.map((cc) => cc.address).join(', ') %></td>
+    </tr>
+    <% } %>
+    <% if (email.bcc.length > 0) { %>
+    <tr>
+      <th>Bcc:</th>
+      <td><%= email.bcc.map((bcc) => bcc.address).join(', ') %></td>
+    </tr>
+    <% } %>
     <tr>
       <th>Received:</th>
-      <td><%= email.received.toString() %></td>
+      <td><%= email.received.toGMTString() %></td>
     </tr>
 </tbody>
 </table>

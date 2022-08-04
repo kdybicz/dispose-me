@@ -41,12 +41,12 @@ Dispose Me is a simple AWS-hosted disposable email service.
 
 First step of the preparation process should be making sure you have
 [Node.js installed](https://nodejs.org/en/download/package-manager/) in a
-version v12.x or above.
+version v14.x or above.
 
 You can easily verify which Node version is installed by running:
 ```
 $ node -v
-v12.19.0
+v14.18.0
 ```
 
 
