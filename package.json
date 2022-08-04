@@ -1,7 +1,7 @@
 {
   "name": "dispose-me",
   "version": "1.0.0",
-  "description": "Dispose Me is a simple AWS-based self-hosted disposable email service.",
+  "description": "Dispose Me is a simple AWS-hosted disposable email service.",
   "author": "Kamil Dybicz",
   "license": "MIT",
   "main": "src/handler.js",
