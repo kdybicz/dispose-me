@@ -42,6 +42,8 @@ provider:
       level: ERROR
       accessLogging: false
       fullExecutionData: false
+  environment:
+    LOG_LEVEL: 2
   apiKeys:
     - 'Postman'
     - 'Appium tests'

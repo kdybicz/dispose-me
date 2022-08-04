@@ -1,10 +1,8 @@
-/* eslint-disable no-case-declarations */
-/* eslint-disable no-console */
-
 import express, { NextFunction, Request, Response } from 'express';
 import serverless from 'serverless-http';
 
 import { InboxController } from './controllers/InboxController';
+import log from './tools/log';
 
 import 'source-map-support/register';
 
@@ -48,7 +46,7 @@ app.use((_req, res, _) => {
 });
 
 app.use((err, _req, res, _) => {
-  console.error(err.stack);
+  log.error(err.stack);
   res.status(500).render('pages/error', { error: err });
 });
 

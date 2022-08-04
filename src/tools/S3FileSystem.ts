@@ -1,11 +1,10 @@
-/* eslint-disable max-len */
-/* eslint-disable no-console */
-
 import { AWSError, S3 } from 'aws-sdk';
 import {
   CopyObjectRequest, GetObjectRequest, DeleteObjectRequest, ListObjectsV2Request,
 } from 'aws-sdk/clients/s3';
 import { PromiseResult } from 'aws-sdk/lib/request';
+
+import log from '../tools/log';
 
 export class S3FileSystem {
   protected client: S3;
@@ -17,29 +16,24 @@ export class S3FileSystem {
     });
   }
 
-  // eslint-disable-next-line max-len
   async getObject(bucket: string, filePath: string): Promise<PromiseResult<S3.GetObjectOutput, AWSError>> {
     const getRequest: GetObjectRequest = {
       Bucket: bucket,
       Key: filePath,
     };
 
-    console.debug('Getting Object:', JSON.stringify(getRequest, null, 2));
+    log.debug('Getting Object:', JSON.stringify(getRequest, null, 2));
     return this.client.getObject(getRequest).promise();
   }
 
-  async copyObject(bucket: string, sourcePath: string, destinationPath: string, expires?: Date): Promise<void> {
+  async copyObject(bucket: string, sourcePath: string, destinationPath: string): Promise<void> {
     const copyRequest: CopyObjectRequest = {
       CopySource: `${bucket}/${sourcePath}`,
       Bucket: bucket,
       Key: destinationPath,
     };
 
-    if (expires) {
-      copyRequest.Expires = expires;
-    }
-
-    console.debug('Copying Object:', JSON.stringify(copyRequest, null, 2));
+    log.debug('Copying Object:', JSON.stringify(copyRequest, null, 2));
 
     await this.client.copyObject(copyRequest).promise();
   }
@@ -49,17 +43,16 @@ export class S3FileSystem {
       Bucket: bucket,
       Key: filePath,
     };
-    console.debug('Deleting Object:', JSON.stringify(deleteRequest, null, 2));
+    log.debug('Deleting Object:', JSON.stringify(deleteRequest, null, 2));
 
     await this.client.deleteObject(deleteRequest).promise();
   }
 
-  async moveObject(bucket: string, sourcePath: string, destinationPath: string, expires?: Date): Promise<void> {
-    await this.copyObject(bucket, sourcePath, destinationPath, expires);
+  async moveObject(bucket: string, sourcePath: string, destinationPath: string): Promise<void> {
+    await this.copyObject(bucket, sourcePath, destinationPath);
     await this.deleteObject(bucket, sourcePath);
   }
 
-  // eslint-disable-next-line max-len
   async listObjects(bucket: string, path: string, startAfter?: string, limit = 50): Promise<PromiseResult<S3.Types.ListObjectsV2Output, AWSError>> {
     const listRequest: ListObjectsV2Request = {
       Bucket: bucket,
@@ -72,7 +65,7 @@ export class S3FileSystem {
       listRequest.StartAfter = startAfter;
     }
 
-    console.debug('Listing Object:', JSON.stringify(listRequest, null, 2));
+    log.debug('Listing Object:', JSON.stringify(listRequest, null, 2));
 
     return this.client.listObjectsV2(listRequest).promise();
   }

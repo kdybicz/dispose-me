@@ -1,9 +1,9 @@
-/* eslint-disable no-console */
 import { SESHandler } from 'aws-lambda';
 
 import 'source-map-support/register';
 
 import { S3FileSystem } from './tools/S3FileSystem';
+import log from './tools/log';
 import { EmailParser } from './tools/EmailParser';
 import { normalizeUsername } from './tools/utils';
 
@@ -13,7 +13,7 @@ const parser = new EmailParser();
 const { EMAIL_BUCKET_NAME } = process.env;
 
 export const handler: SESHandler = async (event) => {
-  console.debug('Processing SES event...');
+  log.debug('Processing SES event...');
 
   const record = event.Records[0];
   const { messageId } = record.ses.mail;
@@ -26,7 +26,9 @@ export const handler: SESHandler = async (event) => {
     const senderEmails = email.from;
     const recipientEmails = email.to;
 
-    console.debug(`Processing emails sent from ${senderEmails.map((e) => e.address).join(', ')} to ${recipientEmails.map((e) => e.address).join(', ')} at ${email.received.toString()}`);
+    log.debug('Processing emails sent from', senderEmails.map((e) => e.address).join(', '),
+      'to', recipientEmails.map((e) => e.address).join(', '),
+      'at', email.received.toString());
 
     const normalizedRecipientName = normalizeUsername(recipientEmails[0].user);
     const targetFile = `${normalizedRecipientName}/${email.received.getTime()}`;
@@ -35,7 +37,7 @@ export const handler: SESHandler = async (event) => {
 
     return { status: 'success' };
   } catch (err) {
-    console.error('Failed to process email', err);
+    log.error('Failed to process email', err);
     return err;
   }
 };

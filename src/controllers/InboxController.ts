@@ -1,11 +1,11 @@
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable max-len */
 import { Request, Response } from 'express';
 
 import { Email, EmailParser } from '../tools/EmailParser';
 import { S3FileSystem } from '../tools/S3FileSystem';
 import { normalizeUsername } from '../tools/utils';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type InboxResponse = Promise<Response<any> | void>;
 
 export class InboxController {
   protected fileSystem: S3FileSystem;
@@ -24,7 +24,7 @@ export class InboxController {
     this.list = this.list.bind(this);
   }
 
-  async show(req: Request, res: Response): Promise<Response<any> | void> {
+  async show(req: Request, res: Response): InboxResponse {
     const {
       query,
       type = 'html',
@@ -51,7 +51,7 @@ export class InboxController {
     return res.json({ email });
   }
 
-  async latest(req: Request, res: Response): Promise<Response<any> | void> {
+  async latest(req: Request, res: Response): InboxResponse {
     const {
       query,
       sentAfter,
@@ -79,7 +79,7 @@ export class InboxController {
     return res.json({ email });
   }
 
-  async list(req: Request, res: Response): Promise<Response<any> | void> {
+  async list(req: Request, res: Response): InboxResponse {
     const {
       query,
       sentAfter,
@@ -90,7 +90,12 @@ export class InboxController {
     const normalizedUsername = normalizeUsername(query as string);
     const listEmailsAfter = sentAfter ? `${normalizedUsername}/${sentAfter}` : null;
 
-    const emailObjectsList = await this.fileSystem.listObjects(this.bucketName, normalizedUsername, listEmailsAfter, limit as number);
+    const emailObjectsList = await this.fileSystem.listObjects(
+      this.bucketName,
+      normalizedUsername,
+      listEmailsAfter,
+      limit as number,
+    );
 
     const emailNamesList = emailObjectsList.Contents.map((item) => item.Key);
     const emails = await Promise.all(emailNamesList.map(async (name) => {
