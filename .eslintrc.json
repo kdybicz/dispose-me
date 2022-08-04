@@ -1,0 +1,60 @@
+{
+  "env": {
+    "node": true,
+    "jest": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2020
+  },
+  "globals": {
+    "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly"
+  },
+  "extends": [
+    "airbnb-base",
+    "plugin:import/errors",
+    "plugin:import/warnings",
+    "plugin:jest/recommended",
+    "plugin:node/recommended"
+  ],
+  "rules": {
+    "node/exports-style": ["error", "module.exports"],
+    "node/file-extension-in-import": ["error", "always"],
+    "node/prefer-global/buffer": ["error", "always"],
+    "node/prefer-global/console": ["error", "always"],
+    "node/prefer-global/process": ["error", "always"],
+    "node/prefer-global/url-search-params": ["error", "always"],
+    "node/prefer-global/url": ["error", "always"],
+    "node/prefer-promises/dns": "error",
+    "node/prefer-promises/fs": "error"
+  },
+  "overrides": [
+    {
+      "files": ["src/**/*.test.[jt]s", "webpack.config.js"],
+      "rules": {
+          "node/no-unpublished-require": 0,
+          "node/no-missing-require": 0,
+          "node/no-unpublished-import": 0
+      }
+    },
+    {
+      "files": ["src/**/*.ts"],
+      "parser": "@typescript-eslint/parser",
+      "plugins": [
+        "@typescript-eslint"
+      ],
+      "extends": [
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended"
+      ],
+      "rules": {
+        "node/no-unsupported-features/es-syntax": 0,
+        "node/file-extension-in-import": 0,
+        "node/no-missing-import": 0,
+        "import/no-unresolved": 0,
+        "import/extensions": 0,
+        "import/prefer-default-export": 0
+      }
+    }
+  ]
+}

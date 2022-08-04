@@ -30,15 +30,20 @@ provider:
     minimumCompressionSize: 1024
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
+    BUCKET_NAME: ${self:custom.buckerName}
   iamRoleStatements:
     - Effect: 'Allow'
       Action:
-        - 's3:*'
+        - 's3:ListBucket'
+        - 's3:GetObject'
+        - 's3:PutObject'
+        - 's3:DeleteObject'
       Resource:
         Fn::Join:
           - ''
           - - 'arn:aws:s3:::'
             - Ref: EmailBucket
+            - '/*'
 
 functions:
   api:
@@ -64,6 +69,11 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${self:custom.buckerName}
+        LifecycleConfiguration:
+          Rules:
+          - Id: CleanUpRule
+            Status: Enabled
+            ExpirationInDays: '1'
     EmailBucketPermissions:
       Type: AWS::S3::BucketPolicy
       DependsOn: EmailBucket
