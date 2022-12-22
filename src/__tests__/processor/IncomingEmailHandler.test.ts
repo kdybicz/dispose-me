@@ -33,10 +33,10 @@ describe('EmailParser tests', () => {
     // when:
     await processor.processEmail(MESSAGE_ID);
     // then:
-    expect(fileSystem.copyObject).toBeCalledTimes(1);
-    expect(fileSystem.copyObject).toBeCalledWith(EMAIL_BUCKET_NAME, MESSAGE_ID, 'janedoe/1483900664000');
+    expect(fileSystem.copyObject).toHaveBeenCalledTimes(1);
+    expect(fileSystem.copyObject).toHaveBeenCalledWith(EMAIL_BUCKET_NAME, MESSAGE_ID, 'janedoe/1483900664000');
     // and:
-    expect(fileSystem.deleteObject).toBeCalledTimes(1);
+    expect(fileSystem.deleteObject).toHaveBeenCalledTimes(1);
   });
 
   test('Handle complex email', async () => {
@@ -52,11 +52,11 @@ describe('EmailParser tests', () => {
     // when:
     await processor.processEmail(MESSAGE_ID);
     // then:
-    expect(fileSystem.copyObject).toBeCalledTimes(2);
-    expect(fileSystem.copyObject).toBeCalledWith(EMAIL_BUCKET_NAME, MESSAGE_ID, 'johndoe/1476358788000');
-    expect(fileSystem.copyObject).toBeCalledWith(EMAIL_BUCKET_NAME, MESSAGE_ID, 'janedoe/1476358788000');
+    expect(fileSystem.copyObject).toHaveBeenCalledTimes(2);
+    expect(fileSystem.copyObject).toHaveBeenCalledWith(EMAIL_BUCKET_NAME, MESSAGE_ID, 'johndoe/1476358788000');
+    expect(fileSystem.copyObject).toHaveBeenCalledWith(EMAIL_BUCKET_NAME, MESSAGE_ID, 'janedoe/1476358788000');
     // and:
-    expect(fileSystem.deleteObject).toBeCalledTimes(1);
+    expect(fileSystem.deleteObject).toHaveBeenCalledTimes(1);
   });
 
   test('Handle cc email', async () => {
@@ -72,11 +72,11 @@ describe('EmailParser tests', () => {
     // when:
     await processor.processEmail(MESSAGE_ID);
     // then:
-    expect(fileSystem.copyObject).toBeCalledTimes(2);
-    expect(fileSystem.copyObject).toBeCalledWith(EMAIL_BUCKET_NAME, MESSAGE_ID, 'janedoe/1644425711000');
-    expect(fileSystem.copyObject).toBeCalledWith(EMAIL_BUCKET_NAME, MESSAGE_ID, 'mariadoe/1644425711000');
+    expect(fileSystem.copyObject).toHaveBeenCalledTimes(2);
+    expect(fileSystem.copyObject).toHaveBeenCalledWith(EMAIL_BUCKET_NAME, MESSAGE_ID, 'janedoe/1644425711000');
+    expect(fileSystem.copyObject).toHaveBeenCalledWith(EMAIL_BUCKET_NAME, MESSAGE_ID, 'mariadoe/1644425711000');
     // and:
-    expect(fileSystem.deleteObject).toBeCalledTimes(1);
+    expect(fileSystem.deleteObject).toHaveBeenCalledTimes(1);
   });
 
   test('Handle bcc email', async () => {
@@ -92,9 +92,9 @@ describe('EmailParser tests', () => {
     // when:
     await processor.processEmail(MESSAGE_ID);
     // then:
-    expect(fileSystem.copyObject).toBeCalledTimes(1);
-    expect(fileSystem.copyObject).toBeCalledWith(EMAIL_BUCKET_NAME, MESSAGE_ID, 'hidden/1644425711000');
+    expect(fileSystem.copyObject).toHaveBeenCalledTimes(1);
+    expect(fileSystem.copyObject).toHaveBeenCalledWith(EMAIL_BUCKET_NAME, MESSAGE_ID, 'hidden/1644425711000');
     // and:
-    expect(fileSystem.deleteObject).toBeCalledTimes(1);
+    expect(fileSystem.deleteObject).toHaveBeenCalledTimes(1);
   });
 });
