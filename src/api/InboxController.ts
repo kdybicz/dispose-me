@@ -1,6 +1,7 @@
 /* eslint-disable class-methods-use-this */
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
+import { generateUsername } from 'unique-username-generator';
 
 import { Email, EmailParser } from '../tools/EmailParser';
 import { S3FileSystem } from '../tools/S3FileSystem';
@@ -32,7 +33,8 @@ export class InboxController {
     } = req.query;
 
     if (type === 'html') {
-      return res.render('pages/index');
+      const generatedUsername = generateUsername();
+      return res.render('pages/index', { generatedUsername });
     }
 
     return res.json({});
