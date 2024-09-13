@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 
-import { IncomingEmailProcessor } from '../../processor/IncomingEmailProcessor';
-import { EmailParser } from '../../tools/EmailParser';
-import { S3FileSystem } from '../../tools/S3FileSystem';
+import { IncomingEmailProcessor } from '../../../service/processor/IncomingEmailProcessor';
+import { EmailParser } from '../../../service/tools/EmailParser';
+import { S3FileSystem } from '../../../service/tools/S3FileSystem';
 
 describe('EmailParser tests', () => {
   const EMAIL_BUCKET_NAME = 'test-bucket';

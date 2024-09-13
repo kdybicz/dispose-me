@@ -1,8 +1,9 @@
 import 'source-map-support/register';
 
-import express, { NextFunction, Request, Response } from 'express';
+import * as express from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { query } from 'express-validator';
-import serverless from 'serverless-http';
+import * as serverless from 'serverless-http';
 
 import { InboxController } from './api/InboxController';
 import log from './tools/log';
@@ -47,6 +48,7 @@ app.use((req, res, next) => {
 });
 
 app.set('view engine', 'ejs');
+app.engine('ejs', require('ejs').__express); // workaround for webpack tree-shaking ejs out
 
 app.get('/', asyncHandler(inboxController.index));
 
