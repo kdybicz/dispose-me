@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 
-import { EmailParser } from '../../tools/EmailParser';
+import { EmailParser } from '../../../service/tools/EmailParser';
 
 describe('EmailParser tests', () => {
   const parser = new EmailParser();

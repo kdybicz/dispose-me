@@ -1,11 +1,16 @@
+# JS generated files and types
+*.js
+!jest.config.js
+!webpack.config.js
+*.d.ts
+!types
+
 # package directories
 node_modules
 
-# Serverless directories
-.serverless
-
 # Webpack directories
 .webpack
+dist
 
 # dotenv
 .env
@@ -16,3 +21,8 @@ node_modules
 # jest
 coverage
 junit.xml
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+cdk.context.json
