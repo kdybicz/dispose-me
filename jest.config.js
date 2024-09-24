@@ -2,8 +2,9 @@ process.env.LOG_LEVEL = 2;
 
 module.exports = {
   testEnvironment: 'node',
+  roots: ['<rootDir>/test'],
   testMatch: [
-    '**/__tests__/**/?(*.)+(spec|test).[tj]s?(x)',
+    '**/*.test.ts',
   ],
-  preset: 'ts-jest',
+  preset: 'ts-jest'
 };

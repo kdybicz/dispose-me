@@ -4,7 +4,7 @@ import {
 } from 'aws-sdk/clients/s3';
 import { PromiseResult } from 'aws-sdk/lib/request';
 
-import log from '../tools/log';
+import log from './log';
 
 export class S3FileSystem {
   protected client: S3;

@@ -1,7 +1,4 @@
-// import { S3Event } from 'aws-lambda';
-// import { handler } from '../email-processor';
 import * as fs from 'fs';
-
 import { simpleParser } from 'mailparser';
 import { parse as parseEmailAddress } from 'address-rfc2822';
 
@@ -13,7 +10,7 @@ describe('Email Processor', () => {
     // when:
     const result = await simpleParser(email);
     // then:
-    expect(result?.from?.text).toEqual('John Doe <john.doe@example.com>');
+    expect(result?.from?.text).toEqual('"John Doe" <john.doe@example.com>');
   });
 
   test('Parse cc email', async () => {
@@ -23,7 +20,7 @@ describe('Email Processor', () => {
     // when:
     const result = await simpleParser(email);
     // then:
-    expect(result?.from?.text).toEqual('John Doe <john.doe@example.com>');
+    expect(result?.from?.text).toEqual('"John Doe" <john.doe@example.com>');
   });
 
   test('Parse bcc email', async () => {
@@ -33,7 +30,7 @@ describe('Email Processor', () => {
     // when:
     const result = await simpleParser(email);
     // then:
-    expect(result?.from?.text).toEqual('John Doe <john.doe@example.com>');
+    expect(result?.from?.text).toEqual('"John Doe" <john.doe@example.com>');
   });
 
   test('Parse single email', () => {

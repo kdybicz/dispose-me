@@ -1,4 +1,4 @@
-import { normalizeUsername } from '../../tools/utils';
+import { normalizeUsername } from '../../../service/tools/utils';
 
 describe('utils tests', () => {
   describe('nameNormalizer', () => {

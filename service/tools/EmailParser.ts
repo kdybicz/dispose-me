@@ -1,7 +1,7 @@
 import { parse as parseEmailAddress } from 'address-rfc2822';
 import { simpleParser as parseEmail, AddressObject } from 'mailparser';
 
-import log from '../tools/log';
+import log from './log';
 
 export type EmailAddress = {
   address: string;
@@ -37,6 +37,7 @@ const parseEmailAddresses = (addresses: undefined | AddressObject | AddressObjec
   }
 
   return parsedAddresses.filter((address: ParsedEmailAddress) => address.constructor.name === 'Address');
+  return parsedAddresses;
 };
 
 export class EmailParser {
