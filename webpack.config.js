@@ -1,6 +1,6 @@
 const CopyPlugin = require('copy-webpack-plugin');
 const glob = require('glob');
-const path = require('path');
+const path = require('node:path');
 const ZipPlugin = require("zip-webpack-plugin");
 
 // Automatically find all Lambda entry points
@@ -52,9 +52,7 @@ module.exports = {
       return new ZipPlugin({
         filename: `../${entryName}.zip`,
         include: new RegExp(`${entryName}/.*`),
-        pathMapper: function(assetPath) {
-          return assetPath.replace(`${entryName}/`, '');
-        },
+        pathMapper: (assetPath) => assetPath.replace(`${entryName}/`, ''),
       });
     }),
   ],

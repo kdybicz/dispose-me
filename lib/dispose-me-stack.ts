@@ -1,20 +1,20 @@
+import * as path from 'node:path';
 import * as cdk from 'aws-cdk-lib';
 import {
   aws_apigateway as apigateway,
   aws_certificatemanager as cm,
+  custom_resources as cr,
   aws_iam as iam,
   aws_lambda as lambda,
   aws_lambda_nodejs as nodejs,
   aws_route53 as route53,
-  aws_route53_targets as targets,
   aws_s3 as s3,
   aws_ses as ses,
   aws_ses_actions as ses_actions,
-  custom_resources as cr,
- } from 'aws-cdk-lib';
-import { Construct } from 'constructs';
+  aws_route53_targets as targets,
+} from 'aws-cdk-lib';
+import type { Construct } from 'constructs';
 import * as dotenv from 'dotenv';
-import * as path from 'path';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
@@ -41,14 +41,18 @@ export class DisposeMeStack extends cdk.Stack {
           id: 'CleanUpRule',
           enabled: true,
           expiration: cdk.Duration.days(1),
-        }
+        },
       ],
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
     });
-  }
+  };
 
-  private setupApiGateway = (domainName: string, hostedZone: route53.IHostedZone, emailBucket: s3.IBucket): void => {
+  private setupApiGateway = (
+    domainName: string,
+    hostedZone: route53.IHostedZone,
+    emailBucket: s3.IBucket,
+  ): void => {
     // Define Lambda function
     const apiLambdaHandler = new nodejs.NodejsFunction(this, 'ApiLambda', {
       functionName: 'dispose-me-api',
@@ -70,7 +74,7 @@ export class DisposeMeStack extends cdk.Stack {
     emailBucket.grantReadWrite(apiLambdaHandler);
 
     // Define the API Gateway resource
-    const certificate = this.setupCertificate(hostedZone, domainName)
+    const certificate = this.setupCertificate(hostedZone, domainName);
     const api = new apigateway.LambdaRestApi(this, 'ApiGateway', {
       restApiName: 'dispose-me-api',
       apiKeySourceType: apigateway.ApiKeySourceType.AUTHORIZER,
@@ -89,13 +93,13 @@ export class DisposeMeStack extends cdk.Stack {
 
     // Create API Authorizer
     const apiAuthorizer = this.setupApiAuthorizer();
-    const privateAccess = process.env.PRIVATE_ACCESS !== "false"
+    const privateAccess = process.env.PRIVATE_ACCESS !== 'false';
 
     // Define the '/' resource with a GET method
     const rootResource = api.root;
     rootResource.addCorsPreflight({
       allowOrigins: apigateway.Cors.ALL_ORIGINS,
-      allowMethods: apigateway.Cors.ALL_METHODS // this is also the default
+      allowMethods: apigateway.Cors.ALL_METHODS, // this is also the default
     });
     rootResource.addMethod('GET', undefined, {
       apiKeyRequired: privateAccess,
@@ -107,7 +111,7 @@ export class DisposeMeStack extends cdk.Stack {
     const proxyResource = api.root.addResource('{proxy+}');
     proxyResource.addCorsPreflight({
       allowOrigins: apigateway.Cors.ALL_ORIGINS,
-      allowMethods: apigateway.Cors.ALL_METHODS // this is also the default
+      allowMethods: apigateway.Cors.ALL_METHODS, // this is also the default
     });
     proxyResource.addMethod('GET', undefined, {
       apiKeyRequired: privateAccess,
@@ -126,7 +130,7 @@ export class DisposeMeStack extends cdk.Stack {
       name: 'dispose-me-api',
       throttle: {
         rateLimit: 3,
-        burstLimit: 5
+        burstLimit: 5,
       },
       quota: {
         limit: 5000,
@@ -134,7 +138,7 @@ export class DisposeMeStack extends cdk.Stack {
       },
     });
     plan.addApiStage({
-      stage: api.deploymentStage
+      stage: api.deploymentStage,
     });
 
     const apiAccessKey = new apigateway.ApiKey(this, 'ApiKey', {
@@ -142,9 +146,12 @@ export class DisposeMeStack extends cdk.Stack {
       stages: [api.deploymentStage],
     });
     plan.addApiKey(apiAccessKey);
-  }
+  };
 
-  private setupCertificate = (hostedZone: route53.IHostedZone, domainName: string): cm.ICertificate => {
+  private setupCertificate = (
+    hostedZone: route53.IHostedZone,
+    domainName: string,
+  ): cm.ICertificate => {
     const certificateValidation = cm.CertificateValidation.fromDns(hostedZone);
     const keyAlgorithm = cm.KeyAlgorithm.EC_SECP384R1;
 
@@ -153,7 +160,7 @@ export class DisposeMeStack extends cdk.Stack {
       keyAlgorithm: keyAlgorithm,
       validation: certificateValidation,
     });
-  }
+  };
 
   private setupApiAuthorizer = (): apigateway.IAuthorizer => {
     const authorizerLambdaHandler = new nodejs.NodejsFunction(this, 'AuthorizerLambda', {
@@ -175,9 +182,13 @@ export class DisposeMeStack extends cdk.Stack {
       identitySources: [],
       resultsCacheTtl: cdk.Duration.seconds(0),
     });
-  }
+  };
 
-  private setupEmailProcessing = (domainName: string, hostedZone: route53.IHostedZone, emailBucket: s3.IBucket): void => {
+  private setupEmailProcessing = (
+    domainName: string,
+    hostedZone: route53.IHostedZone,
+    emailBucket: s3.IBucket,
+  ): void => {
     const processorLambdaHandler = new nodejs.NodejsFunction(this, 'ProcessorLambda', {
       functionName: 'dispose-me-processor',
       runtime: lambda.Runtime.NODEJS_20_X,
@@ -199,27 +210,26 @@ export class DisposeMeStack extends cdk.Stack {
     });
 
     new route53.MxRecord(this, 'MxRecord', {
-      values: [{
-        hostName: `inbound-smtp.${this.region}.amazonaws.com`,
-        priority: 10,
-      }],
+      values: [
+        {
+          hostName: `inbound-smtp.${this.region}.amazonaws.com`,
+          priority: 10,
+        },
+      ],
       zone: hostedZone,
     });
 
     const ruleSet = new ses.ReceiptRuleSet(this, 'RuleSet', {
-
-      receiptRuleSetName: 'EmailHandling'
+      receiptRuleSetName: 'EmailHandling',
     });
 
     const blacklist = (process.env.INBOX_BLACKLIST ?? '').split(',');
     if (blacklist.length > 0) {
-      const blacklistedRecipients = blacklist.map((username) => `${username}@${domainName}`)
+      const blacklistedRecipients = blacklist.map((username) => `${username}@${domainName}`);
       ruleSet.addRule('Blacklist', {
         receiptRuleName: 'Blacklist',
         recipients: blacklistedRecipients,
-        actions: [
-          new ses_actions.Stop(),
-        ],
+        actions: [new ses_actions.Stop()],
       });
     }
     ruleSet.addRule('Processing', {
@@ -241,7 +251,7 @@ export class DisposeMeStack extends cdk.Stack {
       physicalResourceId: cr.PhysicalResourceId.of('DefaultSesCustomResource'),
       parameters: {
         RuleSetName: ruleSet.receiptRuleSetName,
-      }
+      },
     };
     new cr.AwsCustomResource(this, 'SesDefaultRuleSetCustomResource', {
       onCreate: awsSdkCall,
@@ -250,7 +260,7 @@ export class DisposeMeStack extends cdk.Stack {
         ...awsSdkCall,
         parameters: {
           RuleSetName: null,
-        }
+        },
       },
       logRetention: cdk.aws_logs.RetentionDays.ONE_WEEK,
       policy: cr.AwsCustomResourcePolicy.fromStatements([
@@ -258,10 +268,10 @@ export class DisposeMeStack extends cdk.Stack {
           sid: 'SesCustomResourceSetActiveReceiptRuleSet',
           effect: iam.Effect.ALLOW,
           actions: ['ses:SetActiveReceiptRuleSet'],
-          resources: ['*']
-        })
+          resources: ['*'],
+        }),
       ]),
-      timeout: cdk.Duration.seconds(30)
+      timeout: cdk.Duration.seconds(30),
     });
-  }
+  };
 }

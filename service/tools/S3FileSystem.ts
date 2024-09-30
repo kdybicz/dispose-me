@@ -1,8 +1,11 @@
-import { AWSError, S3 } from 'aws-sdk';
-import {
-  CopyObjectRequest, GetObjectRequest, DeleteObjectRequest, ListObjectsV2Request,
+import { type AWSError, S3 } from 'aws-sdk';
+import type {
+  CopyObjectRequest,
+  DeleteObjectRequest,
+  GetObjectRequest,
+  ListObjectsV2Request,
 } from 'aws-sdk/clients/s3';
-import { PromiseResult } from 'aws-sdk/lib/request';
+import type { PromiseResult } from 'aws-sdk/lib/request';
 
 import log from './log';
 
@@ -16,7 +19,10 @@ export class S3FileSystem {
     });
   }
 
-  async getObject(bucket: string, filePath: string): Promise<PromiseResult<S3.GetObjectOutput, AWSError>> {
+  async getObject(
+    bucket: string,
+    filePath: string,
+  ): Promise<PromiseResult<S3.GetObjectOutput, AWSError>> {
     const getRequest: GetObjectRequest = {
       Bucket: bucket,
       Key: filePath,
@@ -55,7 +61,12 @@ export class S3FileSystem {
     await this.deleteObject(bucket, sourcePath);
   }
 
-  async listObjects(bucket: string, path: string, startAfter?: string, limit = 50): Promise<PromiseResult<S3.Types.ListObjectsV2Output, AWSError>> {
+  async listObjects(
+    bucket: string,
+    path: string,
+    startAfter?: string,
+    limit = 50,
+  ): Promise<PromiseResult<S3.Types.ListObjectsV2Output, AWSError>> {
     const listRequest: ListObjectsV2Request = {
       Bucket: bucket,
       MaxKeys: limit,

@@ -1,12 +1,12 @@
-/* eslint-disable class-methods-use-this */
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 
-import { Email, EmailParser } from '../tools/EmailParser';
+import { type Email, EmailParser } from '../tools/EmailParser';
 import { S3FileSystem } from '../tools/S3FileSystem';
 import { normalizeUsername } from '../tools/utils';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+// biome-ignore lint/suspicious/noConfusingVoidType: <explanation>
 export type InboxResponse = Promise<Response<any> | void>;
 
 export class InboxController {
@@ -27,9 +27,7 @@ export class InboxController {
   }
 
   async index(req: Request, res: Response): InboxResponse {
-    const {
-      type = 'html',
-    } = req.query;
+    const { type = 'html' } = req.query;
 
     if (type === 'html') {
       return res.render('pages/index');
@@ -39,13 +37,8 @@ export class InboxController {
   }
 
   async show(req: Request, res: Response): InboxResponse {
-    const {
-      query,
-      type = 'html',
-    } = req.query;
-    const {
-      id = '',
-    } = req.params;
+    const { query, type = 'html' } = req.query;
+    const { id = '' } = req.params;
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -71,11 +64,7 @@ export class InboxController {
   }
 
   async latest(req: Request, res: Response): InboxResponse {
-    const {
-      query,
-      sentAfter,
-      type = 'html',
-    } = req.query;
+    const { query, sentAfter, type = 'html' } = req.query;
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -85,7 +74,12 @@ export class InboxController {
     const normalizedUsername = normalizeUsername(query as string);
     const listEmailsAfter = sentAfter ? `${normalizedUsername}/${sentAfter}` : undefined;
 
-    const emailsList = await this.fileSystem.listObjects(this.bucketName, normalizedUsername, listEmailsAfter, 1000);
+    const emailsList = await this.fileSystem.listObjects(
+      this.bucketName,
+      normalizedUsername,
+      listEmailsAfter,
+      1000,
+    );
 
     let email: Email | undefined;
     if (emailsList.KeyCount !== 0) {
@@ -109,12 +103,7 @@ export class InboxController {
   }
 
   async list(req: Request, res: Response): InboxResponse {
-    const {
-      query,
-      sentAfter,
-      limit = 10,
-      type = 'html',
-    } = req.query;
+    const { query, sentAfter, limit = 10, type = 'html' } = req.query;
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -132,19 +121,21 @@ export class InboxController {
     );
 
     const emailNamesList = emailObjectsList.Contents?.map((item) => item.Key) ?? [];
-    const emails = await Promise.all(emailNamesList.map(async (name) => {
-      if (name) {
-        const emailObject = await this.fileSystem.getObject(this.bucketName, name);
+    const emails = await Promise.all(
+      emailNamesList.map(async (name) => {
+        if (name) {
+          const emailObject = await this.fileSystem.getObject(this.bucketName, name);
 
-        if (emailObject.Body) {
-          const email: Email = await this.emailParser.parseEmail(emailObject.Body.toString());
-          email.id = name.split('/').pop();
-          return email;
+          if (emailObject.Body) {
+            const email: Email = await this.emailParser.parseEmail(emailObject.Body.toString());
+            email.id = name.split('/').pop();
+            return email;
+          }
         }
-      }
 
-      return null;
-    }));
+        return null;
+      }),
+    );
 
     if (type === 'html') {
       return res.render('pages/inbox', { emails: emails.reverse() });

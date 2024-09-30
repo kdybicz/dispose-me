@@ -1,4 +1,4 @@
-name: Tests CI
+name: Node.js CI
 
 on:
   push:
@@ -26,5 +26,7 @@ jobs:
         cache: 'yarn'
     - name: Install dependencies
       run: yarn install
+    - name: Run lint
+      run: yarn lint:ci
     - name: Run tests
       run: yarn test:ci
