@@ -1,7 +1,7 @@
 import 'source-map-support/register';
 
 import * as express from 'express';
-import { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { query } from 'express-validator';
 import * as serverless from 'serverless-http';
 
@@ -13,12 +13,12 @@ const app = express();
 
 // Since Express doesn't support error handling of promises out of the box,
 // this handler enables that
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const asyncHandler = (fn: any) => (req: Request, res: Response, next: NextFunction) => Promise
-  .resolve(fn(req, res, next))
-  .catch((error) => {
-    next(error);
-  });
+const asyncHandler =
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  (fn: any) => (req: Request, res: Response, next: NextFunction) =>
+    Promise.resolve(fn(req, res, next)).catch((error) => {
+      next(error);
+    });
 
 const buildInboxRequestValidator = () => {
   let blacklist: string[] = [];
@@ -34,9 +34,11 @@ const buildInboxRequestValidator = () => {
 
 app.use(express.json());
 
-app.use(express.urlencoded({
-  extended: true,
-}));
+app.use(
+  express.urlencoded({
+    extended: true,
+  }),
+);
 
 app.use((req, res, next) => {
   res.locals.query = req.query;
@@ -60,7 +62,7 @@ app.all('*', (req, res) => {
   inboxController.render404Response(req, res);
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 app.use((err: any, req: any, res: any, _: any) => {
   log.error(err.stack);
   inboxController.render500Response(err, req, res);

@@ -1,13 +1,16 @@
-import { APIGatewayRequestAuthorizerEvent, APIGatewayRequestAuthorizerHandler } from 'aws-lambda';
+import type {
+  APIGatewayRequestAuthorizerEvent,
+  APIGatewayRequestAuthorizerHandler,
+} from 'aws-lambda';
 
 import log from './tools/log';
 
 const getToken = (event: APIGatewayRequestAuthorizerEvent): string | null => {
-  if (event.headers && event.headers['x-api-key']) {
+  if (event.headers?.['x-api-key']) {
     log.debug('Found token in Header');
     return event.headers['x-api-key'];
   }
-  if (event.queryStringParameters && event.queryStringParameters['x-api-key']) {
+  if (event.queryStringParameters?.['x-api-key']) {
     log.debug('Found token in Query parameters');
     return event.queryStringParameters['x-api-key'];
   }
@@ -21,11 +24,13 @@ export const handler: APIGatewayRequestAuthorizerHandler = (event, _, callback) 
     usageIdentifierKey: getToken(event),
     policyDocument: {
       Version: '2012-10-17',
-      Statement: [{
-        Action: 'execute-api:Invoke',
-        Effect: 'Allow',
-        Resource: event.methodArn,
-      }],
+      Statement: [
+        {
+          Action: 'execute-api:Invoke',
+          Effect: 'Allow',
+          Resource: event.methodArn,
+        },
+      ],
     },
   });
 };

@@ -1,6 +1,6 @@
-import { EmailParser } from '../tools/EmailParser';
+import type { EmailParser } from '../tools/EmailParser';
+import type { S3FileSystem } from '../tools/S3FileSystem';
 import log from '../tools/log';
-import { S3FileSystem } from '../tools/S3FileSystem';
 import { normalizeUsername } from '../tools/utils';
 
 export class IncomingEmailProcessor {
@@ -40,13 +40,11 @@ export class IncomingEmailProcessor {
         emailContent.received.toString(),
       );
 
-      const allEmailAddresses = [
-        ...recipientEmails,
-        ...carbonCopyEmails,
-        ...blindCarbonCopyEmails,
-      ];
+      const allEmailAddresses = [...recipientEmails, ...carbonCopyEmails, ...blindCarbonCopyEmails];
 
-      const uniqueNormalizedUsernames = new Set(allEmailAddresses.map((emailAddress) => normalizeUsername(emailAddress.user)));
+      const uniqueNormalizedUsernames = new Set(
+        allEmailAddresses.map((emailAddress) => normalizeUsername(emailAddress.user)),
+      );
       if (uniqueNormalizedUsernames.size === 0) {
         uniqueNormalizedUsernames.add('unknown');
       }

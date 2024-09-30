@@ -3,8 +3,5 @@ export const normalizeUsername = (username: string): string => {
     return username;
   }
 
-  return decodeURIComponent(username)
-    .toLowerCase()
-    .replace(/\+.*/, '')
-    .replace(/\./g, '');
+  return decodeURIComponent(username).toLowerCase().replace(/\+.*/, '').replace(/\./g, '');
 };
