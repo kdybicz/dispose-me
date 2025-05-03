@@ -10,24 +10,34 @@
 </header>
 
 <main role="main" class="container">
-  <div class="row">
-    <div class="col-md">
-      <h5><b>public inbox:</b> <%= query.query %></h5>
+  <% if (query.query) { %>
+    <div class="row">
+      <div class="col-md">
+        <h5><b>public inbox:</b> <%= query.query %></h5>
+      </div>
+      <div class="col-md text-right">
+          <a href="<%= url %>&type=json">[JSON]</a>
+      </div>
     </div>
-    <div class="col-md text-right">
-      <% if (query.query) { %>
-        <a href="<%= url %>&type=json">[JSON]</a>
-      <% } %>
+    <%- include('../partials/email/list', { emails }); %>
+  <% } else{ %>
+    <div class="jumbotron">
+      <h1 class="display-4">📨 Dispose Me</h1>
+      <p class="lead">I'm a simple, disposable email service with an easy API access.</p>
+      <hr class="my-4">
+  
+      <form method="GET" action="/inbox">
+        <div class="form-group row">
+          <label for="query" class="col-sm-2 col-form-label">Your new inbox:</label>
+          <div class="col-sm-4">
+            <input class="form-control" type="text" id="query" name="query"  value="<%= query.query %>" placeholder="Inbox name" aria-label="Inbox name" required pattern="[a-zA-Z0-9.+]{2,}">
+          </div>
+          <label for="query" class="col-sm-2 col-form-label">@<%= process.env.DOMAIN_NAME %></label>
+          <input type="hidden" name="x-api-key" value="<%= query['x-api-key'] %>"></input>
+        </div>
+      </form>
     </div>
-  </div>
-
-  <% if (!query.query) { %>
-    <form class="form-inline mt-2 mt-md-0" method="GET" action="/inbox">
-      <input class="form-control mr-sm-2" type="text" name="query" value="<%= query.query %>" placeholder="Inbox name" aria-label="Inbox name">
-    </form>
   <% } %>
-
-  <%- include('../partials/email/list', { emails }); %>
 </main>
 
 <footer class="footer">

@@ -36,6 +36,18 @@ export class InboxController {
     return res.json({});
   }
 
+  async auth(req: Request, res: Response): InboxResponse {
+    const { token } = req.body;
+
+    res.cookie('x-api-key', token, { secure: false, httpOnly: true });
+    return res.redirect('/inbox');
+  }
+
+  async logout(_req: Request, res: Response): InboxResponse {
+    res.clearCookie('x-api-key');
+    return res.redirect('/');
+  }
+
   async show(req: Request, res: Response): InboxResponse {
     const { query, type = 'html' } = req.query;
     const { id = '' } = req.params;
