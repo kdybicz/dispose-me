@@ -37,9 +37,14 @@ export class InboxController {
   }
 
   async auth(req: Request, res: Response): InboxResponse {
-    const { token } = req.body;
+    const { token, remember } = req.body;
 
-    res.cookie('x-api-key', token, { secure: false, httpOnly: true });
+    let maxAge: number | undefined = undefined;
+    if (remember) {
+      maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days in ms
+    }
+
+    res.cookie('x-api-key', token, { secure: true, httpOnly: true, sameSite: 'strict', maxAge });
     return res.redirect('/inbox');
   }
 
