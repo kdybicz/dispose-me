@@ -16,7 +16,7 @@
         <h5><b>public inbox:</b> <%= query.query %></h5>
       </div>
       <div class="col-md text-right">
-          <a href="<%= url %>&type=json">[JSON]</a>
+          <a href="<%= url %>&x-api-key=<%= token %>&type=json">[JSON]</a>
       </div>
     </div>
     <%- include('../partials/email/list', { emails }); %>
@@ -33,7 +33,6 @@
             <input class="form-control" type="text" id="query" name="query"  value="<%= query.query %>" placeholder="Inbox name" aria-label="Inbox name" required pattern="[a-zA-Z0-9.+]{2,}">
           </div>
           <label for="query" class="col-sm-2 col-form-label">@<%= process.env.DOMAIN_NAME %></label>
-          <input type="hidden" name="x-api-key" value="<%= query['x-api-key'] %>"></input>
         </div>
       </form>
     </div>

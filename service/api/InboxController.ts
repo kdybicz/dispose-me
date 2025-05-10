@@ -69,7 +69,8 @@ export class InboxController {
     }
 
     if (type === 'html') {
-      return res.render('pages/email', { email });
+      const token = this.getToken(req);
+      return res.render('pages/email', { email, token });
     }
 
     return res.json({ email });
@@ -108,7 +109,8 @@ export class InboxController {
     }
 
     if (type === 'html') {
-      return res.render('pages/email', { email });
+      const token = this.getToken(req);
+      return res.render('pages/email', { email, token });
     }
 
     return res.json({ email });
@@ -150,7 +152,8 @@ export class InboxController {
     );
 
     if (type === 'html') {
-      return res.render('pages/inbox', { emails: emails.reverse() });
+      const token = this.getToken(req);
+      return res.render('pages/inbox', { emails: emails.reverse(), token });
     }
 
     return res.json({ emails: emails.reverse() });
@@ -187,5 +190,27 @@ export class InboxController {
     }
 
     res.status(500).json({ message: err.stack });
+  }
+
+  getToken(req: Request): string | null {
+    if (req.headers?.['x-api-key']) {
+      return req.headers['x-api-key']?.[0];
+    }
+    if (req.query?.['x-api-key']) {
+      return req.query['x-api-key']?.[0];
+    }
+    if (req.headers?.cookie) {
+      return (
+        `${req.headers.cookie}`
+          .split(';')
+          .find((cookie: string) => {
+            return cookie.trim().startsWith('x-api-key=');
+          })
+          ?.split('=')?.[1]
+          .trim() ?? null
+      );
+    }
+
+    return null;
   }
 }

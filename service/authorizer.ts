@@ -9,9 +9,10 @@ export const getCookie = (
   event: APIGatewayRequestAuthorizerEvent,
   cookieName: string,
 ): string | undefined => {
-  const cookieHeader = event.headers?.Cookie;
-
-  log.debug(JSON.stringify(event.headers ?? {}));
+  const headers = event.headers ?? {};
+  const cookieHeader = Object.entries(headers).find(
+    ([name, _]) => name.toLowerCase() === 'cookie',
+  )?.[1];
 
   if (!cookieHeader) {
     return;
