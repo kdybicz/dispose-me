@@ -26,6 +26,7 @@ export class InboxController {
     this.latest = this.latest.bind(this);
     this.list = this.list.bind(this);
     this.show = this.show.bind(this);
+    this.getToken = this.getToken.bind(this);
   }
 
   async index(req: Request, res: Response): InboxResponse {
@@ -49,6 +50,8 @@ export class InboxController {
     let maxAge: number | undefined = undefined;
     if (remember) {
       maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days in ms
+
+      res.cookie('remember', true, { secure: true, httpOnly: true, sameSite: 'strict', maxAge });
     }
 
     res.cookie('x-api-key', token, { secure: true, httpOnly: true, sameSite: 'strict', maxAge });
@@ -57,6 +60,7 @@ export class InboxController {
 
   async logout(_req: Request, res: Response): InboxResponse {
     res.clearCookie('x-api-key');
+    res.clearCookie('remember');
     return res.redirect('/');
   }
 
@@ -211,12 +215,17 @@ export class InboxController {
     if (req.query?.['x-api-key']) {
       return req.query['x-api-key']?.[0];
     }
+
+    return this.getCookie(req, 'x-api-key');
+  }
+
+  getCookie(req: Request, name: string): string | null {
     if (req.headers?.cookie) {
       return (
         `${req.headers.cookie}`
           .split(';')
           .find((cookie: string) => {
-            return cookie.trim().startsWith('x-api-key=');
+            return cookie.trim().toLowerCase().startsWith(`${name.toLowerCase()}=`);
           })
           ?.split('=')?.[1]
           ?.trim() ?? null
