@@ -18,17 +18,24 @@ export class InboxController {
   protected bucketName: string;
 
   constructor(bucketName: string) {
-    this.fileSystem = new S3FileSystem();
-    this.emailParser = new EmailParser();
     this.bucketName = bucketName;
+    this.emailParser = new EmailParser();
+    this.fileSystem = new S3FileSystem();
 
-    this.show = this.show.bind(this);
+    this.index = this.index.bind(this);
     this.latest = this.latest.bind(this);
     this.list = this.list.bind(this);
+    this.show = this.show.bind(this);
+    this.getToken = this.getToken.bind(this);
   }
 
   async index(req: Request, res: Response): InboxResponse {
     const { type = 'html' } = req.query;
+
+    const token = this.getToken(req);
+    if (token) {
+      return res.redirect('/inbox');
+    }
 
     if (type === 'html') {
       const generatedUsername = generateUsername();
@@ -36,6 +43,26 @@ export class InboxController {
     }
 
     return res.json({});
+  }
+
+  async auth(req: Request, res: Response): InboxResponse {
+    const { token, remember } = req.body;
+
+    let maxAge: number | undefined = undefined;
+    if (remember) {
+      maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days in ms
+
+      res.cookie('remember', true, { secure: true, httpOnly: true, sameSite: 'strict', maxAge });
+    }
+
+    res.cookie('x-api-key', token, { secure: true, httpOnly: true, sameSite: 'strict', maxAge });
+    return res.redirect('/inbox');
+  }
+
+  async logout(_req: Request, res: Response): InboxResponse {
+    res.clearCookie('x-api-key');
+    res.clearCookie('remember');
+    return res.redirect('/');
   }
 
   async show(req: Request, res: Response): InboxResponse {
@@ -59,7 +86,8 @@ export class InboxController {
     }
 
     if (type === 'html') {
-      return res.render('pages/email', { email });
+      const token = this.getToken(req);
+      return res.render('pages/email', { email, token });
     }
 
     return res.json({ email });
@@ -98,7 +126,8 @@ export class InboxController {
     }
 
     if (type === 'html') {
-      return res.render('pages/email', { email });
+      const token = this.getToken(req);
+      return res.render('pages/email', { email, token });
     }
 
     return res.json({ email });
@@ -140,7 +169,8 @@ export class InboxController {
     );
 
     if (type === 'html') {
-      return res.render('pages/inbox', { emails: emails.reverse() });
+      const token = this.getToken(req);
+      return res.render('pages/inbox', { emails: emails.reverse(), token });
     }
 
     return res.json({ emails: emails.reverse() });
@@ -177,5 +207,32 @@ export class InboxController {
     }
 
     res.status(500).json({ message: err.stack });
+  }
+
+  getToken(req: Request): string | null {
+    if (req.headers?.['x-api-key']) {
+      return req.headers['x-api-key']?.[0];
+    }
+    if (req.query?.['x-api-key']) {
+      return req.query['x-api-key']?.[0];
+    }
+
+    return this.getCookie(req, 'x-api-key');
+  }
+
+  getCookie(req: Request, name: string): string | null {
+    if (req.headers?.cookie) {
+      return (
+        `${req.headers.cookie}`
+          .split(';')
+          .find((cookie: string) => {
+            return cookie.trim().toLowerCase().startsWith(`${name.toLowerCase()}=`);
+          })
+          ?.split('=')?.[1]
+          ?.trim() ?? null
+      );
+    }
+
+    return null;
   }
 }

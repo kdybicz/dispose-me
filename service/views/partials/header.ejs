@@ -1,8 +1,16 @@
 <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+<<<<<<< HEAD
   <a class="navbar-brand" href="/">📨 Dispose Me</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon">test</span>
   </button>
+=======
+  <% if (req.path === '/') { %>
+    <a class="navbar-brand" href="/">📨 Dispose Me</a>
+  <% } else { %>
+    <a class="navbar-brand" href="/inbox">📨 Dispose Me</a>
+  <% } %>
+>>>>>>> master
   <div class="collapse navbar-collapse" id="navbarCollapse">
     <ul class="navbar-nav mr-auto">
       <% if (query.query) { %>
@@ -15,4 +23,10 @@
       <% } %>
     </ul>
   </div>
+<<<<<<< HEAD
+=======
+  <% if (req.path !== '/') { %>
+    <a class="navbar-text nav-link" href="/logout">Logout</a>
+  <% } %>
+>>>>>>> master
 </nav>

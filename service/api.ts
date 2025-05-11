@@ -53,6 +53,8 @@ app.set('view engine', 'ejs');
 app.engine('ejs', require('ejs').__express); // workaround for webpack tree-shaking ejs out
 
 app.get('/', asyncHandler(inboxController.index));
+app.post('/', asyncHandler(inboxController.auth));
+app.get('/logout', asyncHandler(inboxController.logout));
 
 app.get('/inbox/latest', buildInboxRequestValidator(), asyncHandler(inboxController.latest));
 app.get('/inbox/:id', buildInboxRequestValidator(), asyncHandler(inboxController.show));

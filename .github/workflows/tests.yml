@@ -8,6 +8,9 @@ on:
   schedule:
     - cron: '49 4 * * 1'
 
+permissions:
+  contents: read
+
 jobs:
   build:
 
@@ -19,13 +22,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: Enable Corepack
+      run: corepack enable
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'yarn'
     - name: Install dependencies
-      run: yarn install
+      run: yarn --immutable
     - name: Run lint
       run: yarn lint:ci
     - name: Run tests

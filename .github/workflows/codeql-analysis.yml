@@ -24,17 +24,36 @@ jobs:
     name: Analyze (${{ matrix.language }})
     runs-on: 'ubuntu-latest'
     permissions:
+      # required for all workflows
       security-events: write
+
+      # required to fetch internal or private CodeQL packs
+      packages: read
+
+      # only required for workflows in private repositories
+      actions: read
+      contents: read
 
     strategy:
       fail-fast: false
       matrix:
         include:
+        - language: actions
+          build-mode: none
         - language: javascript-typescript
           build-mode: none
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+    - name: Enable Corepack
+      run: corepack enable
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        cache: 'yarn'
+    - name: Install dependencies
+      run: yarn --immutable
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
