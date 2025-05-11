@@ -38,8 +38,7 @@ export class InboxController {
     }
 
     if (type === 'html') {
-      const generatedUsername = generateUsername();
-      return res.render('pages/index', { generatedUsername });
+      return res.render('pages/index');
     }
 
     return res.json({});
@@ -169,8 +168,9 @@ export class InboxController {
     );
 
     if (type === 'html') {
+      const generatedUsername = generateUsername();
       const token = this.getToken(req);
-      return res.render('pages/inbox', { emails: emails.reverse(), token });
+      return res.render('pages/inbox', { emails: emails.reverse(), generatedUsername, token });
     }
 
     return res.json({ emails: emails.reverse() });
