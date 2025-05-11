@@ -35,7 +35,7 @@
         <h5>
           <b>public inbox: </b>
           <span id="email"><%= query.query %>@<%= process.env.DOMAIN_NAME %></span>
-          <button class="btn btn-default btn-clipboard" aria-label="Copy to clipboard" title="Copy to clipboard" data-clipboard-target="#email">
+          <button class="btn btn-default btn-clipboard p-0" aria-label="Copy to clipboard" title="Copy to clipboard" data-clipboard-target="#email">
             <i class="bi bi-clipboard" aria-hidden="true"></i>
           </button>
         </h5>
@@ -45,7 +45,7 @@
       </div>
     </div>
     <%- include('../partials/email/list', { emails }); %>
-  <% } else{ %>
+  <% } else { %>
     <div class="jumbotron">
       <h1 class="display-4">📨 Dispose Me</h1>
       <p class="lead">I'm a simple, disposable email service with an easy API access.</p>
@@ -55,12 +55,12 @@
         <div class="input-group mb-3">
           <label for="query" class="col-sm-2 col-form-label">Your new inbox:</label>
             <div class="col-sm-4 p-0">
-              <input class="form-control" type="text" id="query" name="query"  value="<%= query.query ?? generatedUsername %>" placeholder="Inbox name" aria-label="Inbox name" required pattern="[a-zA-Z0-9.+]{2,}">
+              <input class="form-control" type="text" id="query" name="query"  value="<%= generatedUsername %>" placeholder="Inbox name" aria-label="Inbox name" required pattern="[a-zA-Z0-9.+]{2,}">
             </div>
             <div class="input-group-append">
               <span class="input-group-text">@<%= process.env.DOMAIN_NAME %></span>
-              <button type="submit" class="btn btn-default col-sm-1" aria-label="Open">
-                <span class="bi bi-arrow-right-square-fill" aria-hidden="true" style="font-size: 2rem; color: DodgerBlue;"></span>
+              <button type="submit" class="btn btn-primary" aria-label="Go to inbox">
+                <i class="bi bi-box-arrow-in-right"></i>
               </button>
             </div>
           </div>
