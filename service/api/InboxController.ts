@@ -3,7 +3,6 @@ import { validationResult } from 'express-validator';
 
 import { type Email, EmailParser } from '../tools/EmailParser';
 import { S3FileSystem } from '../tools/S3FileSystem';
-import log from '../tools/log';
 import { normalizeUsername } from '../tools/utils';
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
