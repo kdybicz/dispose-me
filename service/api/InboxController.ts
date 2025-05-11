@@ -3,6 +3,7 @@ import { validationResult } from 'express-validator';
 
 import { type Email, EmailParser } from '../tools/EmailParser';
 import { S3FileSystem } from '../tools/S3FileSystem';
+import log from '../tools/log';
 import { normalizeUsername } from '../tools/utils';
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -17,17 +18,23 @@ export class InboxController {
   protected bucketName: string;
 
   constructor(bucketName: string) {
-    this.fileSystem = new S3FileSystem();
-    this.emailParser = new EmailParser();
     this.bucketName = bucketName;
+    this.emailParser = new EmailParser();
+    this.fileSystem = new S3FileSystem();
 
-    this.show = this.show.bind(this);
+    this.index = this.index.bind(this);
     this.latest = this.latest.bind(this);
     this.list = this.list.bind(this);
+    this.show = this.show.bind(this);
   }
 
   async index(req: Request, res: Response): InboxResponse {
     const { type = 'html' } = req.query;
+
+    const token = this.getToken(req);
+    if (token) {
+      return res.redirect('/inbox');
+    }
 
     if (type === 'html') {
       return res.render('pages/index');
@@ -212,7 +219,7 @@ export class InboxController {
             return cookie.trim().startsWith('x-api-key=');
           })
           ?.split('=')?.[1]
-          .trim() ?? null
+          ?.trim() ?? null
       );
     }
 
