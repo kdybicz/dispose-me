@@ -1,18 +1,17 @@
 import * as path from 'node:path';
 import * as cdk from 'aws-cdk-lib';
-import {
-  aws_apigateway as apigateway,
-  aws_certificatemanager as cm,
-  custom_resources as cr,
-  aws_iam as iam,
-  aws_lambda as lambda,
-  aws_lambda_nodejs as nodejs,
-  aws_route53 as route53,
-  aws_s3 as s3,
-  aws_ses as ses,
-  aws_ses_actions as ses_actions,
-  aws_route53_targets as targets,
-} from 'aws-cdk-lib';
+import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import * as cm from 'aws-cdk-lib/aws-certificatemanager';
+import * as iam from 'aws-cdk-lib/aws-iam';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as nodejs from 'aws-cdk-lib/aws-lambda-nodejs';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
+import * as route53 from 'aws-cdk-lib/aws-route53';
+import * as targets from 'aws-cdk-lib/aws-route53-targets';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as ses from 'aws-cdk-lib/aws-ses';
+import * as ses_actions from 'aws-cdk-lib/aws-ses-actions';
+import * as cr from 'aws-cdk-lib/custom-resources';
 import type { Construct } from 'constructs';
 import * as dotenv from 'dotenv';
 
@@ -69,7 +68,7 @@ export class DisposeMeStack extends cdk.Stack {
       },
       memorySize: 512,
       timeout: cdk.Duration.seconds(3),
-      logRetention: cdk.aws_logs.RetentionDays.ONE_MONTH,
+      logRetention: RetentionDays.ONE_MONTH,
     });
     emailBucket.grantReadWrite(apiLambdaHandler);
 
@@ -101,11 +100,16 @@ export class DisposeMeStack extends cdk.Stack {
       allowOrigins: apigateway.Cors.ALL_ORIGINS,
       allowMethods: apigateway.Cors.ALL_METHODS, // this is also the default
     });
-    rootResource.addMethod('GET', undefined, {
-      apiKeyRequired: privateAccess,
-      authorizer: apiAuthorizer,
-      authorizationType: apigateway.AuthorizationType.CUSTOM,
+    rootResource.addMethod('GET');
+    rootResource.addMethod('POST');
+
+    // Define the '/logout' resource with a GET method
+    const logoutResource = api.root.addResource('logout');
+    logoutResource.addCorsPreflight({
+      allowOrigins: apigateway.Cors.ALL_ORIGINS,
+      allowMethods: apigateway.Cors.ALL_METHODS, // this is also the default
     });
+    logoutResource.addMethod('GET');
 
     // Define the '/*' resource with a GET method
     const proxyResource = api.root.addResource('{proxy+}');
@@ -174,7 +178,7 @@ export class DisposeMeStack extends cdk.Stack {
       },
       memorySize: 512,
       timeout: cdk.Duration.seconds(3),
-      logRetention: cdk.aws_logs.RetentionDays.ONE_MONTH,
+      logRetention: RetentionDays.ONE_MONTH,
     });
 
     return new apigateway.RequestAuthorizer(this, 'ApiGatewayAuthorizer', {
@@ -200,7 +204,7 @@ export class DisposeMeStack extends cdk.Stack {
       },
       memorySize: 512,
       timeout: cdk.Duration.seconds(3),
-      logRetention: cdk.aws_logs.RetentionDays.ONE_MONTH,
+      logRetention: RetentionDays.ONE_MONTH,
     });
     emailBucket.grantReadWrite(processorLambdaHandler);
 
@@ -262,7 +266,7 @@ export class DisposeMeStack extends cdk.Stack {
           RuleSetName: null,
         },
       },
-      logRetention: cdk.aws_logs.RetentionDays.ONE_WEEK,
+      logRetention: RetentionDays.ONE_WEEK,
       policy: cr.AwsCustomResourcePolicy.fromStatements([
         new iam.PolicyStatement({
           sid: 'SesCustomResourceSetActiveReceiptRuleSet',
