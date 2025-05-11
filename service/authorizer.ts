@@ -21,10 +21,10 @@ export const getCookie = (
   return cookieHeader
     .split(';')
     .find((cookie: string) => {
-      return cookie.trim().startsWith(`${cookieName}=`);
+      return cookie.trim().toLowerCase().startsWith(`${cookieName.toLowerCase()}=`);
     })
     ?.split('=')?.[1]
-    .trim();
+    ?.trim();
 };
 
 export const getToken = (event: APIGatewayRequestAuthorizerEvent): string | null => {
