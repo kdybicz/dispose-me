@@ -22,7 +22,7 @@
     "deploy": "yarn predeploy && cdk deploy",
     "lint": "biome check ./bin ./lib ./service",
     "lint:ci": "biome lint ./bin ./lib ./service",
-    "prestart": "cdk synth",
+    "prestart": "cdk synth && sam build -t ./cdk.out/DisposeMeStack.template.json",
     "start": "yarn prestart && sam local start-api -t ./cdk.out/DisposeMeStack.template.json",
     "test": "jest",
     "test:ci": "jest -ci"
