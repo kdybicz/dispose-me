@@ -2453,7 +2453,6 @@ __metadata:
     ts-loader: "npm:^9.5.2"
     ts-node: "npm:^10.9.2"
     typescript: "npm:~5.8.3"
-    unique-username-generator: "npm:^1.4.0"
     webpack: "npm:^5.99.8"
     webpack-cli: "npm:^6.0.1"
     webpack-node-externals: "npm:^3.0.0"
@@ -5955,13 +5954,6 @@ __metadata:
   dependencies:
     imurmurhash: "npm:^0.1.4"
   checksum: 10c0/d324c5a44887bd7e105ce800fcf7533d43f29c48757ac410afd42975de82cc38ea2035c0483f4de82d186691bf3208ef35c644f73aa2b1b20b8e651be5afd293
-  languageName: node
-  linkType: hard
-
-"unique-username-generator@npm:^1.4.0":
-  version: 1.4.0
-  resolution: "unique-username-generator@npm:1.4.0"
-  checksum: 10c0/2397ae4fb71e47267f7f952d76f95965a213dffad3b58ccd79b727b51d371de66be21e6512f64a444eee5f26ad4e5f6b8c1da33c105db055b0ac609274d6930f
   languageName: node
   linkType: hard
 

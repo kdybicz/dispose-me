@@ -1,6 +1,5 @@
 import type { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import { generateUsername } from 'unique-username-generator';
 
 import { type Email, EmailParser } from '../tools/EmailParser';
 import { S3FileSystem } from '../tools/S3FileSystem';
@@ -168,9 +167,8 @@ export class InboxController {
     );
 
     if (type === 'html') {
-      const generatedUsername = generateUsername();
       const token = this.getToken(req);
-      return res.render('pages/inbox', { emails: emails.reverse(), generatedUsername, token });
+      return res.render('pages/inbox', { emails: emails.reverse(), token });
     }
 
     return res.json({ emails: emails.reverse() });
