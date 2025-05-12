@@ -199,3 +199,6 @@ junit.xml
 .cdk.staging
 cdk.out
 cdk.context.json
+
+# SAM default build folder
+.aws-sam/
