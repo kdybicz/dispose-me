@@ -156,7 +156,14 @@ comments inside for guidance. Once done, deploy the code to AWS by running:
 $ yarn deploy
 ```
 
-To get the API access key, go to the _API Gateway_ section of the AWS Console
+API access key can be found in the `Terminal` output under the
+`DisposeMeStack.ApiKeyValue` key:
+```
+Outputs:
+DisposeMeStack.ApiGatewayEndpoint5BB8GD2A = https://abcdefg123.execute-api.eu-west-1.amazonaws.com/production/
+DisposeMeStack.ApiKeyValue = n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW
+````
+or you can go to the _API Gateway_ section of the AWS Console
 and check _API keys_.
 
 **Note:** If you encounter any issues, raise an Issue with steps taken and

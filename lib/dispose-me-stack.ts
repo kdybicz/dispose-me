@@ -15,6 +15,8 @@ import * as cr from 'aws-cdk-lib/custom-resources';
 import type { Construct } from 'constructs';
 import * as dotenv from 'dotenv';
 
+import { GetApiKey } from './constructs/get-api-key';
+
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 export class DisposeMeStack extends cdk.Stack {
@@ -150,6 +152,14 @@ export class DisposeMeStack extends cdk.Stack {
       stages: [api.deploymentStage],
     });
     plan.addApiKey(apiAccessKey);
+
+    const getApiAccessKeyWithValue = new GetApiKey(this, 'GetApiKey', {
+      apiKey: apiAccessKey,
+    });
+
+    new cdk.CfnOutput(this, 'ApiKeyValue', {
+      value: getApiAccessKeyWithValue.value,
+    });
   };
 
   private setupCertificate = (

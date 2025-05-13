@@ -31,7 +31,7 @@ export class InboxController {
   async index(req: Request, res: Response): InboxResponse {
     const { type = 'html' } = req.query;
 
-    const token = this.getToken(req);
+    const token = this.getCookie(req, 'x-api-key');
     if (token) {
       return res.redirect('/inbox');
     }
