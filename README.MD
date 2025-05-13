@@ -1,3 +1,6 @@
+[![CodeQL Advanced](https://github.com/kdybicz/dispose-me/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/kdybicz/dispose-me/actions/workflows/codeql-analysis.yml)
+[![Node.js CI](https://github.com/kdybicz/dispose-me/actions/workflows/tests.yml/badge.svg)](https://github.com/kdybicz/dispose-me/actions/workflows/tests.yml)
+
 # Dispose Me
 
 Dispose Me is a simple AWS-hosted disposable email service.
