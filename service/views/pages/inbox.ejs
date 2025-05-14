@@ -57,7 +57,8 @@
   $(function () {
     $("form").on( "submit", function(event) {
       var username = $('#username').val();
-      $('form').attr('action', `/inbox/${username}`);
+      var sanitizedUsername = encodeURIComponent(username);
+      $('form').attr('action', `/inbox/${sanitizedUsername}`);
     });
   });
 </script>
