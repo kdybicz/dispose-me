@@ -64,15 +64,15 @@ export class InboxController {
   }
 
   async show(req: Request, res: Response): InboxResponse {
-    const { query, type = 'html' } = req.query;
-    const { id = '' } = req.params;
+    const { type = 'html' } = req.query;
+    const { id = '', username } = req.params;
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return this.render403Response(req, res);
     }
 
-    const normalizedUsername = normalizeUsername(query as string);
+    const normalizedUsername = normalizeUsername(username);
     const emailObjectPath = `${normalizedUsername}/${id}`;
 
     const emailObject = await this.fileSystem.getObject(this.bucketName, emailObjectPath);
@@ -92,14 +92,15 @@ export class InboxController {
   }
 
   async latest(req: Request, res: Response): InboxResponse {
-    const { query, sentAfter, type = 'html' } = req.query;
+    const { sentAfter, type = 'html' } = req.query;
+    const { username } = req.params;
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return this.render403Response(req, res);
     }
 
-    const normalizedUsername = normalizeUsername(query as string);
+    const normalizedUsername = normalizeUsername(username);
     const listEmailsAfter = sentAfter ? `${normalizedUsername}/${sentAfter}` : undefined;
 
     const emailsList = await this.fileSystem.listObjects(
@@ -131,15 +132,31 @@ export class InboxController {
     return res.json({ email });
   }
 
-  async list(req: Request, res: Response): InboxResponse {
-    const { query, sentAfter, limit = 10, type = 'html' } = req.query;
+  async inbox(req: Request, res: Response): InboxResponse {
+    const { type = 'html' } = req.query;
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return this.render403Response(req, res);
     }
 
-    const normalizedUsername = normalizeUsername(query as string);
+    if (type === 'html') {
+      return res.render('pages/inbox');
+    }
+
+    return res.json({ message: 'Go to /inbox/:username' });
+  }
+
+  async list(req: Request, res: Response): InboxResponse {
+    const { sentAfter, limit = 10, type = 'html' } = req.query;
+    const { username } = req.params;
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return this.render403Response(req, res);
+    }
+
+    const normalizedUsername = normalizeUsername(username);
     const listEmailsAfter = sentAfter ? `${normalizedUsername}/${sentAfter}` : undefined;
 
     const emailObjectsList = await this.fileSystem.listObjects(
@@ -168,7 +185,7 @@ export class InboxController {
 
     if (type === 'html') {
       const token = this.getToken(req);
-      return res.render('pages/inbox', { emails: emails.reverse(), token });
+      return res.render('pages/list', { emails: emails.reverse(), token });
     }
 
     return res.json({ emails: emails.reverse() });
@@ -208,11 +225,14 @@ export class InboxController {
   }
 
   getToken(req: Request): string | null {
-    if (req.headers?.['x-api-key']) {
-      return req.headers['x-api-key']?.[0];
+    const header = req.headersDistinct?.['x-api-key'];
+    if (header) {
+      return header[0];
     }
-    if (req.query?.['x-api-key']) {
-      return req.query['x-api-key']?.[0];
+
+    const query = req.query?.['x-api-key'];
+    if (query) {
+      return (Array.isArray(query) ? query[0] : query) as string;
     }
 
     return this.getCookie(req, 'x-api-key');

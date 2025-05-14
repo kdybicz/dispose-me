@@ -12,12 +12,10 @@
 <main role="main" class="container">
   <div class="row">
     <div class="col-md">
-      <a class="nav-link" href="/inbox?<%= new URLSearchParams(query) %>">&lt;- Back to Inbox</a>
+      <a class="nav-link" href="/inbox/<%= req.params.username %>?<%= new URLSearchParams(query) %>">&lt;- Back to Inbox</a>
     </div>
     <div class="col-md text-right">
-      <% if (query.query) { %>
-        <a href="<%= url %>&x-api-key=<%= token %>&type=json">[JSON]</a>
-      <% } %>
+      <a href="<%=req.path %>?x-api-key=<%= token %>&type=json">[JSON]</a>
     </div>
   </div>
 
