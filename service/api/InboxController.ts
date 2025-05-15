@@ -184,7 +184,7 @@ export class InboxController {
     }
 
     return res.json({ emails });
-  }
+  };
 
   listRss = async (req: Request, res: Response): InboxResponse => {
     const { sentAfter } = req.query;
