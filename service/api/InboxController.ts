@@ -102,12 +102,12 @@ export class InboxController {
       this.bucketName,
       normalizedUsername,
       listEmailsAfter,
-      1000,
+      1,
     );
 
     let email: Email | undefined;
     if (emailsList.KeyCount !== 0) {
-      const latestFilePath = emailsList.Contents?.slice(-1).pop()?.Key;
+      const latestFilePath = emailsList.Contents?.pop()?.Key;
 
       if (latestFilePath) {
         const latestEmail = await this.fileSystem.getObject(this.bucketName, latestFilePath);
@@ -180,11 +180,11 @@ export class InboxController {
 
     if (type === 'html') {
       const token = this.getToken(req);
-      return res.render('pages/list', { emails: emails.reverse(), token });
+      return res.render('pages/list', { emails, token });
     }
 
-    return res.json({ emails: emails.reverse() });
-  };
+    return res.json({ emails });
+  }
 
   listRss = async (req: Request, res: Response): InboxResponse => {
     const { sentAfter } = req.query;
