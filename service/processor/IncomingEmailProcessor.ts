@@ -52,7 +52,7 @@ export class IncomingEmailProcessor {
       }
 
       const copyToUserInboxTasks = [...uniqueNormalizedUsernames].map((normalizedUsername) => {
-        const filename = `${MAX_EPOCH - emailContent.received.getTime()}.eml`;
+        const filename = `${MAX_EPOCH - emailContent.received.getTime()}`;
         const targetFile = `${normalizedUsername}/${filename}`;
 
         return this.fileSystem.copyObject(this.bucketName, messageId, targetFile);
