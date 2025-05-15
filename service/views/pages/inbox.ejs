@@ -2,82 +2,38 @@
 <html lang="en">
 <head>
   <%- include('../partials/head'); %>
-  <script type="text/javascript">
-    function initClipboard() {
-      var clipboard = new ClipboardJS('.btn-clipboard');
-      clipboard.on('success', function(e) {
-        var icon = e.trigger.querySelector(".bi");
-        var originalTitle = e.trigger.title;
-
-        e.clearSelection();
-
-        icon.classList.replace("bi-clipboard", "bi-check2")
-        e.trigger.title = "Copied!"
-
-        setTimeout(function() {
-          icon.classList.replace("bi-check2", "bi-clipboard");
-          e.trigger.title = originalTitle;
-        }, 2e3);
-      });
-    };
-
-    function generateUsername() {
-      var my_chance = new Chance();
-      var username = my_chance.name().replace(' ', '') + my_chance.integer({ min: 1, max: 99 });
-
-      $('#query').val(username.toLowerCase());
-    };
-  </script>
 </head>
-<body class="bg-light" onload="initClipboard();">
+<body class="bg-light">
 
 <header>
   <%- include('../partials/header'); %>
 </header>
 
 <main role="main" class="container">
-  <% if (query.query) { %>
-    <div class="row">
-      <div class="col-md">
-        <h5>
-          <b>public inbox: </b>
-          <span id="email"><%= query.query %>@<%= process.env.DOMAIN_NAME %></span>
-          <button class="btn btn-default btn-clipboard p-0" aria-label="Copy to clipboard" title="Copy to clipboard" data-clipboard-target="#email">
-            <i class="bi bi-clipboard" aria-hidden="true"></i>
-          </button>
-        </h5>
-      </div>
-      <div class="col-md text-right">
-          <a href="<%= url %>&x-api-key=<%= token %>&type=json">[JSON]</a>
-      </div>
-    </div>
-    <%- include('../partials/email/list', { emails }); %>
-  <% } else { %>
-    <div class="jumbotron">
-      <h1 class="display-4">📨 Dispose Me</h1>
-      <p class="lead">I'm a simple, disposable email service with an easy API access.</p>
-      <hr class="my-4">
-  
-      <form method="GET" action="/inbox">
-        <div class="input-group mb-3">
-          <label for="query" class="col-sm-2 col-form-label">Your new inbox:</label>
-          <div class="col-sm-4 p-0">
-            <input class="form-control" type="text" id="query" name="query" placeholder="Inbox name" aria-label="Inbox name" required pattern="[a-zA-Z0-9.+]{2,}">
-            <input type="hidden" value="<%= query['x-api-key'] %>" name="x-api-key" <%= query['x-api-key'] ? "" : "disabled" %>>
-          </div>
-          <div class="input-group-append">
-            <span class="input-group-text">@<%= process.env.DOMAIN_NAME %></span>
-            <button type="button" class="btn btn-outline-secondary" aria-label="Generate new username" onclick="generateUsername();">
-              <i class="bi bi-repeat"></i>
-            </button>
-            <button type="submit" class="btn btn-primary" aria-label="Go to inbox">
-              <i class="bi bi-box-arrow-in-right"></i>
-            </button>
-          </div>
+  <div class="jumbotron">
+    <h1 class="display-4">📨 Dispose Me</h1>
+    <p class="lead">I'm a simple, disposable email service with an easy API access.</p>
+    <hr class="my-4">
+
+    <form method="GET" action="/inbox">
+      <div class="input-group mb-3">
+        <label for="username" class="col-sm-2 col-form-label">Your new inbox:</label>
+        <div class="col-sm-4 p-0">
+          <input class="form-control" type="text" id="username" placeholder="Inbox name" aria-label="Inbox name" required pattern="[a-zA-Z0-9.+]{2,}">
+          <input type="hidden" value="<%= query['x-api-key'] %>" name="x-api-key" <%= query['x-api-key'] ? "" : "disabled" %>>
         </div>
-      </form>
-    </div>
-  <% } %>
+        <div class="input-group-append">
+          <span class="input-group-text">@<%= process.env.DOMAIN_NAME %></span>
+          <button type="button" class="btn btn-outline-secondary" aria-label="Generate new username" onclick="generateUsername();">
+            <i class="bi bi-repeat"></i>
+          </button>
+          <button type="submit" class="btn btn-primary" aria-label="Go to inbox">
+            <i class="bi bi-box-arrow-in-right"></i>
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
 </main>
 
 <footer class="footer">
@@ -89,6 +45,23 @@
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js" integrity="sha384-w1Q4orYjBQndcko6MimVbzY0tgp4pWB4lZ7lr30WKz0vr/aWKhXdBNmNb5D92v7s" crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+  function generateUsername() {
+    var my_chance = new Chance();
+    var username = my_chance.name().replace(' ', '') + my_chance.integer({ min: 1, max: 99 });
+
+    $('#username').val(username.toLowerCase());
+  };
+
+  $(function () {
+    $("form").on( "submit", function(event) {
+      var username = $('#username').val();
+      var sanitizedUsername = encodeURIComponent(username);
+      $('form').attr('action', `/inbox/${sanitizedUsername}`);
+    });
+  });
+</script>
 
 <!-- clipboard.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.10/clipboard.min.js" integrity="sha512-PIisRT8mFfdxx99gMs7WAY5Gp+CtjYYxKvF93w8yWAvX548UBNADHu7Qkavgr6yRG+asocqfuk5crjNd5z9s6Q==" crossorigin="anonymous"></script>

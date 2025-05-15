@@ -2,16 +2,16 @@
   <% if (req.path === '/') { %>
     <a class="navbar-brand" href="/">📨 Dispose Me</a>
   <% } else { %>
-    <a class="navbar-brand" href="/inbox">📨 Dispose Me</a>
+    <a class="navbar-brand" href="/inbox?<%= new URLSearchParams(query) %>">📨 Dispose Me</a>
   <% } %>
   <div class="collapse navbar-collapse" id="navbarCollapse">
     <ul class="navbar-nav mr-auto">
-      <% if (query.query) { %>
-        <li class="nav-item <%= req.path === '/inbox' ? 'active' : '' %>">
-          <a class="nav-link" href="/inbox?<%= new URLSearchParams(query) %>">Inbox</a>
+      <% if (req.params.username) { %>
+        <li class="nav-item <%= req.path === `/inbox/${req.params.username}` ? 'active' : '' %>">
+          <a class="nav-link" href="/inbox/<%= req.params.username %>?<%= new URLSearchParams(query) %>">Inbox</a>
         </li>
-        <li class="nav-item <%= req.path === '/inbox/latest' ? 'active' : '' %>">
-          <a class="nav-link" href="/inbox/latest?<%= new URLSearchParams(query) %>">Latest</a>
+        <li class="nav-item <%= req.path === `/inbox/${req.params.username}/latest` ? 'active' : '' %>">
+          <a class="nav-link" href="/inbox/<%= req.params.username %>/latest?<%= new URLSearchParams(query) %>">Latest</a>
         </li>
       <% } %>
     </ul>

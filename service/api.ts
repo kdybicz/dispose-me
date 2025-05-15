@@ -2,7 +2,7 @@ import 'source-map-support/register';
 
 import * as express from 'express';
 import type { NextFunction, Request, Response } from 'express';
-import { query } from 'express-validator';
+import { param } from 'express-validator';
 import * as serverless from 'serverless-http';
 
 import { InboxController } from './api/InboxController';
@@ -29,7 +29,7 @@ const buildInboxRequestValidator = () => {
   } catch (err) {
     log.error('Unable to parse INBOX_BLACKLIST', err);
   }
-  return query('query').not().isIn(blacklist);
+  return param('username').not().isIn(blacklist);
 };
 
 app.use(express.json());
@@ -40,11 +40,15 @@ app.use(
   }),
 );
 
+// provide req properties to be used in EJS templates
 app.use((req, res, next) => {
   res.locals.query = req.query;
-  res.locals.params = req.params;
   res.locals.url = req.originalUrl;
   res.locals.req = req;
+
+  log.debug(
+    `query: ${JSON.stringify(res.locals.query)}, params: ${JSON.stringify(res.locals.params)}`,
+  );
 
   next();
 });
@@ -56,9 +60,14 @@ app.get('/', asyncHandler(inboxController.index));
 app.post('/', asyncHandler(inboxController.auth));
 app.get('/logout', asyncHandler(inboxController.logout));
 
-app.get('/inbox/latest', buildInboxRequestValidator(), asyncHandler(inboxController.latest));
-app.get('/inbox/:id', buildInboxRequestValidator(), asyncHandler(inboxController.show));
-app.get('/inbox', buildInboxRequestValidator(), asyncHandler(inboxController.list));
+app.get(
+  '/inbox/:username/latest',
+  buildInboxRequestValidator(),
+  asyncHandler(inboxController.latest),
+);
+app.get('/inbox/:username/:id', buildInboxRequestValidator(), asyncHandler(inboxController.show));
+app.get('/inbox/:username', buildInboxRequestValidator(), asyncHandler(inboxController.list));
+app.get('/inbox', buildInboxRequestValidator(), asyncHandler(inboxController.inbox));
 
 app.all('*', (req, res) => {
   inboxController.render404Response(req, res);
