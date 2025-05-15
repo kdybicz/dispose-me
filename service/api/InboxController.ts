@@ -269,7 +269,7 @@ export class InboxController {
     return res.send(feed.rss2());
   };
 
-  render403Response(req: Request, res: Response): void {
+  render403Response = (req: Request, res: Response): void => {
     const { type = 'html' } = req.query;
 
     if (type === 'html') {
@@ -278,9 +278,9 @@ export class InboxController {
     }
 
     res.status(403).json({ message: 'You are not allowed to visit that page.' });
-  }
+  };
 
-  render404Response(req: Request, res: Response): void {
+  render404Response = (req: Request, res: Response): void => {
     const { type = 'html' } = req.query;
 
     if (type === 'html') {
@@ -289,9 +289,9 @@ export class InboxController {
     }
 
     res.status(404).json({ message: 'The page you are looking for was not found.' });
-  }
+  };
 
-  render500Response(err: Error, req: Request, res: Response): void {
+  render500Response = (err: Error, req: Request, res: Response): void => {
     const { type = 'html' } = req.query;
 
     if (type === 'html') {
@@ -300,9 +300,9 @@ export class InboxController {
     }
 
     res.status(500).json({ message: err.stack });
-  }
+  };
 
-  getToken(req: Request): string | null {
+  getToken = (req: Request): string | null => {
     const header = req.headersDistinct?.['x-api-key'];
     if (header) {
       return header[0];
@@ -314,9 +314,9 @@ export class InboxController {
     }
 
     return this.getCookie(req, 'x-api-key');
-  }
+  };
 
-  getCookie(req: Request, name: string): string | null {
+  getCookie = (req: Request, name: string): string | null => {
     if (req.headers?.cookie) {
       return (
         `${req.headers.cookie}`
@@ -330,5 +330,5 @@ export class InboxController {
     }
 
     return null;
-  }
+  };
 }
