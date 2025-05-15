@@ -3,6 +3,8 @@ import type { S3FileSystem } from '../tools/S3FileSystem';
 import log from '../tools/log';
 import { normalizeUsername } from '../tools/utils';
 
+const MAX_EPOCH = 9999999999999;
+
 export class IncomingEmailProcessor {
   protected fileSystem: S3FileSystem;
 
@@ -50,7 +52,8 @@ export class IncomingEmailProcessor {
       }
 
       const copyToUserInboxTasks = [...uniqueNormalizedUsernames].map((normalizedUsername) => {
-        const targetFile = `${normalizedUsername}/${emailContent.received.getTime()}`;
+        const filename = `${MAX_EPOCH - emailContent.received.getTime()}.eml`;
+        const targetFile = `${normalizedUsername}/${filename}`;
 
         return this.fileSystem.copyObject(this.bucketName, messageId, targetFile);
       });
