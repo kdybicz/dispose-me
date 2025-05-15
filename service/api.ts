@@ -46,10 +46,6 @@ app.use((req, res, next) => {
   res.locals.url = req.originalUrl;
   res.locals.req = req;
 
-  log.debug(
-    `query: ${JSON.stringify(res.locals.query)}, params: ${JSON.stringify(res.locals.params)}`,
-  );
-
   next();
 });
 
@@ -64,6 +60,11 @@ app.get(
   '/inbox/:username/latest',
   buildInboxRequestValidator(),
   asyncHandler(inboxController.latest),
+);
+app.get(
+  '/inbox/:username/feed/',
+  buildInboxRequestValidator(),
+  asyncHandler(inboxController.listRss),
 );
 app.get('/inbox/:username/:id', buildInboxRequestValidator(), asyncHandler(inboxController.show));
 app.get('/inbox/:username', buildInboxRequestValidator(), asyncHandler(inboxController.list));

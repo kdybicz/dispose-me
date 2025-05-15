@@ -2444,6 +2444,7 @@ __metadata:
     email-addresses: "npm:^5.0.0"
     express: "npm:^4.21.2"
     express-validator: "npm:^7.2.1"
+    feed: "npm:^5.0.1"
     jest: "npm:^29.7.0"
     jest-junit: "npm:^16.0.0"
     mailparser: "npm:^3.7.2"
@@ -2927,6 +2928,15 @@ __metadata:
     picomatch:
       optional: true
   checksum: 10c0/6ccc33be16945ee7bc841e1b4178c0b4cf18d3804894cb482aa514651c962a162f96da7ffc6ebfaf0df311689fb70091b04dd6caffe28d56b9ebdc0e7ccadfdd
+  languageName: node
+  linkType: hard
+
+"feed@npm:^5.0.1":
+  version: 5.0.1
+  resolution: "feed@npm:5.0.1"
+  dependencies:
+    xml-js: "npm:^1.6.11"
+  checksum: 10c0/f860345abbb04c03ac90339077aaf2f08b58c655e2b2fa112bb2ac54ce0b04ff7ab58c64bc2a625a390bec40d4fc28ecbf2983f1f3fc1ca9336e41a56c0d1f94
   languageName: node
   linkType: hard
 
@@ -5197,7 +5207,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sax@npm:>=0.6.0":
+"sax@npm:>=0.6.0, sax@npm:^1.2.4":
   version: 1.4.1
   resolution: "sax@npm:1.4.1"
   checksum: 10c0/6bf86318a254c5d898ede6bd3ded15daf68ae08a5495a2739564eb265cd13bcc64a07ab466fb204f67ce472bb534eb8612dac587435515169593f4fffa11de7c
@@ -6254,6 +6264,17 @@ __metadata:
     imurmurhash: "npm:^0.1.4"
     signal-exit: "npm:^3.0.7"
   checksum: 10c0/a2c282c95ef5d8e1c27b335ae897b5eca00e85590d92a3fd69a437919b7b93ff36a69ea04145da55829d2164e724bc62202cdb5f4b208b425aba0807889375c7
+  languageName: node
+  linkType: hard
+
+"xml-js@npm:^1.6.11":
+  version: 1.6.11
+  resolution: "xml-js@npm:1.6.11"
+  dependencies:
+    sax: "npm:^1.2.4"
+  bin:
+    xml-js: ./bin/cli.js
+  checksum: 10c0/c83631057f10bf90ea785cee434a8a1a0030c7314fe737ad9bf568a281083b565b28b14c9e9ba82f11fc9dc582a3a907904956af60beb725be1c9ad4b030bc5a
   languageName: node
   linkType: hard
 

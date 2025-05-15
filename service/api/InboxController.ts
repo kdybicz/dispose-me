@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 
+import { Feed } from 'feed';
 import { type Email, EmailParser } from '../tools/EmailParser';
 import { S3FileSystem } from '../tools/S3FileSystem';
 import { normalizeUsername } from '../tools/utils';
@@ -20,15 +21,9 @@ export class InboxController {
     this.bucketName = bucketName;
     this.emailParser = new EmailParser();
     this.fileSystem = new S3FileSystem();
-
-    this.index = this.index.bind(this);
-    this.latest = this.latest.bind(this);
-    this.list = this.list.bind(this);
-    this.show = this.show.bind(this);
-    this.getToken = this.getToken.bind(this);
   }
 
-  async index(req: Request, res: Response): InboxResponse {
+  index = async (req: Request, res: Response): InboxResponse => {
     const { type = 'html' } = req.query;
 
     const token = this.getCookie(req, 'x-api-key');
@@ -41,9 +36,9 @@ export class InboxController {
     }
 
     return res.json({});
-  }
+  };
 
-  async auth(req: Request, res: Response): InboxResponse {
+  auth = async (req: Request, res: Response): InboxResponse => {
     const { token, remember } = req.body;
 
     let maxAge: number | undefined = undefined;
@@ -55,7 +50,7 @@ export class InboxController {
 
     res.cookie('x-api-key', token, { secure: true, httpOnly: true, sameSite: 'strict', maxAge });
     return res.redirect('/inbox');
-  }
+  };
 
   async logout(_req: Request, res: Response): InboxResponse {
     res.clearCookie('x-api-key');
@@ -63,7 +58,7 @@ export class InboxController {
     return res.redirect('/');
   }
 
-  async show(req: Request, res: Response): InboxResponse {
+  show = async (req: Request, res: Response): InboxResponse => {
     const { type = 'html' } = req.query;
     const { id = '', username } = req.params;
 
@@ -89,9 +84,9 @@ export class InboxController {
     }
 
     return res.json({ email });
-  }
+  };
 
-  async latest(req: Request, res: Response): InboxResponse {
+  latest = async (req: Request, res: Response): InboxResponse => {
     const { sentAfter, type = 'html' } = req.query;
     const { username } = req.params;
 
@@ -130,9 +125,9 @@ export class InboxController {
     }
 
     return res.json({ email });
-  }
+  };
 
-  async inbox(req: Request, res: Response): InboxResponse {
+  inbox = async (req: Request, res: Response): InboxResponse => {
     const { type = 'html' } = req.query;
 
     const errors = validationResult(req);
@@ -145,9 +140,9 @@ export class InboxController {
     }
 
     return res.json({ message: 'Go to /inbox/:username' });
-  }
+  };
 
-  async list(req: Request, res: Response): InboxResponse {
+  list = async (req: Request, res: Response): InboxResponse => {
     const { sentAfter, limit = 10, type = 'html' } = req.query;
     const { username } = req.params;
 
@@ -189,7 +184,90 @@ export class InboxController {
     }
 
     return res.json({ emails: emails.reverse() });
-  }
+  };
+
+  listRss = async (req: Request, res: Response): InboxResponse => {
+    const { sentAfter } = req.query;
+    const { username } = req.params;
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return this.render403Response(req, res);
+    }
+
+    const normalizedUsername = normalizeUsername(username);
+    const listEmailsAfter = sentAfter ? `${normalizedUsername}/${sentAfter}` : undefined;
+
+    const emailObjectsList = await this.fileSystem.listObjects(
+      this.bucketName,
+      normalizedUsername,
+      listEmailsAfter,
+      10,
+    );
+
+    const emailNamesList = emailObjectsList.Contents?.map((item) => item.Key) ?? [];
+    const emails = await Promise.all(
+      emailNamesList.map(async (name) => {
+        if (name) {
+          const emailObject = await this.fileSystem.getObject(this.bucketName, name);
+
+          if (emailObject.Body) {
+            const email: Email = await this.emailParser.parseEmail(emailObject.Body.toString());
+            email.id = name.split('/').pop();
+            return email;
+          }
+        }
+
+        return null;
+      }),
+    );
+
+    const token = this.getToken(req);
+
+    const feed = new Feed({
+      title: 'Dispose Me',
+      description: 'Dispose Me is a simple AWS-hosted disposable email service.',
+      id: 'http://example.com/',
+      link: `http://disposeme.de/inbox/${username}?x-api-key=${token}`,
+      language: 'en', // optional, used only in RSS 2.0, possible values: http://www.w3.org/TR/REC-html40/struct/dirlang.html#langcodes
+      // image: "http://example.com/image.png",
+      favicon:
+        "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📨</text></svg>",
+      copyright: 'All rights reserved 2025, Dispose Me',
+      // updated: new Date(2013, 6, 14), // optional, default = today
+      generator: 'Dispose Me', // optional, default = 'Feed for Node.js'
+      // feedLinks: {
+      //   json: "https://example.com/json",
+      //   atom: "https://example.com/atom"
+      // },
+      // author: {
+      //   name: "John Doe",
+      //   email: "johndoe@example.com",
+      //   link: "https://example.com/johndoe"
+      // }
+    });
+    emails
+      .filter((email) => email != null)
+      .forEach((email) => {
+        feed.addItem({
+          id: email.id,
+          title: email.subject,
+          link: `http://disposeme.de/inbox/${username}/${email.id}?x-api-key=${token}`,
+          content: email.body,
+          author: email.from
+            .concat(email.cc)
+            .concat(email.bcc)
+            .map((email) => ({
+              name: email.user,
+              email: email.address,
+            })),
+          date: email.received,
+        });
+      });
+
+    res.type('application/rss+xml');
+    return res.send(feed.rss2());
+  };
 
   render403Response(req: Request, res: Response): void {
     const { type = 'html' } = req.query;
