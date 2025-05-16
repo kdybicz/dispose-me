@@ -12,7 +12,9 @@
 <main role="main" class="container">
   <div class="row">
     <div class="col-md">
-      <a class="nav-link" href="/inbox/<%= req.params.username %>?<%= new URLSearchParams(query) %>">&lt;- Back to Inbox</a>
+      <a class="nav-link" href="/inbox/<%= req.params.username %>?<%= new URLSearchParams(query) %>">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>&nbsp;Back to Inbox
+      </a>
     </div>
     <div class="col-md text-right">
       <a href="<%=req.path %>?x-api-key=<%= token %>&type=json">[JSON]</a>
