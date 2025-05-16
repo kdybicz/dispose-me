@@ -96,18 +96,23 @@ export class InboxController {
     }
 
     const normalizedUsername = normalizeUsername(username);
-    const listEmailsAfter = sentAfter ? `${normalizedUsername}/${sentAfter}` : undefined;
-
-    const emailsList = await this.fileSystem.listObjects(
+    const emailObjectsList = await this.fileSystem.listObjects(
       this.bucketName,
       normalizedUsername,
-      listEmailsAfter,
+      undefined,
       1,
     );
 
+    const emailNamesList = (emailObjectsList.Contents?.map((item) => item.Key) ?? []).filter(
+      (name) =>
+        name != null && sentAfter != null
+          ? name.localeCompare(`${normalizedUsername}/${sentAfter.toString()}`) < 0
+          : true,
+    );
+
     let email: Email | undefined;
-    if (emailsList.KeyCount !== 0) {
-      const latestFilePath = emailsList.Contents?.pop()?.Key;
+    if (emailNamesList.length !== 0) {
+      const latestFilePath = emailNamesList.pop();
 
       if (latestFilePath) {
         const latestEmail = await this.fileSystem.getObject(this.bucketName, latestFilePath);
@@ -152,16 +157,19 @@ export class InboxController {
     }
 
     const normalizedUsername = normalizeUsername(username);
-    const listEmailsAfter = sentAfter ? `${normalizedUsername}/${sentAfter}` : undefined;
-
     const emailObjectsList = await this.fileSystem.listObjects(
       this.bucketName,
       normalizedUsername,
-      listEmailsAfter,
+      undefined,
       limit as number,
     );
 
-    const emailNamesList = emailObjectsList.Contents?.map((item) => item.Key) ?? [];
+    const emailNamesList = (emailObjectsList.Contents?.map((item) => item.Key) ?? []).filter(
+      (name) =>
+        name != null && sentAfter != null
+          ? name.localeCompare(`${normalizedUsername}/${sentAfter.toString()}`) < 0
+          : true,
+    );
     const emails = await Promise.all(
       emailNamesList.map(async (name) => {
         if (name) {
@@ -187,7 +195,6 @@ export class InboxController {
   };
 
   listRss = async (req: Request, res: Response): InboxResponse => {
-    const { sentAfter } = req.query;
     const { username } = req.params;
 
     const errors = validationResult(req);
@@ -196,12 +203,10 @@ export class InboxController {
     }
 
     const normalizedUsername = normalizeUsername(username);
-    const listEmailsAfter = sentAfter ? `${normalizedUsername}/${sentAfter}` : undefined;
-
     const emailObjectsList = await this.fileSystem.listObjects(
       this.bucketName,
       normalizedUsername,
-      listEmailsAfter,
+      undefined,
       10,
     );
 
@@ -236,15 +241,6 @@ export class InboxController {
       copyright: 'All rights reserved 2025, Dispose Me',
       // updated: new Date(2013, 6, 14), // optional, default = today
       generator: 'Dispose Me', // optional, default = 'Feed for Node.js'
-      // feedLinks: {
-      //   json: "https://example.com/json",
-      //   atom: "https://example.com/atom"
-      // },
-      // author: {
-      //   name: "John Doe",
-      //   email: "johndoe@example.com",
-      //   link: "https://example.com/johndoe"
-      // }
     });
     emails
       .filter((email) => email != null)
