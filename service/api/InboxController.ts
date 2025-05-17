@@ -177,7 +177,7 @@ export class InboxController {
 
         if (latestEmail.Body) {
           email = await this.emailParser.parseEmail(latestEmail.Body.toString());
-          email.id = latestFilePath.split('/')[-1];
+          email.id = latestFilePath.split('/').pop();
         }
       }
     }

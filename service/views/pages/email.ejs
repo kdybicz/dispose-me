@@ -18,7 +18,7 @@
     </div>
     <div class="col-md text-right">
       <a href="javascript:void(0);" onclick="window.print();">[Print]</a>
-      <a href="<%= req.path %>/download?x-api-key=<%= token %>">[Download]</a>
+      <a href="/inbox/<%= req.params.username %>/<%= req.params.id ?? email.id %>/download?x-api-key=<%= token %>">[Download]</a>
       <a href="<%= req.path %>?x-api-key=<%= token %>&type=json">[JSON]</a>
     </div>
   </div>
