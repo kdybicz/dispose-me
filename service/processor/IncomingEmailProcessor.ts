@@ -1,9 +1,8 @@
 import type { EmailParser } from '../tools/EmailParser';
 import type { S3FileSystem } from '../tools/S3FileSystem';
+import { MAX_EPOCH } from '../tools/const';
 import log from '../tools/log';
 import { normalizeUsername } from '../tools/utils';
-
-const MAX_EPOCH = 9999999999999;
 
 export class IncomingEmailProcessor {
   protected fileSystem: S3FileSystem;

@@ -1,10 +1,35 @@
 import type { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 
-import { Feed } from 'feed';
 import { type Email, EmailParser } from '../tools/EmailParser';
 import { S3FileSystem } from '../tools/S3FileSystem';
-import { normalizeUsername } from '../tools/utils';
+import { AUTH_COOKIE_KEY, MAX_EPOCH, REMEMBER_COOKIE_KEY } from '../tools/const';
+import { mapEmailListToFeed } from '../tools/feed';
+import { getCookie, getToken, normalizeUsername, parseIntOrDefault } from '../tools/utils';
+
+export interface InboxListParams extends Record<string, string> {
+  username: string;
+}
+
+export interface InboxEmailParams extends InboxListParams {
+  id: string;
+}
+
+export interface InboxQuery extends Record<string, undefined | string> {
+  limit?: string;
+  sendAfter?: string;
+  type?: 'html' | 'json';
+}
+
+export interface InboxAuthBody {
+  token: string;
+  remember: boolean;
+}
+
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+interface InboxRequest<P = Record<string, string>, B = any>
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  extends Request<P, any, B, InboxQuery> {}
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 // biome-ignore lint/suspicious/noConfusingVoidType: <explanation>
@@ -23,10 +48,10 @@ export class InboxController {
     this.fileSystem = new S3FileSystem();
   }
 
-  index = async (req: Request, res: Response): InboxResponse => {
+  index = async (req: InboxRequest, res: Response): InboxResponse => {
     const { type = 'html' } = req.query;
 
-    const token = this.getCookie(req, 'x-api-key');
+    const token = getCookie(req, AUTH_COOKIE_KEY);
     if (token) {
       return res.redirect('/inbox');
     }
@@ -38,27 +63,40 @@ export class InboxController {
     return res.json({});
   };
 
-  auth = async (req: Request, res: Response): InboxResponse => {
+  auth = async (
+    req: InboxRequest<Record<string, never>, InboxAuthBody>,
+    res: Response,
+  ): InboxResponse => {
     const { token, remember } = req.body;
 
     let maxAge: number | undefined = undefined;
     if (remember) {
       maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days in ms
 
-      res.cookie('remember', true, { secure: true, httpOnly: true, sameSite: 'strict', maxAge });
+      res.cookie(REMEMBER_COOKIE_KEY, true, {
+        secure: true,
+        httpOnly: true,
+        sameSite: 'strict',
+        maxAge,
+      });
     }
 
-    res.cookie('x-api-key', token, { secure: true, httpOnly: true, sameSite: 'strict', maxAge });
+    res.cookie(AUTH_COOKIE_KEY, token, {
+      secure: true,
+      httpOnly: true,
+      sameSite: 'strict',
+      maxAge,
+    });
     return res.redirect('/inbox');
   };
 
   async logout(_req: Request, res: Response): InboxResponse {
-    res.clearCookie('x-api-key');
-    res.clearCookie('remember');
+    res.clearCookie(AUTH_COOKIE_KEY);
+    res.clearCookie(REMEMBER_COOKIE_KEY);
     return res.redirect('/');
   }
 
-  show = async (req: Request, res: Response): InboxResponse => {
+  show = async (req: InboxRequest<InboxEmailParams>, res: Response): InboxResponse => {
     const { type = 'html' } = req.query;
     const { id = '', username } = req.params;
 
@@ -79,14 +117,14 @@ export class InboxController {
     }
 
     if (type === 'html') {
-      const token = this.getToken(req);
+      const token = getToken(req);
       return res.render('pages/email', { email, token });
     }
 
     return res.json({ email });
   };
 
-  latest = async (req: Request, res: Response): InboxResponse => {
+  latest = async (req: InboxRequest<InboxListParams>, res: Response): InboxResponse => {
     const { sentAfter, type = 'html' } = req.query;
     const { username } = req.params;
 
@@ -99,16 +137,17 @@ export class InboxController {
     const emailObjectsList = await this.fileSystem.listObjects(
       this.bucketName,
       normalizedUsername,
-      undefined,
       1,
     );
 
-    const emailNamesList = (emailObjectsList.Contents?.map((item) => item.Key) ?? []).filter(
-      (name) =>
-        name != null && sentAfter != null
-          ? name.localeCompare(`${normalizedUsername}/${sentAfter.toString()}`) < 0
-          : true,
-    );
+    const emailNamesList = (emailObjectsList.Contents?.map((item) => item.Key) ?? [])
+      .filter((item) => item != null)
+      .filter((name) => {
+        const parsedSentAfter = parseIntOrDefault(sentAfter);
+        return name != null && parsedSentAfter != null
+          ? name.localeCompare(`${normalizedUsername}/${MAX_EPOCH - parsedSentAfter}`) < 0
+          : true;
+      });
 
     let email: Email | undefined;
     if (emailNamesList.length !== 0) {
@@ -125,14 +164,14 @@ export class InboxController {
     }
 
     if (type === 'html') {
-      const token = this.getToken(req);
+      const token = getToken(req);
       return res.render('pages/email', { email, token });
     }
 
     return res.json({ email });
   };
 
-  inbox = async (req: Request, res: Response): InboxResponse => {
+  inbox = async (req: InboxRequest, res: Response): InboxResponse => {
     const { type = 'html' } = req.query;
 
     const errors = validationResult(req);
@@ -147,8 +186,8 @@ export class InboxController {
     return res.json({ message: 'Go to /inbox/:username' });
   };
 
-  list = async (req: Request, res: Response): InboxResponse => {
-    const { sentAfter, limit = 10, type = 'html' } = req.query;
+  list = async (req: InboxRequest<InboxListParams>, res: Response): InboxResponse => {
+    const { sentAfter, limit, type = 'html' } = req.query;
     const { username } = req.params;
 
     const errors = validationResult(req);
@@ -160,41 +199,38 @@ export class InboxController {
     const emailObjectsList = await this.fileSystem.listObjects(
       this.bucketName,
       normalizedUsername,
-      undefined,
-      limit as number,
+      parseIntOrDefault(limit, 10),
     );
 
-    const emailNamesList = (emailObjectsList.Contents?.map((item) => item.Key) ?? []).filter(
-      (name) =>
-        name != null && sentAfter != null
-          ? name.localeCompare(`${normalizedUsername}/${sentAfter.toString()}`) < 0
-          : true,
-    );
+    const emailNamesList = (emailObjectsList.Contents?.map((item) => item.Key) ?? [])
+      .filter((item) => item != null)
+      .filter((name) => {
+        const parsedSentAfter = parseIntOrDefault(sentAfter);
+        return name != null && parsedSentAfter != null
+          ? name.localeCompare(`${normalizedUsername}/${MAX_EPOCH - parsedSentAfter}`) < 0
+          : true;
+      });
+    const emailObjectList = await this.fileSystem.getObjects(this.bucketName, emailNamesList);
     const emails = await Promise.all(
-      emailNamesList.map(async (name) => {
-        if (name) {
-          const emailObject = await this.fileSystem.getObject(this.bucketName, name);
-
-          if (emailObject.Body) {
-            const email: Email = await this.emailParser.parseEmail(emailObject.Body.toString());
-            email.id = name.split('/').pop();
-            return email;
-          }
+      emailObjectList.map(async (emailObject, idx) => {
+        if (emailObject.Body) {
+          const email: Email = await this.emailParser.parseEmail(emailObject.Body.toString());
+          email.id = emailNamesList[idx].split('/').pop();
+          return email;
         }
-
         return null;
       }),
     );
 
     if (type === 'html') {
-      const token = this.getToken(req);
-      return res.render('pages/list', { emails, token });
+      const token = getToken(req);
+      return res.render('pages/list', { emails: emails.filter((email) => email != null), token });
     }
 
-    return res.json({ emails });
+    return res.json({ emails: emails.filter((email) => email != null) });
   };
 
-  listRss = async (req: Request, res: Response): InboxResponse => {
+  listRss = async (req: InboxRequest<InboxListParams>, res: Response): InboxResponse => {
     const { username } = req.params;
 
     const errors = validationResult(req);
@@ -206,63 +242,34 @@ export class InboxController {
     const emailObjectsList = await this.fileSystem.listObjects(
       this.bucketName,
       normalizedUsername,
-      undefined,
       10,
     );
 
-    const emailNamesList = emailObjectsList.Contents?.map((item) => item.Key) ?? [];
+    const emailNamesList = (emailObjectsList.Contents?.map((item) => item.Key) ?? []).filter(
+      (item) => item != null,
+    );
+    const emailObjectList = await this.fileSystem.getObjects(this.bucketName, emailNamesList);
     const emails = await Promise.all(
-      emailNamesList.map(async (name) => {
-        if (name) {
-          const emailObject = await this.fileSystem.getObject(this.bucketName, name);
-
-          if (emailObject.Body) {
-            const email: Email = await this.emailParser.parseEmail(emailObject.Body.toString());
-            email.id = name.split('/').pop();
-            return email;
-          }
+      emailObjectList.map(async (emailObject, idx) => {
+        if (emailObject.Body) {
+          const email: Email = await this.emailParser.parseEmail(emailObject.Body.toString());
+          email.id = emailNamesList[idx].split('/').pop();
+          return email;
         }
-
         return null;
       }),
     );
 
-    const token = this.getToken(req);
+    const token = getToken(req) as string;
 
-    const feed = new Feed({
-      title: 'Dispose Me',
-      description: 'Dispose Me is a simple AWS-hosted disposable email service.',
-      id: 'http://example.com/',
-      link: `http://disposeme.de/inbox/${username}?x-api-key=${token}`,
-      language: 'en', // optional, used only in RSS 2.0, possible values: http://www.w3.org/TR/REC-html40/struct/dirlang.html#langcodes
-      // image: "http://example.com/image.png",
-      favicon:
-        "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📨</text></svg>",
-      copyright: 'All rights reserved 2025, Dispose Me',
-      // updated: new Date(2013, 6, 14), // optional, default = today
-      generator: 'Dispose Me', // optional, default = 'Feed for Node.js'
-    });
-    emails
-      .filter((email) => email != null)
-      .forEach((email) => {
-        feed.addItem({
-          id: email.id,
-          title: email.subject,
-          link: `http://disposeme.de/inbox/${username}/${email.id}?x-api-key=${token}`,
-          content: email.body,
-          author: email.from
-            .concat(email.cc)
-            .concat(email.bcc)
-            .map((email) => ({
-              name: email.user,
-              email: email.address,
-            })),
-          date: email.received,
-        });
-      });
+    const feed = mapEmailListToFeed(
+      emails.filter((email) => email != null),
+      normalizedUsername,
+      token,
+    );
 
     res.type('application/rss+xml');
-    return res.send(feed.rss2());
+    return res.send(feed);
   };
 
   render403Response = (req: Request, res: Response): void => {
@@ -296,35 +303,5 @@ export class InboxController {
     }
 
     res.status(500).json({ message: err.stack });
-  };
-
-  getToken = (req: Request): string | null => {
-    const header = req.headersDistinct?.['x-api-key'];
-    if (header) {
-      return header[0];
-    }
-
-    const query = req.query?.['x-api-key'];
-    if (query) {
-      return (Array.isArray(query) ? query[0] : query) as string;
-    }
-
-    return this.getCookie(req, 'x-api-key');
-  };
-
-  getCookie = (req: Request, name: string): string | null => {
-    if (req.headers?.cookie) {
-      return (
-        `${req.headers.cookie}`
-          .split(';')
-          .find((cookie: string) => {
-            return cookie.trim().toLowerCase().startsWith(`${name.toLowerCase()}=`);
-          })
-          ?.split('=')?.[1]
-          ?.trim() ?? null
-      );
-    }
-
-    return null;
   };
 }
