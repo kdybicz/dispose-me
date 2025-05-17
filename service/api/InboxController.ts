@@ -98,7 +98,7 @@ export class InboxController {
 
   show = async (req: InboxRequest<InboxEmailParams>, res: Response): InboxResponse => {
     const { type = 'html' } = req.query;
-    const { id = '', username } = req.params;
+    const { id, username } = req.params;
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -122,6 +122,25 @@ export class InboxController {
     }
 
     return res.json({ email });
+  };
+
+  download = async (req: InboxRequest<InboxEmailParams>, res: Response): InboxResponse => {
+    const { id, username } = req.params;
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return this.render403Response(req, res);
+    }
+
+    const normalizedUsername = normalizeUsername(username);
+    const emailObjectPath = `${normalizedUsername}/${id}`;
+
+    const emailObject = await this.fileSystem.getObject(this.bucketName, emailObjectPath);
+
+    res.setHeader('Content-disposition', `attachment; filename=${id}.eml`);
+    res.type('application/octet-stream');
+
+    return res.send(emailObject.Body?.toString());
   };
 
   latest = async (req: InboxRequest<InboxListParams>, res: Response): InboxResponse => {
@@ -158,7 +177,7 @@ export class InboxController {
 
         if (latestEmail.Body) {
           email = await this.emailParser.parseEmail(latestEmail.Body.toString());
-          email.id = latestFilePath.split('/')[-1];
+          email.id = latestFilePath.split('/').pop();
         }
       }
     }

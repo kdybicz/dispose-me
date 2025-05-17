@@ -66,6 +66,11 @@ app.get(
   buildInboxRequestValidator(),
   asyncHandler(inboxController.listRss),
 );
+app.get(
+  '/inbox/:username/:id/download',
+  buildInboxRequestValidator(),
+  asyncHandler(inboxController.download),
+);
 app.get('/inbox/:username/:id', buildInboxRequestValidator(), asyncHandler(inboxController.show));
 app.get('/inbox/:username', buildInboxRequestValidator(), asyncHandler(inboxController.list));
 app.get('/inbox', buildInboxRequestValidator(), asyncHandler(inboxController.inbox));
