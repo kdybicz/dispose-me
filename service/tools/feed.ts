@@ -1,0 +1,39 @@
+import { Feed, type Item } from 'feed';
+import type { Email } from '../tools/EmailParser';
+import { AUTH_QUERY_KEY } from './const';
+
+export const mapEmailToFeedItem = (email: Email, username: string, token: string): Item => ({
+  id: email.id,
+  title: email.subject,
+  link: `https://${process.env.DOMAIN_NAME}/inbox/${username}/${email.id}?${AUTH_QUERY_KEY}=${token}`,
+  content: email.body,
+  author: email.from
+    .concat(email.cc)
+    .concat(email.bcc)
+    .map((email) => ({
+      name: email.user,
+      email: email.address,
+    })),
+  date: email.received,
+});
+
+export const mapEmailListToFeed = (emails: Email[], username: string, token: string): string => {
+  let updated = new Date();
+  if (emails) {
+    updated = emails[0].received;
+  }
+
+  const feed = new Feed({
+    id: `https://${process.env.DOMAIN_NAME}/`,
+    title: 'Dispose Me',
+    description: 'Dispose Me is a simple AWS-hosted disposable email service.',
+    link: `https://${process.env.DOMAIN_NAME}/inbox/${username}?${AUTH_QUERY_KEY}=${token}`,
+    copyright: 'Dispose Me',
+    updated,
+    generator: 'Dispose Me',
+  });
+
+  emails.forEach((email) => feed.addItem(mapEmailToFeedItem(email, username, token)));
+
+  return feed.rss2();
+};

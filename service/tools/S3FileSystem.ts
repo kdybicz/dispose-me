@@ -33,6 +33,13 @@ export class S3FileSystem {
     return this.client.getObject(getRequest).promise();
   }
 
+  async getObjects(
+    bucket: string,
+    filePaths: string[],
+  ): Promise<PromiseResult<S3.GetObjectOutput, AWSError>[]> {
+    return Promise.all(filePaths.map((filePath) => this.getObject(bucket, filePath)));
+  }
+
   async copyObject(bucket: string, sourcePath: string, destinationPath: string): Promise<void> {
     const copyRequest: CopyObjectRequest = {
       CopySource: `${bucket}/${sourcePath}`,
@@ -64,8 +71,7 @@ export class S3FileSystem {
   async listObjects(
     bucket: string,
     path: string,
-    startAfter?: string,
-    limit = 50,
+    limit = 10,
   ): Promise<PromiseResult<S3.Types.ListObjectsV2Output, AWSError>> {
     const listRequest: ListObjectsV2Request = {
       Bucket: bucket,
@@ -73,10 +79,6 @@ export class S3FileSystem {
       Delimiter: '/',
       Prefix: `${path}/`,
     };
-
-    if (startAfter) {
-      listRequest.StartAfter = startAfter;
-    }
 
     log.debug('Listing Objects:', JSON.stringify(listRequest, null, 2));
 

@@ -5,15 +5,17 @@
       <th>From</th>
       <th>Subject</th>
       <th>Received</th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
     <% for(var i = 0; i < emails.length; i++) { %>
-      <tr data-id="<%= emails[i].id %>" onclick="location.href = '/inbox/<%= req.params.username %>/<%= emails[i].id %>?<%= new URLSearchParams(query) %>'" style="cursor: pointer">
+      <tr data-id="<%= emails[i].id %>" class="position-relative">
         <th scope="row"><%= i + 1 %></th>
         <td><%= emails[i].from[0].address %></td>
         <td><%= emails[i].subject %></td>
         <td><%= emails[i].received.toGMTString() %></td>
+        <td><a href="/inbox/<%= req.params.username %>/<%= emails[i].id %>?<%= new URLSearchParams(query) %>" class="stretched-link"></a></td>
       </tr>
     <% } %>
   </tbody>
