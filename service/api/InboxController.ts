@@ -3,8 +3,9 @@ import { validationResult } from 'express-validator';
 
 import { type Email, EmailParser } from '../tools/EmailParser';
 import { S3FileSystem } from '../tools/S3FileSystem';
-import { AUTH_COOKIE_KEY, MAX_EPOCH, REMEMBER_COOKIE_KEY } from '../tools/const';
+import { AUTH_COOKIE_KEY, AUTH_QUERY_KEY, MAX_EPOCH, REMEMBER_COOKIE_KEY } from '../tools/const';
 import { mapEmailListToFeed } from '../tools/feed';
+import log from '../tools/log';
 import { getCookie, getToken, normalizeUsername, parseIntOrDefault } from '../tools/utils';
 
 export interface InboxListParams extends Record<string, string> {
@@ -19,6 +20,7 @@ export interface InboxQuery extends Record<string, undefined | string> {
   limit?: string;
   sendAfter?: string;
   type?: 'html' | 'json';
+  [AUTH_QUERY_KEY]?: string;
 }
 
 export interface InboxAuthBody {
@@ -49,6 +51,10 @@ export class InboxController {
   }
 
   index = async (req: InboxRequest, res: Response): InboxResponse => {
+    log.debug(
+      `Action: 'delete' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
+    );
+
     const { type = 'html' } = req.query;
 
     const token = getCookie(req, AUTH_COOKIE_KEY);
@@ -67,6 +73,10 @@ export class InboxController {
     req: InboxRequest<Record<string, never>, InboxAuthBody>,
     res: Response,
   ): InboxResponse => {
+    log.debug(
+      `Action: 'auth' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
+    );
+
     const { token, remember } = req.body;
 
     let maxAge: number | undefined = undefined;
@@ -97,6 +107,10 @@ export class InboxController {
   }
 
   show = async (req: InboxRequest<InboxEmailParams>, res: Response): InboxResponse => {
+    log.debug(
+      `Action: 'show' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
+    );
+
     const { type = 'html' } = req.query;
     const { id, username } = req.params;
 
@@ -125,6 +139,10 @@ export class InboxController {
   };
 
   download = async (req: InboxRequest<InboxEmailParams>, res: Response): InboxResponse => {
+    log.debug(
+      `Action: 'download' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
+    );
+
     const { id, username } = req.params;
 
     const errors = validationResult(req);
@@ -143,7 +161,31 @@ export class InboxController {
     return res.send(emailObject.Body?.toString());
   };
 
+  delete = async (req: InboxRequest<InboxEmailParams>, res: Response): InboxResponse => {
+    log.debug(
+      `Action: 'delete' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
+    );
+
+    const { id, username } = req.params;
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return this.render403Response(req, res);
+    }
+
+    const normalizedUsername = normalizeUsername(username);
+    const emailObjectPath = `${normalizedUsername}/${id}`;
+
+    await this.fileSystem.deleteObject(this.bucketName, emailObjectPath);
+
+    return res.redirect(`/inbox/${username}?${new URLSearchParams(req.query as Record<string, string>)}`);
+  };
+
   latest = async (req: InboxRequest<InboxListParams>, res: Response): InboxResponse => {
+    log.debug(
+      `Action: 'latest' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
+    );
+
     const { sentAfter, type = 'html' } = req.query;
     const { username } = req.params;
 
@@ -191,6 +233,10 @@ export class InboxController {
   };
 
   inbox = async (req: InboxRequest, res: Response): InboxResponse => {
+    log.debug(
+      `Action: 'inbox' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
+    );
+
     const { type = 'html' } = req.query;
 
     const errors = validationResult(req);
@@ -206,6 +252,10 @@ export class InboxController {
   };
 
   list = async (req: InboxRequest<InboxListParams>, res: Response): InboxResponse => {
+    log.debug(
+      `Action: 'list' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
+    );
+
     const { sentAfter, limit, type = 'html' } = req.query;
     const { username } = req.params;
 
@@ -250,6 +300,10 @@ export class InboxController {
   };
 
   listRss = async (req: InboxRequest<InboxListParams>, res: Response): InboxResponse => {
+    log.debug(
+      `Action: 'listRss' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
+    );
+
     const { username } = req.params;
 
     const errors = validationResult(req);
@@ -292,6 +346,10 @@ export class InboxController {
   };
 
   render403Response = (req: Request, res: Response): void => {
+    log.debug(
+      `Action: '403' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
+    );
+
     const { type = 'html' } = req.query;
 
     if (type === 'html') {
@@ -303,6 +361,10 @@ export class InboxController {
   };
 
   render404Response = (req: Request, res: Response): void => {
+    log.debug(
+      `Action: '404' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
+    );
+
     const { type = 'html' } = req.query;
 
     if (type === 'html') {
@@ -314,6 +376,10 @@ export class InboxController {
   };
 
   render500Response = (err: Error, req: Request, res: Response): void => {
+    log.debug(
+      `Action: '500' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
+    );
+
     const { type = 'html' } = req.query;
 
     if (type === 'html') {

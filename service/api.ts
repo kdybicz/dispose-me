@@ -67,6 +67,11 @@ app.get(
   asyncHandler(inboxController.listRss),
 );
 app.get(
+  '/inbox/:username/:id/delete',
+  buildInboxRequestValidator(),
+  asyncHandler(inboxController.delete),
+);
+app.get(
   '/inbox/:username/:id/download',
   buildInboxRequestValidator(),
   asyncHandler(inboxController.download),
