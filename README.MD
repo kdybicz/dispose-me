@@ -42,8 +42,7 @@ Dispose Me is a simple AWS-hosted disposable email service.
 
 ### Environment
 
-First, make sure you have [Node.js installed](https://nodejs.org/en/download/
-package-manager/) in version v20.x or above.
+First, please make sure you have [Node.js installed](https://nodejs.org/en/download/package-manager/) in version v20.x or above.
 
 You can easily verify the installed Node.js version by running:
 
