@@ -40,11 +40,11 @@
       </h5>
     </div>
     <div class="col-md text-right">
-        <a href="<%= req.path %>/feed/?x-api-key=<%= token %>" title="RSS feed of the inbox">
-          <i class="bi bi-rss" style="font-size: 1.5rem;"></i>
+        <a class="action" href="<%= req.path %>/feed/?x-api-key=<%= token %>" title="RSS feed of the inbox">
+          <i class="bi bi-rss""></i>
         </a>
-        <a href="<%= req.path %>?x-api-key=<%= token %>&type=json" title="JSON output of the inbox">
-          <i class="bi bi-filetype-json" style="font-size: 1.5rem;"></i>
+        <a class="action" href="<%= req.path %>?x-api-key=<%= token %>&type=json" title="JSON output of the inbox">
+          <i class="bi bi-filetype-json""></i>
         </a>
     </div>
   </div>

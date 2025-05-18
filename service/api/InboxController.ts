@@ -178,7 +178,9 @@ export class InboxController {
 
     await this.fileSystem.deleteObject(this.bucketName, emailObjectPath);
 
-    return res.redirect(`/inbox/${username}?${new URLSearchParams(req.query as Record<string, string>)}`);
+    return res.redirect(
+      `/inbox/${username}?${new URLSearchParams(req.query as Record<string, string>)}`,
+    );
   };
 
   latest = async (req: InboxRequest<InboxListParams>, res: Response): InboxResponse => {
