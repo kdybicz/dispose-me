@@ -3,6 +3,7 @@ import type {
   APIGatewayRequestAuthorizerHandler,
 } from 'aws-lambda';
 
+import { AUTH_COOKIE_KEY, AUTH_HEADER_KEY, AUTH_QUERY_KEY } from './tools/const';
 import log from './tools/log';
 
 export const getCookie = (
@@ -28,16 +29,16 @@ export const getCookie = (
 };
 
 export const getToken = (event: APIGatewayRequestAuthorizerEvent): string | null => {
-  if (event.headers?.['x-api-key']) {
+  if (event.headers?.[AUTH_HEADER_KEY]) {
     log.debug('Found token in Header');
-    return event.headers['x-api-key'];
+    return event.headers[AUTH_HEADER_KEY];
   }
-  if (event.queryStringParameters?.['x-api-key']) {
+  if (event.queryStringParameters?.[AUTH_QUERY_KEY]) {
     log.debug('Found token in Query parameters');
-    return event.queryStringParameters['x-api-key'];
+    return event.queryStringParameters[AUTH_QUERY_KEY];
   }
 
-  const cookie = getCookie(event, 'x-api-key');
+  const cookie = getCookie(event, AUTH_COOKIE_KEY);
   if (cookie) {
     log.debug('Found token in a cookie');
     return cookie;
