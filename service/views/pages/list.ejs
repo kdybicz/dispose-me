@@ -35,13 +35,17 @@
         <b>public inbox: </b>
         <span id="email"><%= req.params.username %>@<%= process.env.DOMAIN_NAME %></span>
         <button class="btn btn-default btn-clipboard p-0" aria-label="Copy to clipboard" title="Copy to clipboard" data-clipboard-target="#email">
-          <i class="bi bi-clipboard" aria-hidden="true"></i>
+          <i class="bi bi-clipboard"></i>
         </button>
       </h5>
     </div>
     <div class="col-md text-right">
-        <a href="<%= req.path %>/feed/?x-api-key=<%= token %>">[RSS]</a>
-        <a href="<%= req.path %>?x-api-key=<%= token %>&type=json">[JSON]</a>
+        <a href="<%= req.path %>/feed/?x-api-key=<%= token %>" title="RSS feed of the inbox">
+          <i class="bi bi-rss" style="font-size: 1.5rem;"></i>
+        </a>
+        <a href="<%= req.path %>?x-api-key=<%= token %>&type=json" title="JSON output of the inbox">
+          <i class="bi bi-filetype-json" style="font-size: 1.5rem;"></i>
+        </a>
     </div>
   </div>
   <%- include('../partials/email/list', { emails }); %>
