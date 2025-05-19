@@ -25,7 +25,9 @@ describe('EmailParser tests', () => {
     const data = await fs.readFileSync(`${__dirname}/../data/simple.eml`).toString();
     // and:
     fileSystem.getObject = jest.fn().mockResolvedValueOnce({
-      Body: data,
+      Body: {
+        transformToString: jest.fn().mockResolvedValueOnce(data),
+      },
     });
     // and:
     const processor = new IncomingEmailProcessor(fileSystem, EMAIL_BUCKET_NAME, emailParser);
@@ -44,7 +46,9 @@ describe('EmailParser tests', () => {
     const data = await fs.readFileSync(`${__dirname}/../data/complex.eml`).toString();
     // and:
     fileSystem.getObject = jest.fn().mockResolvedValueOnce({
-      Body: data,
+      Body: {
+        transformToString: jest.fn().mockResolvedValueOnce(data),
+      },
     });
     // and:
     const processor = new IncomingEmailProcessor(fileSystem, EMAIL_BUCKET_NAME, emailParser);
@@ -64,7 +68,9 @@ describe('EmailParser tests', () => {
     const data = await fs.readFileSync(`${__dirname}/../data/cc.eml`).toString();
     // and:
     fileSystem.getObject = jest.fn().mockResolvedValueOnce({
-      Body: data,
+      Body: {
+        transformToString: jest.fn().mockResolvedValueOnce(data),
+      },
     });
     // and:
     const processor = new IncomingEmailProcessor(fileSystem, EMAIL_BUCKET_NAME, emailParser);
@@ -84,7 +90,9 @@ describe('EmailParser tests', () => {
     const data = await fs.readFileSync(`${__dirname}/../data/bcc.eml`).toString();
     // and:
     fileSystem.getObject = jest.fn().mockResolvedValueOnce({
-      Body: data,
+      Body: {
+        transformToString: jest.fn().mockResolvedValueOnce(data),
+      },
     });
     // and:
     const processor = new IncomingEmailProcessor(fileSystem, EMAIL_BUCKET_NAME, emailParser);

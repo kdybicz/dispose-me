@@ -19,9 +19,10 @@ export class IncomingEmailProcessor {
 
   async processEmail(messageId: string): Promise<void> {
     try {
-      const emailData = await this.fileSystem.getObject(this.bucketName, messageId);
+      const emailObject = await this.fileSystem.getObject(this.bucketName, messageId);
+      const emailBody = await emailObject.Body?.transformToString();
 
-      const emailContent = await this.emailParser.parseEmail(emailData.Body?.toString() ?? '');
+      const emailContent = await this.emailParser.parseEmail(emailBody ?? '');
 
       const senderEmails = emailContent.from;
       const recipientEmails = emailContent.to;
