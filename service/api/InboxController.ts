@@ -123,10 +123,11 @@ export class InboxController {
     const emailObjectPath = `${normalizedUsername}/${id}`;
 
     const emailObject = await this.fileSystem.getObject(this.bucketName, emailObjectPath);
+    const body = await emailObject.Body?.transformToString();
 
     let email: Email | undefined;
-    if (emailObject.Body) {
-      email = await this.emailParser.parseEmail(emailObject.Body.toString());
+    if (body) {
+      email = await this.emailParser.parseEmail(body);
       email.id = id;
     }
 
@@ -154,11 +155,12 @@ export class InboxController {
     const emailObjectPath = `${normalizedUsername}/${id}`;
 
     const emailObject = await this.fileSystem.getObject(this.bucketName, emailObjectPath);
+    const body = await emailObject.Body?.transformToString();
 
     res.setHeader('Content-disposition', `attachment; filename=${id}.eml`);
     res.type('application/octet-stream');
 
-    return res.send(emailObject.Body?.toString());
+    return res.send(body);
   };
 
   delete = async (req: InboxRequest<InboxEmailParams>, res: Response): InboxResponse => {
@@ -218,9 +220,10 @@ export class InboxController {
 
       if (latestFilePath) {
         const latestEmail = await this.fileSystem.getObject(this.bucketName, latestFilePath);
+        const body = await latestEmail.Body?.transformToString();
 
-        if (latestEmail.Body) {
-          email = await this.emailParser.parseEmail(latestEmail.Body.toString());
+        if (body) {
+          email = await this.emailParser.parseEmail(body);
           email.id = latestFilePath.split('/').pop();
         }
       }
@@ -284,8 +287,9 @@ export class InboxController {
     const emailObjectList = await this.fileSystem.getObjects(this.bucketName, emailNamesList);
     const emails = await Promise.all(
       emailObjectList.map(async (emailObject, idx) => {
-        if (emailObject.Body) {
-          const email: Email = await this.emailParser.parseEmail(emailObject.Body.toString());
+        const body = await emailObject.Body?.transformToString();
+        if (body) {
+          const email: Email = await this.emailParser.parseEmail(body);
           email.id = emailNamesList[idx].split('/').pop();
           return email;
         }
@@ -326,8 +330,9 @@ export class InboxController {
     const emailObjectList = await this.fileSystem.getObjects(this.bucketName, emailNamesList);
     const emails = await Promise.all(
       emailObjectList.map(async (emailObject, idx) => {
-        if (emailObject.Body) {
-          const email: Email = await this.emailParser.parseEmail(emailObject.Body.toString());
+        const body = await emailObject.Body?.transformToString();
+        if (body) {
+          const email: Email = await this.emailParser.parseEmail(body);
           email.id = emailNamesList[idx].split('/').pop();
           return email;
         }

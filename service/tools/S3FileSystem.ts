@@ -1,11 +1,12 @@
-import { type AWSError, S3 } from 'aws-sdk';
+import { S3 } from '@aws-sdk/client-s3';
 import type {
   CopyObjectRequest,
   DeleteObjectRequest,
+  GetObjectCommandOutput,
   GetObjectRequest,
+  ListObjectsV2CommandOutput,
   ListObjectsV2Request,
-} from 'aws-sdk/clients/s3';
-import type { PromiseResult } from 'aws-sdk/lib/request';
+} from '@aws-sdk/client-s3';
 
 import log from './log';
 
@@ -19,10 +20,7 @@ export class S3FileSystem {
     });
   }
 
-  async getObject(
-    bucket: string,
-    filePath: string,
-  ): Promise<PromiseResult<S3.GetObjectOutput, AWSError>> {
+  async getObject(bucket: string, filePath: string): Promise<GetObjectCommandOutput> {
     const getRequest: GetObjectRequest = {
       Bucket: bucket,
       Key: filePath,
@@ -30,13 +28,10 @@ export class S3FileSystem {
 
     log.debug('Getting Object:', JSON.stringify(getRequest, null, 2));
 
-    return this.client.getObject(getRequest).promise();
+    return this.client.getObject(getRequest);
   }
 
-  async getObjects(
-    bucket: string,
-    filePaths: string[],
-  ): Promise<PromiseResult<S3.GetObjectOutput, AWSError>[]> {
+  async getObjects(bucket: string, filePaths: string[]): Promise<GetObjectCommandOutput[]> {
     return Promise.all(filePaths.map((filePath) => this.getObject(bucket, filePath)));
   }
 
@@ -49,7 +44,7 @@ export class S3FileSystem {
 
     log.debug('Copying Object:', JSON.stringify(copyRequest, null, 2));
 
-    await this.client.copyObject(copyRequest).promise();
+    await this.client.copyObject(copyRequest);
   }
 
   async deleteObject(bucket: string, filePath: string): Promise<void> {
@@ -60,7 +55,7 @@ export class S3FileSystem {
 
     log.debug('Deleting Object:', JSON.stringify(deleteRequest, null, 2));
 
-    await this.client.deleteObject(deleteRequest).promise();
+    await this.client.deleteObject(deleteRequest);
   }
 
   async moveObject(bucket: string, sourcePath: string, destinationPath: string): Promise<void> {
@@ -68,11 +63,7 @@ export class S3FileSystem {
     await this.deleteObject(bucket, sourcePath);
   }
 
-  async listObjects(
-    bucket: string,
-    path: string,
-    limit = 10,
-  ): Promise<PromiseResult<S3.Types.ListObjectsV2Output, AWSError>> {
+  async listObjects(bucket: string, path: string, limit = 10): Promise<ListObjectsV2CommandOutput> {
     const listRequest: ListObjectsV2Request = {
       Bucket: bucket,
       MaxKeys: limit,
@@ -82,6 +73,6 @@ export class S3FileSystem {
 
     log.debug('Listing Objects:', JSON.stringify(listRequest, null, 2));
 
-    return this.client.listObjectsV2(listRequest).promise();
+    return this.client.listObjectsV2(listRequest);
   }
 }
