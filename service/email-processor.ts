@@ -17,6 +17,7 @@ const emailProcessor = new IncomingEmailProcessor(
   process.env.EMAIL_BUCKET_NAME ?? '',
   emailParser,
   emailDatabase,
+  process.env.DOMAIN_NAME ?? '',
 );
 
 export const handler: SESHandler = async (event) => {

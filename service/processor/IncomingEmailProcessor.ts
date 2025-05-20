@@ -10,6 +10,7 @@ export class IncomingEmailProcessor {
     protected bucketName: string,
     protected emailParser: EmailParser,
     protected emailDatabase: EmailDatabase,
+    protected domainName: string,
   ) {}
 
   async processEmail(messageId: string): Promise<void> {
@@ -38,10 +39,10 @@ export class IncomingEmailProcessor {
       );
 
       const allEmailAddresses = [...recipientEmails, ...carbonCopyEmails, ...blindCarbonCopyEmails];
-      const allMatchingEmailAddresses = allEmailAddresses;
-      // const allMatchingEmailAddresses = allEmailAddresses.filter((emailAddress) =>
-      //   emailAddress.address.endsWith(`@${process.env.DOMAIN_NAME}`),
-      // );
+      const allMatchingEmailAddresses = allEmailAddresses.filter((emailAddress) =>
+        // excluding addresses from other domains
+        emailAddress.address.endsWith(`@${this.domainName}`),
+      );
 
       const uniqueNormalizedUsernames = new Set(
         allMatchingEmailAddresses.map((emailAddress) => normalizeUsername(emailAddress.user)),

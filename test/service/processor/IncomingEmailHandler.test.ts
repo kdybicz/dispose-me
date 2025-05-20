@@ -8,6 +8,7 @@ import { EmailDatabase } from '../../../service/tools/EmailDatabase';
 describe('EmailParser tests', () => {
   const EMAIL_BUCKET_NAME = 'test-bucket';
   const MESSAGE_ID = 'message-id';
+  const DOMAIN_NAME = 'example.com';
 
   const emailParser = new EmailParser();
 
@@ -33,7 +34,7 @@ describe('EmailParser tests', () => {
       },
     });
     // and:
-    const processor = new IncomingEmailProcessor(fileSystem, EMAIL_BUCKET_NAME, emailParser, emailDatabase);
+    const processor = new IncomingEmailProcessor(fileSystem, EMAIL_BUCKET_NAME, emailParser, emailDatabase, DOMAIN_NAME);
 
     // when:
     await processor.processEmail(MESSAGE_ID);
@@ -52,7 +53,7 @@ describe('EmailParser tests', () => {
       },
     });
     // and:
-    const processor = new IncomingEmailProcessor(fileSystem, EMAIL_BUCKET_NAME, emailParser, emailDatabase);
+    const processor = new IncomingEmailProcessor(fileSystem, EMAIL_BUCKET_NAME, emailParser, emailDatabase, DOMAIN_NAME);
 
     // when:
     await processor.processEmail(MESSAGE_ID);
@@ -72,7 +73,7 @@ describe('EmailParser tests', () => {
       },
     });
     // and:
-    const processor = new IncomingEmailProcessor(fileSystem, EMAIL_BUCKET_NAME, emailParser, emailDatabase);
+    const processor = new IncomingEmailProcessor(fileSystem, EMAIL_BUCKET_NAME, emailParser, emailDatabase, DOMAIN_NAME);
 
     // when:
     await processor.processEmail(MESSAGE_ID);
@@ -92,7 +93,7 @@ describe('EmailParser tests', () => {
       },
     });
     // and:
-    const processor = new IncomingEmailProcessor(fileSystem, EMAIL_BUCKET_NAME, emailParser, emailDatabase);
+    const processor = new IncomingEmailProcessor(fileSystem, EMAIL_BUCKET_NAME, emailParser, emailDatabase, DOMAIN_NAME);
 
     // when:
     await processor.processEmail(MESSAGE_ID);

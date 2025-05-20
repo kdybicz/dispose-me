@@ -242,6 +242,7 @@ export class DisposeMeStack extends cdk.Stack {
       code: lambda.AssetCode.fromAsset('dist/email-processor.zip'),
       handler: 'index.handler',
       environment: {
+        DOMAIN_NAME: process.env.DOMAIN_NAME ?? '',
         EMAIL_BUCKET_NAME: emailBucket.bucketName,
         LOG_LEVEL: '5',
       },
