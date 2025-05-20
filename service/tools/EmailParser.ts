@@ -19,6 +19,13 @@ export type Email = {
   received: Date;
 };
 
+export type EmailList = {
+  id: string;
+  from: string;
+  subject: string;
+  received: Date;
+};
+
 type ParsedEmailAddress = {
   address: string;
   user: () => string;

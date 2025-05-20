@@ -15,7 +15,6 @@ export class S3FileSystem {
 
   constructor(region?: string) {
     this.client = new S3Client({
-      apiVersion: '2006-03-01',
       region: region ?? process.env.AWS_REGION,
     });
   }

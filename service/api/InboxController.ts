@@ -1,12 +1,14 @@
 import type { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 
-import { type Email, EmailParser } from '../tools/EmailParser';
+import { EmailDatabase } from '../tools/EmailDatabase';
+import { type Email, type EmailList, EmailParser } from '../tools/EmailParser';
 import { S3FileSystem } from '../tools/S3FileSystem';
 import { AUTH_COOKIE_KEY, AUTH_QUERY_KEY, MAX_EPOCH, REMEMBER_COOKIE_KEY } from '../tools/const';
 import { mapEmailListToFeed } from '../tools/feed';
 import log from '../tools/log';
 import { getCookie, getToken, normalizeUsername, parseIntOrDefault } from '../tools/utils';
+import dayjs = require('dayjs');
 
 export interface InboxListParams extends Record<string, string> {
   username: string;
@@ -38,14 +40,14 @@ interface InboxRequest<P = Record<string, string>, B = any>
 export type InboxResponse = Promise<Response<any> | void>;
 
 export class InboxController {
-  protected fileSystem: S3FileSystem;
-
-  protected emailParser: EmailParser;
-
   protected bucketName: string;
+  protected emailDatabase: EmailDatabase;
+  protected emailParser: EmailParser;
+  protected fileSystem: S3FileSystem;
 
   constructor(bucketName: string) {
     this.bucketName = bucketName;
+    this.emailDatabase = new EmailDatabase();
     this.emailParser = new EmailParser();
     this.fileSystem = new S3FileSystem();
   }
@@ -119,24 +121,28 @@ export class InboxController {
       return this.render403Response(req, res);
     }
 
-    const normalizedUsername = normalizeUsername(username);
-    const emailObjectPath = `${normalizedUsername}/${id}`;
-
-    const emailObject = await this.fileSystem.getObject(this.bucketName, emailObjectPath);
-    const emailBody = await emailObject.Body?.transformToString();
-
     let email: Email | undefined;
-    if (emailBody) {
-      email = await this.emailParser.parseEmail(emailBody);
-      email.id = id;
+
+    const normalizedUsername = normalizeUsername(username);
+    const existsForUser = await this.emailDatabase.exists(normalizedUsername, id);
+    if (existsForUser) {
+      const emailObject = await this.fileSystem.getObject(this.bucketName, id);
+      const emailBody = await emailObject.Body?.transformToString();
+
+      if (emailBody) {
+        email = await this.emailParser.parseEmail(emailBody);
+        email.id = id;
+      }
+
+      if (type === 'html') {
+        const token = getToken(req);
+        return res.render('pages/email', { email, token });
+      }
+
+      return res.json({ email });
     }
 
-    if (type === 'html') {
-      const token = getToken(req);
-      return res.render('pages/email', { email, token });
-    }
-
-    return res.json({ email });
+    return this.render404Response(req, res);
   };
 
   download = async (req: InboxRequest<InboxEmailParams>, res: Response): InboxResponse => {
@@ -152,15 +158,18 @@ export class InboxController {
     }
 
     const normalizedUsername = normalizeUsername(username);
-    const emailObjectPath = `${normalizedUsername}/${id}`;
+    const existsForUser = await this.emailDatabase.exists(normalizedUsername, id);
+    if (existsForUser) {
+      const emailObject = await this.fileSystem.getObject(this.bucketName, id);
+      const emailBody = await emailObject.Body?.transformToString();
 
-    const emailObject = await this.fileSystem.getObject(this.bucketName, emailObjectPath);
-    const emailBody = await emailObject.Body?.transformToString();
+      res.setHeader('Content-disposition', `attachment; filename=${id}.eml`);
+      res.type('application/octet-stream');
 
-    res.setHeader('Content-disposition', `attachment; filename=${id}.eml`);
-    res.type('application/octet-stream');
+      return res.send(emailBody);
+    }
 
-    return res.send(emailBody);
+    return this.render404Response(req, res);
   };
 
   delete = async (req: InboxRequest<InboxEmailParams>, res: Response): InboxResponse => {
@@ -176,13 +185,16 @@ export class InboxController {
     }
 
     const normalizedUsername = normalizeUsername(username);
-    const emailObjectPath = `${normalizedUsername}/${id}`;
+    const deletedFromDatabase = await this.emailDatabase.delete(normalizedUsername, id);
+    if (deletedFromDatabase) {
+      await this.fileSystem.deleteObject(this.bucketName, id);
 
-    await this.fileSystem.deleteObject(this.bucketName, emailObjectPath);
+      return res.redirect(
+        `/inbox/${username}?${new URLSearchParams(req.query as Record<string, string>)}`,
+      );
+    }
 
-    return res.redirect(
-      `/inbox/${username}?${new URLSearchParams(req.query as Record<string, string>)}`,
-    );
+    return this.render404Response(req, res);
   };
 
   latest = async (req: InboxRequest<InboxListParams>, res: Response): InboxResponse => {
@@ -198,34 +210,22 @@ export class InboxController {
       return this.render403Response(req, res);
     }
 
+    let email: Email | undefined;
+
     const normalizedUsername = normalizeUsername(username);
-    const emailObjectsList = await this.fileSystem.listObjects(
-      this.bucketName,
+    const latestEmail = await this.emailDatabase.list(
       normalizedUsername,
+      parseIntOrDefault(sentAfter),
       1,
     );
+    if (latestEmail.Items) {
+      const messageId = latestEmail.Items[0].Id;
+      const emailObject = await this.fileSystem.getObject(this.bucketName, messageId);
+      const emailBody = await emailObject.Body?.transformToString();
 
-    const emailNamesList = (emailObjectsList.Contents?.map((item) => item.Key) ?? [])
-      .filter((item) => item != null)
-      .filter((name) => {
-        const parsedSentAfter = parseIntOrDefault(sentAfter);
-        return name != null && parsedSentAfter != null
-          ? name.localeCompare(`${normalizedUsername}/${MAX_EPOCH - parsedSentAfter}`) < 0
-          : true;
-      });
-
-    let email: Email | undefined;
-    if (emailNamesList.length !== 0) {
-      const latestFilePath = emailNamesList.pop();
-
-      if (latestFilePath) {
-        const latestEmail = await this.fileSystem.getObject(this.bucketName, latestFilePath);
-        const emailBody = await latestEmail.Body?.transformToString();
-
-        if (emailBody) {
-          email = await this.emailParser.parseEmail(emailBody);
-          email.id = latestFilePath.split('/').pop();
-        }
+      if (emailBody) {
+        email = await this.emailParser.parseEmail(emailBody);
+        email.id = messageId;
       }
     }
 
@@ -270,39 +270,25 @@ export class InboxController {
     }
 
     const normalizedUsername = normalizeUsername(username);
-    const emailObjectsList = await this.fileSystem.listObjects(
-      this.bucketName,
+    const emailObjectList = await this.emailDatabase.list(
       normalizedUsername,
-      parseIntOrDefault(limit, 10),
+      parseIntOrDefault(sentAfter),
+      parseIntOrDefault(limit),
     );
 
-    const emailNamesList = (emailObjectsList.Contents?.map((item) => item.Key) ?? [])
-      .filter((item) => item != null)
-      .filter((name) => {
-        const parsedSentAfter = parseIntOrDefault(sentAfter);
-        return name != null && parsedSentAfter != null
-          ? name.localeCompare(`${normalizedUsername}/${MAX_EPOCH - parsedSentAfter}`) < 0
-          : true;
-      });
-    const emailObjectList = await this.fileSystem.getObjects(this.bucketName, emailNamesList);
-    const emails = await Promise.all(
-      emailObjectList.map(async (emailObject, idx) => {
-        const emailBody = await emailObject.Body?.transformToString();
-        if (emailBody) {
-          const email: Email = await this.emailParser.parseEmail(emailBody);
-          email.id = emailNamesList[idx].split('/').pop();
-          return email;
-        }
-        return null;
-      }),
-    );
+    const emails = (emailObjectList.Items ?? []).map<EmailList>((emailObject) => ({
+      id: emailObject.Id,
+      from: emailObject.Sender,
+      subject: emailObject.Subject,
+      received: dayjs.unix(emailObject.ReceivedAt).toDate(),
+    }));
 
     if (type === 'html') {
       const token = getToken(req);
-      return res.render('pages/list', { emails: emails.filter((email) => email != null), token });
+      return res.render('pages/list', { emails, token });
     }
 
-    return res.json({ emails: emails.filter((email) => email != null) });
+    return res.json({ emails });
   };
 
   listRss = async (req: InboxRequest<InboxListParams>, res: Response): InboxResponse => {
@@ -318,15 +304,9 @@ export class InboxController {
     }
 
     const normalizedUsername = normalizeUsername(username);
-    const emailObjectsList = await this.fileSystem.listObjects(
-      this.bucketName,
-      normalizedUsername,
-      10,
-    );
+    const emailList = await this.emailDatabase.list(normalizedUsername);
 
-    const emailNamesList = (emailObjectsList.Contents?.map((item) => item.Key) ?? []).filter(
-      (item) => item != null,
-    );
+    const emailNamesList = emailList.Items?.map((item) => item.Id) ?? [];
     const emailObjectList = await this.fileSystem.getObjects(this.bucketName, emailNamesList);
     const emails = await Promise.all(
       emailObjectList.map(async (emailObject, idx) => {
