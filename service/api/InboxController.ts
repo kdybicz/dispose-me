@@ -201,8 +201,6 @@ export class InboxController {
     const normalizedUsername = normalizeUsername(username);
     const deletedFromDatabase = await this.emailDatabase.delete(normalizedUsername, id);
     if (deletedFromDatabase) {
-      await this.fileSystem.deleteObject(this.bucketName, id);
-
       return res.redirect(
         `/inbox/${username}?${new URLSearchParams(req.query as Record<string, string>)}`,
       );
