@@ -1,4 +1,4 @@
-import { normalizeUsername } from '../../../service/tools/utils';
+import { normalizeUsername, parsePositiveIntOrDefault } from '../../../service/tools/utils';
 
 describe('utils tests', () => {
   describe('nameNormalizer', () => {
@@ -16,6 +16,53 @@ describe('utils tests', () => {
       const result = normalizeUsername(input);
       // then:
       expect(result).toEqual(expected);
+    });
+  });
+
+  describe('parsePositiveIntOrDefault', () => {
+    test('return undefined if no params provided', () => {
+      // when
+      const result = parsePositiveIntOrDefault();
+      // then
+      expect(result).toBeUndefined();
+    });
+
+    test.each([
+      [''],
+      ['abc'],
+      ['-1'],
+      ['0'],
+    ])('return undefined if invalid %p value and default value not provided', (value) => {
+      // when
+      const result = parsePositiveIntOrDefault(value);
+      // then
+      expect(result).toBeUndefined();
+    });
+
+    test.each([
+      [''],
+      ['abc'],
+      ['-1'],
+      ['0'],
+    ])('return default value when invalid %p value provided', (value) => {
+      // when
+      const result = parsePositiveIntOrDefault(value, 10);
+      // then
+      expect(result).toEqual(10);
+    });
+
+    test('return parsed value, default value not provided', () => {
+      // when
+      const result = parsePositiveIntOrDefault('123');
+      // then
+      expect(result).toEqual(123);
+    });
+
+    test('return parsed value, default value provided', () => {
+      // when
+      const result = parsePositiveIntOrDefault('123', 10);
+      // then
+      expect(result).toEqual(123);
     });
   });
 });

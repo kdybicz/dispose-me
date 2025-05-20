@@ -9,7 +9,10 @@ export const normalizeUsername = (username: string): string => {
   return decodeURIComponent(username).toLowerCase().replace(/\+.*/, '').replace(/\./g, '');
 };
 
-export const parseIntOrDefault = (value?: string, defaultValue?: number): number | undefined => {
+export const parsePositiveIntOrDefault = (
+  value?: string,
+  defaultValue?: number,
+): number | undefined => {
   if (!value) {
     return defaultValue;
   }

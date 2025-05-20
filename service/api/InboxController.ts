@@ -7,7 +7,7 @@ import { S3FileSystem } from '../tools/S3FileSystem';
 import { AUTH_COOKIE_KEY, AUTH_QUERY_KEY, REMEMBER_COOKIE_KEY } from '../tools/const';
 import { mapEmailDetailsListToFeed } from '../tools/feed';
 import log from '../tools/log';
-import { getCookie, getToken, normalizeUsername, parseIntOrDefault } from '../tools/utils';
+import { getCookie, getToken, normalizeUsername, parsePositiveIntOrDefault } from '../tools/utils';
 import dayjs = require('dayjs');
 
 export interface InboxListParams extends Record<string, string> {
@@ -227,7 +227,7 @@ export class InboxController {
     const normalizedUsername = normalizeUsername(username);
     const latestEmail = await this.emailDatabase.list(
       normalizedUsername,
-      parseIntOrDefault(sentAfter),
+      parsePositiveIntOrDefault(sentAfter),
       1,
     );
     if (latestEmail.Items) {
@@ -287,8 +287,8 @@ export class InboxController {
     const normalizedUsername = normalizeUsername(username);
     const emailObjectList = await this.emailDatabase.list(
       normalizedUsername,
-      parseIntOrDefault(sentAfter),
-      parseIntOrDefault(limit),
+      parsePositiveIntOrDefault(sentAfter),
+      parsePositiveIntOrDefault(limit),
     );
 
     const emails = (emailObjectList.Items ?? []).map<EmailListItem>((emailObject) => ({
