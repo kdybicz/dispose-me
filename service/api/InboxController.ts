@@ -39,7 +39,7 @@ interface InboxRequest<P = Record<string, string>, B = any>
 // biome-ignore lint/suspicious/noConfusingVoidType: <explanation>
 export type InboxResponse = Promise<Response<any> | void>;
 
-export type EmailList = {
+export type EmailListItem = {
   id: string;
   from: string;
   subject: string;
@@ -293,7 +293,7 @@ export class InboxController {
       parseIntOrDefault(limit),
     );
 
-    const emails = (emailObjectList.Items ?? []).map<EmailList>((emailObject) => ({
+    const emails = (emailObjectList.Items ?? []).map<EmailListItem>((emailObject) => ({
       id: emailObject.Id,
       from: emailObject.Sender,
       subject: emailObject.Subject,
