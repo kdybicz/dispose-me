@@ -2,10 +2,10 @@ import type { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 
 import { EmailDatabase } from '../tools/EmailDatabase';
-import { type Email, type EmailList, EmailParser } from '../tools/EmailParser';
+import { EmailParser, type ParsedEmail } from '../tools/EmailParser';
 import { S3FileSystem } from '../tools/S3FileSystem';
-import { AUTH_COOKIE_KEY, AUTH_QUERY_KEY, MAX_EPOCH, REMEMBER_COOKIE_KEY } from '../tools/const';
-import { mapEmailListToFeed } from '../tools/feed';
+import { AUTH_COOKIE_KEY, AUTH_QUERY_KEY, REMEMBER_COOKIE_KEY } from '../tools/const';
+import { mapEmailDetailsListToFeed } from '../tools/feed';
 import log from '../tools/log';
 import { getCookie, getToken, normalizeUsername, parseIntOrDefault } from '../tools/utils';
 import dayjs = require('dayjs');
@@ -38,6 +38,17 @@ interface InboxRequest<P = Record<string, string>, B = any>
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 // biome-ignore lint/suspicious/noConfusingVoidType: <explanation>
 export type InboxResponse = Promise<Response<any> | void>;
+
+export type EmailList = {
+  id: string;
+  from: string;
+  subject: string;
+  received: Date;
+};
+
+export type EmailDetails = ParsedEmail & {
+  id: string;
+};
 
 export class InboxController {
   protected bucketName: string;
@@ -121,7 +132,7 @@ export class InboxController {
       return this.render403Response(req, res);
     }
 
-    let email: Email | undefined;
+    let email: EmailDetails | undefined;
 
     const normalizedUsername = normalizeUsername(username);
     const existsForUser = await this.emailDatabase.exists(normalizedUsername, id);
@@ -130,8 +141,11 @@ export class InboxController {
       const emailBody = await emailObject.Body?.transformToString();
 
       if (emailBody) {
-        email = await this.emailParser.parseEmail(emailBody);
-        email.id = id;
+        const parsedEmail = await this.emailParser.parseEmail(emailBody);
+        email = {
+          ...parsedEmail,
+          id,
+        };
       }
 
       if (type === 'html') {
@@ -210,7 +224,7 @@ export class InboxController {
       return this.render403Response(req, res);
     }
 
-    let email: Email | undefined;
+    let email: EmailDetails | undefined;
 
     const normalizedUsername = normalizeUsername(username);
     const latestEmail = await this.emailDatabase.list(
@@ -224,8 +238,11 @@ export class InboxController {
       const emailBody = await emailObject.Body?.transformToString();
 
       if (emailBody) {
-        email = await this.emailParser.parseEmail(emailBody);
-        email.id = messageId;
+        const parsedEmail = await this.emailParser.parseEmail(emailBody);
+        email = {
+          ...parsedEmail,
+          id: messageId,
+        };
       }
     }
 
@@ -312,9 +329,11 @@ export class InboxController {
       emailObjectList.map(async (emailObject, idx) => {
         const emailBody = await emailObject.Body?.transformToString();
         if (emailBody) {
-          const email: Email = await this.emailParser.parseEmail(emailBody);
-          email.id = emailNamesList[idx].split('/').pop();
-          return email;
+          const parsedEmail = await this.emailParser.parseEmail(emailBody);
+          return {
+            ...parsedEmail,
+            id: emailNamesList[idx],
+          };
         }
         return null;
       }),
@@ -322,7 +341,7 @@ export class InboxController {
 
     const token = getToken(req) as string;
 
-    const feed = mapEmailListToFeed(
+    const feed = mapEmailDetailsListToFeed(
       emails.filter((email) => email != null),
       normalizedUsername,
       token,
