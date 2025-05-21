@@ -25,6 +25,7 @@
     "prestart": "cdk synth",
     "start": "yarn prestart && sam local start-api -t ./cdk.out/DisposeMeStack.template.json",
     "test": "jest",
+    "test:coverage": "jest --coverage",
     "test:ci": "jest -ci"
   },
   "devDependencies": {
