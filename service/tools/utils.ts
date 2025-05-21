@@ -24,7 +24,7 @@ export const parsePositiveIntOrDefault = (
 export const getToken = (req: Request): string | null => {
   const header = req.headersDistinct?.[AUTH_HEADER_KEY];
   if (header) {
-    return header[0];
+    return (Array.isArray(header) ? header[0] : header) as string;
   }
 
   const query = req.query?.[AUTH_QUERY_KEY];
