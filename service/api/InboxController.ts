@@ -346,7 +346,7 @@ export class InboxController {
     );
 
     res.type('application/rss+xml');
-    return res.send(feed);
+    return res.send(feed.rss2());
   };
 
   render403Response = (req: Request, res: Response): void => {

@@ -11,11 +11,10 @@ export const mapEmailDetailsToFeedItem = (
   title: email.subject,
   link: `https://${process.env.DOMAIN_NAME}/inbox/${username}/${email.id}?${AUTH_QUERY_KEY}=${token}`,
   content: email.body,
-  author: email.from
-    .map((email) => ({
-      name: email.user,
-      email: email.address,
-    })),
+  author: email.from.map((email) => ({
+    name: email.user,
+    email: email.address,
+  })),
   contributor: email.to
     .concat(email.cc)
     .concat(email.bcc)
@@ -30,9 +29,9 @@ export const mapEmailDetailsListToFeed = (
   emails: EmailDetails[],
   username: string,
   token: string,
-): string => {
+): Feed => {
   let updated = new Date();
-  if (emails) {
+  if (emails.length > 0) {
     updated = emails[0].received;
   }
 
@@ -48,5 +47,5 @@ export const mapEmailDetailsListToFeed = (
 
   emails.forEach((email) => feed.addItem(mapEmailDetailsToFeedItem(email, username, token)));
 
-  return feed.rss2();
+  return feed;
 };
