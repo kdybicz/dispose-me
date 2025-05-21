@@ -23,13 +23,13 @@ export const parsePositiveIntOrDefault = (
 
 export const getToken = (req: Request): string | null => {
   const header = req.headersDistinct?.[AUTH_HEADER_KEY];
-  if (header) {
-    return (Array.isArray(header) ? header[0] : header) as string;
+  if (header && header.length > 0) {
+    return header[0];
   }
 
   const query = req.query?.[AUTH_QUERY_KEY];
   if (query) {
-    return (Array.isArray(query) ? query[0] : query) as string;
+    return (Array.isArray(query) && query.length > 0 ? query[0] : query) as string;
   }
 
   return getCookie(req, AUTH_COOKIE_KEY);
