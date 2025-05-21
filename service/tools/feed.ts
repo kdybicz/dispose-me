@@ -12,6 +12,11 @@ export const mapEmailDetailsToFeedItem = (
   link: `https://${process.env.DOMAIN_NAME}/inbox/${username}/${email.id}?${AUTH_QUERY_KEY}=${token}`,
   content: email.body,
   author: email.from
+    .map((email) => ({
+      name: email.user,
+      email: email.address,
+    })),
+  contributor: email.to
     .concat(email.cc)
     .concat(email.bcc)
     .map((email) => ({
