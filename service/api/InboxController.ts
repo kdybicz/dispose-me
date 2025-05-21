@@ -110,6 +110,7 @@ export class InboxController {
       sameSite: 'strict',
       maxAge,
     });
+
     return res.redirect('/inbox');
   };
 
