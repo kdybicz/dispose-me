@@ -1,4 +1,5 @@
 import { Feed, type Item } from 'feed';
+
 import type { EmailDetails } from '../api/InboxController';
 import { AUTH_QUERY_KEY } from './const';
 

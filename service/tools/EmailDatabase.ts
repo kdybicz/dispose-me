@@ -5,8 +5,6 @@ import {
   PutCommand,
   QueryCommand,
   type QueryCommandOutput,
-  ScanCommand,
-  type ScanCommandOutput,
 } from '@aws-sdk/lib-dynamodb';
 import dayjs = require('dayjs');
 

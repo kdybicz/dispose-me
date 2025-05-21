@@ -1,4 +1,5 @@
 import type { Request } from 'express';
+
 import { AUTH_COOKIE_KEY, AUTH_HEADER_KEY, AUTH_QUERY_KEY } from './const';
 
 export const normalizeUsername = (username: string): string => {
