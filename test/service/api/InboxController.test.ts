@@ -75,165 +75,178 @@ const MockedEmailParser = EmailParser as unknown as {
   mockParseEmail: jest.Mock;
 };
 
-describe('InboxController tests', () => {
-  const bucketName = 'bucket';
-  const controller = new InboxController(bucketName);
+describe('InboxController', () => {
+  let controller: InboxController;
+  let res: Response;
 
   beforeEach(() => {
+    controller = new InboxController('bucket');
+    res = mockResponse();
     jest.clearAllMocks();
   });
 
-  test.each([[undefined], ['html']])('show index page as html', async (type) => {
-    // given
-    const req = mockRequest({
-      query: { type },
-    });
-    const res = mockResponse();
+  describe('index()', () => {
+    test('renders index page as html by default', async () => {
+      // given
+      const req = mockRequest();
 
-    // when
-    await controller.index(req, res);
-    // then
-    expect(res.render).toHaveBeenCalledWith('pages/index');
+      // when
+      await controller.index(req, res);
+      // then
+      expect(res.render).toHaveBeenCalledWith('pages/index');
+    });
+
+    test('renders index page as html', async () => {
+      // given
+      const type = 'html';
+      const req = mockRequest({
+        query: { type },
+      });
+
+      // when
+      await controller.index(req, res);
+      // then
+      expect(res.render).toHaveBeenCalledWith('pages/index');
+    });
+
+    test('show index page as json', async () => {
+      // given
+      const type = 'json';
+      // and
+      const req = mockRequest({
+        query: { type },
+      });
+
+      // when
+      await controller.index(req, res);
+      // then
+      expect(res.json).toHaveBeenCalledWith({});
+    });
+
+    test('redirects to inbox if auth cookie set', async () => {
+      // given
+      const req = mockRequest({
+        cookies: { [AUTH_COOKIE_KEY]: COOKIE_TOKEN },
+      });
+
+      // when
+      await controller.index(req, res);
+      // then
+      expect(res.redirect).toHaveBeenCalledWith('/inbox');
+    });
   });
 
-  test('show index page as json', async () => {
-    // given
-    const type = 'json';
-    // and
-    const req = mockRequest({
-      query: { type },
-    });
-    const res = mockResponse();
+  describe('auth()', () => {
+    test('sets cookies and redirects to inbox if remember is true', async () => {
+      // given
+      const token = 'token';
+      const remember = true;
+      // and
+      const req = mockRequest<Record<string, never>, InboxAuthBody>({
+        body: { token, remember },
+      });
 
-    // when
-    await controller.index(req, res);
-    // then
-    expect(res.json).toHaveBeenCalledWith({});
+      // when
+      await controller.auth(req, res);
+      // then
+      expect(res.cookie).toHaveBeenCalledWith(REMEMBER_COOKIE_KEY, remember, {
+        httpOnly: true,
+        maxAge: 2592000000,
+        sameSite: 'strict',
+        secure: true,
+      });
+      expect(res.cookie).toHaveBeenCalledWith(AUTH_COOKIE_KEY, token, {
+        httpOnly: true,
+        maxAge: 2592000000,
+        sameSite: 'strict',
+        secure: true,
+      });
+      expect(res.redirect).toHaveBeenCalledWith('/inbox');
+    });
+
+    test('sets cookie and redirects if remember is false', async () => {
+      // given
+      const token = 'token';
+      const remember = false;
+      // and
+      const req = mockRequest<Record<string, never>, InboxAuthBody>({
+        body: { token, remember },
+      });
+
+      // when
+      await controller.auth(req, res);
+      // then
+      expect(res.cookie).toHaveBeenCalledWith(AUTH_COOKIE_KEY, token, {
+        httpOnly: true,
+        sameSite: 'strict',
+        secure: true,
+      });
+      expect(res.redirect).toHaveBeenCalledWith('/inbox');
+    });
   });
 
-  test('when show index page with a auth cookie set, redirects to the inbox', async () => {
-    // given
-    const req = mockRequest({
-      cookies: { [AUTH_COOKIE_KEY]: COOKIE_TOKEN },
-    });
-    const res = mockResponse();
+  describe('logout()', () => {
+    test('clears cookies and redirects to home', async () => {
+      // given
+      const req = mockRequest();
 
-    // when
-    await controller.index(req, res);
-    // then
-    expect(res.redirect).toHaveBeenCalledWith('/inbox');
+      // when
+      await controller.logout(req, res);
+      // then
+      expect(res.clearCookie).toHaveBeenCalledWith(AUTH_COOKIE_KEY);
+      expect(res.clearCookie).toHaveBeenCalledWith(REMEMBER_COOKIE_KEY);
+      expect(res.redirect).toHaveBeenCalledWith('/');
+    });
   });
 
-  test('auth with token and remember true', async () => {
-    // given
-    const token = 'token';
-    const remember = true;
-    // and
-    const req = mockRequest<Record<string, never>, InboxAuthBody>({
-      body: { token, remember },
+  describe('list()', () => {
+    test.each([[undefined], ['html']])('renders email list as html', async (type) => {
+      // given
+      const username = 'username';
+      const sentAfter = '123456789';
+      const limit = '15';
+      // and
+      const req = mockRequest<InboxListParams>({
+        query: { sentAfter, limit, type },
+        params: { username },
+      });
+      // and
+      MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [] });
+
+      // when
+      await controller.list(req, res);
+      // then
+      expect(MockedEmailDatabase.mockListEmails).toHaveBeenCalledWith(
+        username,
+        Number.parseInt(sentAfter),
+        Number.parseInt(limit),
+      );
+      expect(res.render).toHaveBeenCalledWith('pages/list', { emails: [], token: HEADER_TOKEN });
     });
-    const res = mockResponse();
 
-    // when
-    await controller.auth(req, res);
-    // then
-    expect(res.cookie).toHaveBeenCalledWith(REMEMBER_COOKIE_KEY, remember, {
-      httpOnly: true,
-      maxAge: 2592000000,
-      sameSite: 'strict',
-      secure: true,
+    test('renders email list as json', async () => {
+      // given
+      const username = 'username';
+      const sentAfter = '123456789';
+      const limit = '15';
+      const type = 'json';
+      // and
+      const req = mockRequest<InboxListParams>({
+        query: { sentAfter, limit, type },
+        params: { username },
+      });
+      // and
+      MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [] });
+
+      // when
+      await controller.list(req, res);
+      // then
+      expect(MockedEmailDatabase.mockListEmails).toHaveBeenCalledWith(
+        username,
+        Number.parseInt(sentAfter),
+        Number.parseInt(limit),
+      );
+      expect(res.json).toHaveBeenCalledWith({ emails: [] });
     });
-    expect(res.cookie).toHaveBeenCalledWith(AUTH_COOKIE_KEY, token, {
-      httpOnly: true,
-      maxAge: 2592000000,
-      sameSite: 'strict',
-      secure: true,
-    });
-    expect(res.redirect).toHaveBeenCalledWith('/inbox');
-  });
-
-  test('auth with token and remember false', async () => {
-    // given
-    const token = 'token';
-    const remember = false;
-    // and
-    const req = mockRequest<Record<string, never>, InboxAuthBody>({
-      body: { token, remember },
-    });
-    const res = mockResponse();
-
-    // when
-    await controller.auth(req, res);
-    // then
-    expect(res.cookie).toHaveBeenCalledWith(AUTH_COOKIE_KEY, token, {
-      httpOnly: true,
-      sameSite: 'strict',
-      secure: true,
-    });
-    expect(res.redirect).toHaveBeenCalledWith('/inbox');
-  });
-
-  test('logout clears cookies', async () => {
-    // given
-    const req = mockRequest();
-    const res = mockResponse();
-
-    // when
-    await controller.logout(req, res);
-    // then
-    expect(res.clearCookie).toHaveBeenCalledWith(AUTH_COOKIE_KEY);
-    expect(res.clearCookie).toHaveBeenCalledWith(REMEMBER_COOKIE_KEY);
-    expect(res.redirect).toHaveBeenCalledWith('/');
-  });
-
-  test.each([[undefined], ['html']])('list emails as html', async (type) => {
-    // given
-    const username = 'username';
-    const sentAfter = '123456789';
-    const limit = '15';
-    // and
-    const req = mockRequest<InboxListParams>({
-      query: { sentAfter, limit, type },
-      params: { username },
-    });
-    const res = mockResponse();
-    // and
-    MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [] });
-
-    // when
-    await controller.list(req, res);
-    // then
-    expect(MockedEmailDatabase.mockListEmails).toHaveBeenCalledWith(
-      username,
-      Number.parseInt(sentAfter),
-      Number.parseInt(limit),
-    );
-    expect(res.render).toHaveBeenCalledWith('pages/list', { emails: [], token: HEADER_TOKEN });
-  });
-
-  test('list emails as json', async () => {
-    // given
-    const username = 'username';
-    const sentAfter = '123456789';
-    const limit = '15';
-    const type = 'json';
-    // and
-    const req = mockRequest<InboxListParams>({
-      query: { sentAfter, limit, type },
-      params: { username },
-    });
-    const res = mockResponse();
-    // and
-    MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [] });
-
-    // when
-    await controller.list(req, res);
-    // then
-    expect(MockedEmailDatabase.mockListEmails).toHaveBeenCalledWith(
-      username,
-      Number.parseInt(sentAfter),
-      Number.parseInt(limit),
-    );
-    expect(res.json).toHaveBeenCalledWith({ emails: [] });
   });
 });
