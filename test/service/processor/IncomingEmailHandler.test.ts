@@ -5,7 +5,7 @@ import { EmailParser } from '../../../service/tools/EmailParser';
 import { S3FileSystem } from '../../../service/tools/S3FileSystem';
 import { EmailDatabase } from '../../../service/tools/EmailDatabase';
 
-describe('EmailParser tests', () => {
+describe('IncomingEmailProcessor tests', () => {
   const EMAIL_BUCKET_NAME = 'test-bucket';
   const MESSAGE_ID = 'message-id';
   const DOMAIN_NAME = 'example.com';

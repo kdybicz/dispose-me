@@ -31,7 +31,7 @@ export interface InboxAuthBody {
 }
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-interface InboxRequest<P = Record<string, string>, B = any>
+export interface InboxRequest<P = Record<string, string>, B = any>
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   extends Request<P, any, B, InboxQuery> {}
 
@@ -65,7 +65,7 @@ export class InboxController {
 
   index = async (req: InboxRequest, res: Response): InboxResponse => {
     log.debug(
-      `Action: 'delete' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
+      `Action: 'index' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
     const { type = 'html' } = req.query;
