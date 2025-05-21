@@ -1,15 +1,8 @@
-import type { Response, Request } from 'express';
+import type { Request } from 'express';
 import { getCookie, getToken, normalizeUsername, parsePositiveIntOrDefault } from '../../../service/tools/utils';
 import { AUTH_COOKIE_KEY, AUTH_HEADER_KEY, AUTH_QUERY_KEY } from '../../../service/tools/const';
 
-const mockResponse = (): Response => {
-  const res = {} as unknown as Response;
-  res.status = jest.fn().mockReturnValue(res);
-  res.json = jest.fn().mockReturnValue(res);
-  return res;
-};
-
-const mockRequest = (params: { cookie?: string, headers?: Record<string, string | string[]>, query?: Record<string, string | string[]>} = { headers: {}, query: {} }): Request => {
+const mockRequest = (params: { cookie?: string, headers?: Record<string, string[]>, query?: Record<string, string | string[]>} = { headers: {}, query: {} }): Request => {
   const req = {
     headers: { cookie: params.cookie },
     headersDistinct: params.headers,
@@ -126,26 +119,6 @@ describe('utils tests', () => {
       const result = getToken(req);
       // then
       expect(result).toBeNull();
-    });
-
-    test('return token from header', () => {
-      // given
-      const req = mockRequest({ headers: { [AUTH_HEADER_KEY]: 'header-token' }});
-
-      // when
-      const result = getToken(req);
-      // then
-      expect(result).toEqual('header-token');
-    });
-
-    test('return token from header', () => {
-      // given
-      const req = mockRequest({ headers: { [AUTH_HEADER_KEY]: 'header-token' }});
-
-      // when
-      const result = getToken(req);
-      // then
-      expect(result).toEqual('header-token');
     });
 
     test('return token from array header', () => {
