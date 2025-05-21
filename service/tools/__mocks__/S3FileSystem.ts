@@ -3,8 +3,6 @@ export class S3FileSystem {
   static getObject = jest.fn();
   static getObjects = jest.fn();
 
-  constructor() {}
-
   getObject(...args) {
     // Call the static mock so tests can control it
     return S3FileSystem.getObject(...args);

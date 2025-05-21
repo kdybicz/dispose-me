@@ -1,11 +1,9 @@
 export class EmailDatabase {
   // Static properties to access the mocks from your tests
-static mockStoreEmail = jest.fn();
-static mockListEmails = jest.fn();
-static mockEmailExist = jest.fn();
-static mockDeleteEmail = jest.fn();
-
-  constructor() {}
+  static mockStoreEmail = jest.fn();
+  static mockListEmails = jest.fn();
+  static mockEmailExist = jest.fn();
+  static mockDeleteEmail = jest.fn();
 
   async store(...args) {
     return EmailDatabase.mockStoreEmail(...args);
