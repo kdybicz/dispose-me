@@ -324,10 +324,12 @@ export class InboxController {
         const emailBody = await emailObject.Body?.transformToString();
         if (emailBody) {
           const parsedEmail = await this.emailParser.parseEmail(emailBody);
-          return {
-            ...parsedEmail,
-            id: emailNamesList[idx],
-          };
+          if (parsedEmail) {
+            return {
+              ...parsedEmail,
+              id: emailNamesList[idx],
+            };
+          }
         }
         return null;
       }),

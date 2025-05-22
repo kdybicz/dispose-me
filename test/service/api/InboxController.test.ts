@@ -8,7 +8,7 @@ import {
 } from '../../../service/api/InboxController';
 import { EmailDatabase } from '../../../service/tools/EmailDatabase';
 import { S3FileSystem } from '../../../service/tools/S3FileSystem';
-import { EmailParser } from '../../../service/tools/EmailParser';
+import { EmailParser, type ParsedEmail } from '../../../service/tools/EmailParser';
 import {
   AUTH_COOKIE_KEY,
   AUTH_HEADER_KEY,
@@ -61,7 +61,7 @@ const mockResponse = (): Response => {
     send: jest.fn(),
     setHeader: jest.fn(),
     status: jest.fn().mockReturnThis(),
-    type: jest.fn(),
+    type: jest.fn().mockReturnThis(),
   } as unknown as Response;
 };
 
@@ -707,6 +707,157 @@ describe('InboxController', () => {
         Number.parseInt(limit),
       );
       expect(res.json).toHaveBeenCalledWith({ emails: [] });
+    });
+  });
+
+  describe('listRss()', () => {
+    const username = 'username';
+    const normalizedUsername = 'username'; // adjust if normalizeUsername transforms it
+    const id1 = 'id1';
+    const id2 = 'id2';
+
+    test.skip('should return 403 if username is missing', async () => {
+      // given
+      const req = mockRequest<InboxListParams>({ params: {} });
+
+      // when
+      await controller.listRss(req, res);
+      // then
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.render).toHaveBeenCalledWith('pages/403');
+    });
+
+    const mockParsedEmail = (from: string, subject: string): ParsedEmail => ({
+      from: [{ address: from, user: from }],
+      to: [],
+      cc: [],
+      bcc: [],
+      subject,
+      body: '',
+      received: new Date('Thu, 22 May 2025 09:26:56 GMT'),
+    });
+
+    test('should render an RSS feed with emails', async () => {
+      // given
+      const req = mockRequest<InboxListParams>({ params: { username } });
+      // and
+      MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({
+        Items: [{ Id: id1 }, { Id: id2 }],
+      });
+      MockedS3FileSystem.getObjects.mockResolvedValueOnce([
+        { Body: { transformToString: jest.fn().mockResolvedValue('raw1') } },
+        { Body: { transformToString: jest.fn().mockResolvedValue('raw2') } },
+      ]);
+      MockedEmailParser.mockParseEmail
+        .mockResolvedValueOnce(mockParsedEmail('a', 'b'))
+        .mockResolvedValueOnce(mockParsedEmail('c', 'd'));
+
+      // when
+      await controller.listRss(req, res);
+      // then
+      expect(MockedEmailDatabase.mockListEmails).toHaveBeenCalledWith(normalizedUsername);
+      expect(MockedS3FileSystem.getObjects).toHaveBeenCalledWith('bucket', [id1, id2]);
+      // and
+      expect(res.type).toHaveBeenCalledWith('application/rss+xml');
+      expect(res.send).toHaveBeenCalledWith(
+        '<?xml version="1.0" encoding="utf-8"?>\n' +
+          '<rss version="2.0">\n' +
+          '    <channel>\n' +
+          '        <title>Dispose Me</title>\n' +
+          '        <link>https://example.com/inbox/username?x-api-key=header-token</link>\n' +
+          '        <description>Dispose Me is a simple AWS-hosted disposable email service.</description>\n' +
+          '        <lastBuildDate>Thu, 22 May 2025 09:26:56 GMT</lastBuildDate>\n' +
+          '        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>\n' +
+          '        <generator>Dispose Me</generator>\n' +
+          '        <copyright>Dispose Me</copyright>\n' +
+          '        <item>\n' +
+          '            <title><![CDATA[b]]></title>\n' +
+          '            <link>https://example.com/inbox/username/id1?x-api-key=header-token</link>\n' +
+          '            <guid>id1</guid>\n' +
+          '            <pubDate>Thu, 22 May 2025 09:26:56 GMT</pubDate>\n' +
+          '            <author>a (a)</author>\n' +
+          '        </item>\n' +
+          '        <item>\n' +
+          '            <title><![CDATA[d]]></title>\n' +
+          '            <link>https://example.com/inbox/username/id2?x-api-key=header-token</link>\n' +
+          '            <guid>id2</guid>\n' +
+          '            <pubDate>Thu, 22 May 2025 09:26:56 GMT</pubDate>\n' +
+          '            <author>c (c)</author>\n' +
+          '        </item>\n' +
+          '    </channel>\n' +
+          '</rss>',
+      );
+    });
+
+    test('should handle empty emails list gracefully', async () => {
+      // given
+      const req = mockRequest<InboxListParams>({ params: { username } });
+      // and
+      jest.useFakeTimers().setSystemTime(new Date('Sun, 01 Jan 2023 01:01:01 GMT'));
+      // and
+      MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [] });
+      MockedS3FileSystem.getObjects.mockResolvedValueOnce([]);
+
+      // when
+      await controller.listRss(req, res);
+      // then
+      expect(res.type).toHaveBeenCalledWith('application/rss+xml');
+      expect(res.send).toHaveBeenCalledWith(
+        '<?xml version="1.0" encoding="utf-8"?>\n' +
+          '<rss version="2.0">\n' +
+          '    <channel>\n' +
+          '        <title>Dispose Me</title>\n' +
+          '        <link>https://example.com/inbox/username?x-api-key=header-token</link>\n' +
+          '        <description>Dispose Me is a simple AWS-hosted disposable email service.</description>\n' +
+          '        <lastBuildDate>Sun, 01 Jan 2023 01:01:01 GMT</lastBuildDate>\n' +
+          '        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>\n' +
+          '        <generator>Dispose Me</generator>\n' +
+          '        <copyright>Dispose Me</copyright>\n' +
+          '    </channel>\n' +
+          '</rss>',
+      );
+    });
+
+    test('should skip null/failed parses and still return valid RSS', async () => {
+      // given
+      const req = mockRequest<InboxListParams>({ params: { username } });
+      // and
+      MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({
+        Items: [{ Id: id1 }, { Id: id2 }],
+      });
+      MockedS3FileSystem.getObjects.mockResolvedValueOnce([
+        { Body: { transformToString: jest.fn().mockResolvedValue('raw1') } },
+        { Body: { transformToString: jest.fn().mockResolvedValue('raw2') } },
+      ]);
+      MockedEmailParser.mockParseEmail
+        .mockResolvedValueOnce(mockParsedEmail('a', 'b'))
+        .mockResolvedValueOnce(null);
+
+      // when
+      await controller.listRss(req, res);
+      // then
+      expect(res.type).toHaveBeenCalledWith('application/rss+xml');
+      expect(res.send).toHaveBeenCalledWith(
+        '<?xml version="1.0" encoding="utf-8"?>\n' +
+          '<rss version="2.0">\n' +
+          '    <channel>\n' +
+          '        <title>Dispose Me</title>\n' +
+          '        <link>https://example.com/inbox/username?x-api-key=header-token</link>\n' +
+          '        <description>Dispose Me is a simple AWS-hosted disposable email service.</description>\n' +
+          '        <lastBuildDate>Thu, 22 May 2025 09:26:56 GMT</lastBuildDate>\n' +
+          '        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>\n' +
+          '        <generator>Dispose Me</generator>\n' +
+          '        <copyright>Dispose Me</copyright>\n' +
+          '        <item>\n' +
+          '            <title><![CDATA[b]]></title>\n' +
+          '            <link>https://example.com/inbox/username/id1?x-api-key=header-token</link>\n' +
+          '            <guid>id1</guid>\n' +
+          '            <pubDate>Thu, 22 May 2025 09:26:56 GMT</pubDate>\n' +
+          '            <author>a (a)</author>\n' +
+          '        </item>\n' +
+          '    </channel>\n' +
+          '</rss>',
+      );
     });
   });
 });
