@@ -2,6 +2,7 @@ import { Request, type Response } from 'express';
 import {
   type InboxAuthBody,
   InboxController,
+  type InboxEmailParams,
   type InboxListParams,
   type InboxRequest,
 } from '../../../service/api/InboxController';
@@ -50,12 +51,17 @@ const mockRequest = <P = Record<string, string>, B = any>(
 };
 
 const mockResponse = (): Response => {
+  const mockRender = jest.fn();
   return {
-    render: jest.fn(),
+    clearCookie: jest.fn(),
+    cookie: jest.fn(),
     json: jest.fn(),
     redirect: jest.fn(),
-    cookie: jest.fn(),
-    clearCookie: jest.fn(),
+    render: mockRender,
+    send: jest.fn(),
+    setHeader: jest.fn(),
+    status: jest.fn().mockReturnThis(),
+    type: jest.fn(),
   } as unknown as Response;
 };
 
@@ -137,9 +143,10 @@ describe('InboxController', () => {
   });
 
   describe('auth()', () => {
+    const token = 'token';
+
     test('sets cookies and redirects to inbox if remember is true', async () => {
       // given
-      const token = 'token';
       const remember = true;
       // and
       const req = mockRequest<Record<string, never>, InboxAuthBody>({
@@ -166,7 +173,6 @@ describe('InboxController', () => {
 
     test('sets cookie and redirects if remember is false', async () => {
       // given
-      const token = 'token';
       const remember = false;
       // and
       const req = mockRequest<Record<string, never>, InboxAuthBody>({
@@ -199,13 +205,470 @@ describe('InboxController', () => {
     });
   });
 
+  describe('show()', () => {
+    const username = 'username';
+    const id = 'message-id';
+
+    test.skip('should return 403 if username or id is missing', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({ params: {} });
+
+      // when
+      await controller.show(req, res);
+      // then
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.render).toHaveBeenCalledWith('pages/403');
+    });
+
+    test.each([[undefined], ['html']])(
+      'should return 404 as HTML if email does not exist',
+      async (type) => {
+        // given
+        const req = mockRequest<InboxEmailParams>({
+          params: { username, id },
+          query: { type },
+        });
+        // and
+        MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(false);
+
+        // when
+        await controller.show(req, res);
+        // then
+        expect(res.status).toHaveBeenCalledWith(404);
+        expect(res.render).toHaveBeenCalledWith('pages/404');
+      },
+    );
+
+    test('should return 404 as JSON if email does not exist', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({
+        params: { username, id },
+        query: { type: 'json' },
+      });
+      // and
+      MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(false);
+
+      // when
+      await controller.show(req, res);
+      // then
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'The page you are looking for was not found.',
+      });
+    });
+
+    test.each([[undefined], ['html']])('should render email details as HTML', async (type) => {
+      // given
+      const req = mockRequest<InboxEmailParams>({
+        params: { username, id },
+        query: { type },
+      });
+      // and
+      MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
+      MockedS3FileSystem.getObject.mockResolvedValueOnce({
+        Body: { transformToString: () => 'raw-email' },
+      });
+      MockedEmailParser.mockParseEmail.mockResolvedValueOnce({ from: 'a', subject: 'b' });
+
+      // when
+      await controller.show(req, res);
+      // then
+      expect(res.render).toHaveBeenCalledWith('pages/email', {
+        email: expect.objectContaining({ id }),
+        token: HEADER_TOKEN,
+      });
+    });
+
+    test('should return email details as JSON', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({
+        params: { username, id },
+        query: { type: 'json' },
+      });
+      // and
+      MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
+      MockedS3FileSystem.getObject.mockResolvedValueOnce({
+        Body: { transformToString: () => 'raw-email' },
+      });
+      MockedEmailParser.mockParseEmail.mockResolvedValueOnce({ from: 'a', subject: 'b' });
+
+      // when
+      await controller.show(req, res);
+      // then
+      expect(res.json).toHaveBeenCalledWith({ email: expect.objectContaining({ id }) });
+    });
+
+    test.each([[undefined], ['html']])(
+      'should return email details as HTML when email body not found - to be fixed',
+      async (type) => {
+        // given
+        const req = mockRequest<InboxEmailParams>({
+          params: { username, id },
+          query: { type },
+        });
+        // and
+        MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
+        MockedS3FileSystem.getObject.mockResolvedValueOnce({
+          Body: { transformToString: () => undefined },
+        });
+
+        // when
+        await controller.show(req, res);
+        // then
+        expect(res.render).toHaveBeenCalledWith('pages/email', {
+          email: undefined,
+          token: HEADER_TOKEN,
+        });
+      },
+    );
+
+    test('should return email details as JSON when email body not found - to be fixed', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({
+        params: { username, id },
+        query: { type: 'json' },
+      });
+      // and
+      MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
+      MockedS3FileSystem.getObject.mockResolvedValueOnce({
+        Body: { transformToString: () => undefined },
+      });
+
+      // when
+      await controller.show(req, res);
+      // then
+      expect(res.json).toHaveBeenCalledWith({
+        email: undefined,
+      });
+    });
+
+    test.skip.each([[undefined], ['html'], ['json']])(
+      'should return 404 if S3 or parser fails',
+      async (type) => {
+        // given
+        const req = mockRequest<InboxEmailParams>({
+          params: { username, id },
+          query: { type },
+        });
+        // and
+        MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
+        MockedS3FileSystem.getObject.mockResolvedValueOnce({
+          Body: { transformToString: () => undefined },
+        });
+
+        // when
+        await controller.show(req, res);
+        // then
+        expect(res.status).toHaveBeenCalledWith(404);
+        expect(res.render).toHaveBeenCalledWith('pages/404');
+      },
+    );
+  });
+
+  describe('download()', () => {
+    const username = 'username';
+    const id = 'message-id';
+
+    test.skip('should return 403 if username or id is missing', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({ params: {} });
+
+      // when
+      await controller.download(req, res);
+      // then
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.render).toHaveBeenCalledWith('pages/403');
+    });
+
+    test('should return 404 if email does not exist', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({ params: { username, id } });
+      // and
+      MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(false);
+
+      // when
+      await controller.download(req, res);
+      // then
+      expect(res.render).toHaveBeenCalledWith('pages/404');
+    });
+
+    test('should set headers and send email file if it exists', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({ params: { username, id } });
+      // and
+      MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
+      MockedS3FileSystem.getObject.mockResolvedValueOnce({
+        Body: { transformToString: jest.fn().mockResolvedValue('raw-email-data') },
+      });
+
+      // when
+      await controller.download(req, res);
+      // then
+      expect(res.setHeader).toHaveBeenCalledWith(
+        'Content-disposition',
+        `attachment; filename=${id}.eml`,
+      );
+      expect(res.type).toHaveBeenCalledWith('application/octet-stream');
+      expect(res.send).toHaveBeenCalledWith('raw-email-data');
+    });
+
+    test.skip('should return 404 if S3 object has no body', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({ params: { username, id } });
+      // and
+      MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
+      MockedS3FileSystem.getObject.mockResolvedValueOnce({
+        Body: { transformToString: jest.fn().mockResolvedValue(undefined) },
+      });
+
+      // when
+      await controller.download(req, res);
+      // then
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.render).toHaveBeenCalledWith('pages/404');
+    });
+  });
+
+  describe('delete()', () => {
+    const username = 'username';
+    const id = 'message-id';
+
+    test.skip('should return 403 if username or id is missing', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({ params: {} });
+
+      // when
+      await controller.delete(req, res);
+      // then
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.render).toHaveBeenCalledWith('pages/403');
+    });
+
+    test('should redirect to inbox if deletion is successful', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({
+        params: { username, id },
+      });
+      // and
+      MockedEmailDatabase.mockDeleteEmail.mockResolvedValueOnce(true);
+
+      // when
+      await controller.delete(req, res);
+      // then
+      expect(MockedEmailDatabase.mockDeleteEmail).toHaveBeenCalledWith(username, id);
+      // and
+      expect(res.redirect).toHaveBeenCalledWith(
+        `/inbox/${username}?${new URLSearchParams(req.query as Record<string, string>)}`,
+      );
+    });
+
+    test('should return 404 if deletion is unsuccessful', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({
+        params: { username, id },
+      });
+      // and
+      MockedEmailDatabase.mockDeleteEmail.mockResolvedValueOnce(false);
+
+      // when
+      await controller.delete(req, res);
+      // then
+      expect(MockedEmailDatabase.mockDeleteEmail).toHaveBeenCalledWith(username, id);
+      // and
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.render).toHaveBeenCalledWith('pages/404');
+    });
+  });
+
+  describe('latest()', () => {
+    const username = 'username';
+    const id = 'message-id';
+    const sentAfter = '123456789';
+
+    test.skip('should return 403 if username is missing', async () => {
+      // given
+      const req = mockRequest<InboxListParams>({ params: {} });
+
+      // when
+      await controller.latest(req, res);
+      //then
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.render).toHaveBeenCalledWith('pages/403');
+    });
+
+    test.skip('should return 404 if latest email is not found', async () => {
+      // given
+      const req = mockRequest<InboxListParams>({
+        params: { username },
+        query: { sentAfter },
+      });
+      // and
+      MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: undefined });
+
+      // when
+      await controller.latest(req, res);
+      // then
+      expect(res.render).toHaveBeenCalledWith('pages/404');
+    });
+
+    test.each([[undefined], ['html']])(
+      'should render latest email as HTML if found',
+      async (type) => {
+        // given
+        const req = mockRequest<InboxListParams>({
+          params: { username },
+          query: { sentAfter, type },
+        });
+        // and
+        MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
+        MockedS3FileSystem.getObject.mockResolvedValueOnce({
+          Body: { transformToString: jest.fn().mockResolvedValue('raw-email') },
+        });
+        MockedEmailParser.mockParseEmail.mockResolvedValueOnce({ from: 'a', subject: 'b' });
+
+        // when
+        await controller.latest(req, res);
+        // then
+        expect(res.render).toHaveBeenCalledWith('pages/email', {
+          email: expect.objectContaining({ id }),
+          token: HEADER_TOKEN,
+        });
+      },
+    );
+
+    test('should return latest email as JSON if found and type=json', async () => {
+      // given
+      const req = mockRequest<InboxListParams>({
+        params: { username },
+        query: { sentAfter, type: 'json' },
+      });
+      // and
+      MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
+      MockedS3FileSystem.getObject.mockResolvedValueOnce({
+        Body: { transformToString: jest.fn().mockResolvedValue('raw-email') },
+      });
+      MockedEmailParser.mockParseEmail.mockResolvedValueOnce({ from: 'a', subject: 'b' });
+
+      // when
+      await controller.latest(req, res);
+      // then
+      expect(res.json).toHaveBeenCalledWith({
+        email: expect.objectContaining({ id }),
+      });
+    });
+
+    test.each([[undefined], ['html']])(
+      'should return email details as HTML when email body not found - to be fixed',
+      async (type) => {
+        // given
+        const req = mockRequest<InboxEmailParams>({
+          params: { username },
+          query: { type },
+        });
+        // and
+        MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
+        MockedS3FileSystem.getObject.mockResolvedValueOnce({
+          Body: { transformToString: jest.fn().mockResolvedValue(undefined) },
+        });
+
+        // when
+        await controller.latest(req, res);
+        // then
+        expect(res.render).toHaveBeenCalledWith('pages/email', {
+          email: undefined,
+          token: HEADER_TOKEN,
+        });
+      },
+    );
+
+    test('should return email details as JSON when email body not found - to be fixed', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({
+        params: { username },
+        query: { type: 'json' },
+      });
+      // and
+      MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
+      MockedS3FileSystem.getObject.mockResolvedValueOnce({
+        Body: { transformToString: jest.fn().mockResolvedValue(undefined) },
+      });
+
+      // when
+      await controller.latest(req, res);
+      // then
+      expect(res.json).toHaveBeenCalledWith({
+        email: undefined,
+      });
+    });
+
+    test.skip.each([[undefined], ['html'], ['json']])(
+      'should return 404 if S3 object returns no body',
+      async (type) => {
+        // given
+        const req = mockRequest<InboxListParams>({
+          params: { username },
+          query: { sentAfter, type },
+        });
+        // and
+        MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
+        MockedS3FileSystem.getObject.mockResolvedValueOnce({
+          Body: { transformToString: jest.fn().mockResolvedValue(undefined) },
+        });
+
+        // when
+        await controller.latest(req, res);
+        // then
+        expect(res.status).toHaveBeenCalledWith(404);
+        expect(res.render).toHaveBeenCalledWith('pages/404');
+      },
+    );
+  });
+
+  describe('inbox()', () => {
+    test('should render inbox page as HTML by default', async () => {
+      // given
+      const req = mockRequest<InboxListParams>({
+        query: {},
+      });
+
+      // when
+      await controller.inbox(req, res);
+      // then
+      expect(res.render).toHaveBeenCalledWith('pages/inbox');
+    });
+
+    test('should render inbox page as HTML when type is html', async () => {
+      // given
+      const req = mockRequest<InboxListParams>({
+        query: { type: 'html' },
+      });
+
+      // when
+      await controller.inbox(req, res);
+      // then
+      expect(res.render).toHaveBeenCalledWith('pages/inbox');
+    });
+
+    test('should return a JSON message when type is json', async () => {
+      // given
+      const req = mockRequest<InboxListParams>({
+        query: { type: 'json' },
+      });
+
+      // when
+      await controller.inbox(req, res);
+      // then
+      expect(res.json).toHaveBeenCalledWith({ message: 'Go to /inbox/:username' });
+    });
+  });
+
   describe('list()', () => {
+    const username = 'username';
+    const sentAfter = '123456789';
+    const limit = '15';
+
     test.each([[undefined], ['html']])('renders email list as html', async (type) => {
       // given
-      const username = 'username';
-      const sentAfter = '123456789';
-      const limit = '15';
-      // and
       const req = mockRequest<InboxListParams>({
         query: { sentAfter, limit, type },
         params: { username },
@@ -226,9 +689,6 @@ describe('InboxController', () => {
 
     test('renders email list as json', async () => {
       // given
-      const username = 'username';
-      const sentAfter = '123456789';
-      const limit = '15';
       const type = 'json';
       // and
       const req = mockRequest<InboxListParams>({

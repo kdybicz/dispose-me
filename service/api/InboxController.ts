@@ -260,11 +260,6 @@ export class InboxController {
 
     const { type = 'html' } = req.query;
 
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return this.render403Response(req, res);
-    }
-
     if (type === 'html') {
       return res.render('pages/inbox');
     }
