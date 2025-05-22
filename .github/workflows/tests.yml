@@ -10,31 +10,26 @@ on:
 
 permissions:
   contents: read
+  checks: write
+  # pull-requests: write
+  # contents: write
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [20.x, 22.x]
-
     steps:
     - uses: actions/checkout@v4
     - name: Enable Corepack
       run: corepack enable
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Use Node.js 20.x
       uses: actions/setup-node@v4
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: 20.x
         cache: 'yarn'
     - name: Install dependencies
       run: yarn --immutable
     - name: Run lint
       run: yarn lint:ci
-    # - name: Run tests
-    #   run: yarn test:ci
     - name: Run tests & coverage
       uses: ArtiomTr/jest-coverage-report-action@v2
       with:
