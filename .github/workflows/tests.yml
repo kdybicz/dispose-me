@@ -32,5 +32,6 @@ jobs:
     - name: Run tests & coverage
       uses: ArtiomTr/jest-coverage-report-action@v2
       with:
+        icons: emoji
         package-manager: yarn
         skip-step: install
