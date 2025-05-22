@@ -1,96 +1,106 @@
-import { APIGatewayRequestAuthorizerEvent } from 'aws-lambda/trigger/api-gateway-authorizer';
+import type { APIGatewayRequestAuthorizerEvent } from 'aws-lambda/trigger/api-gateway-authorizer';
+
 import { getCookie, getToken } from '../../service/authorizer';
+import { AUTH_COOKIE_KEY, AUTH_HEADER_KEY, AUTH_QUERY_KEY } from '../../service/tools/const';
+import { COOKIE_TOKEN, HEADER_TOKEN, QUERY_TOKEN } from '../utils';
 
 describe('Authorizer', () => {
-  const TOKEN = 'token';
-
   describe('getCookie', () => {
     test('Do not fail when no cookie', () => {
-      // given:
-      const event = mockEvent()
+      // given
+      const event = mockEvent();
 
-      // when:
-      const result = getCookie(event, 'x-api-key');
-      // then:
+      // when
+      const result = getCookie(event, AUTH_COOKIE_KEY);
+      // then
       expect(result).toBeUndefined();
     });
 
     test('Return cookie value', () => {
-      // given:
-      const event = mockEvent({ cookie: TOKEN })
+      // given
+      const event = mockEvent({ cookie: COOKIE_TOKEN });
 
-      // when:
-      const result = getCookie(event, 'x-api-key');
-      // then:
-      expect(result).toEqual(TOKEN);
+      // when
+      const result = getCookie(event, AUTH_COOKIE_KEY);
+      // then
+      expect(result).toEqual(COOKIE_TOKEN);
     });
   });
 
   describe('getToken', () => {
     test('Do not fail when no cookie, header nor query', () => {
-      // given:
-      const event = mockEvent()
+      // given
+      const event = mockEvent();
 
-      // when:
+      // when
       const result = getToken(event);
-      // then:
+      // then
       expect(result).toBeNull();
     });
 
     test('Prioritize header token', () => {
-      // given:
-      const event = mockEvent({ cookie: 'cookie-token', header: 'header-token', query: 'query-token' });
+      // given
+      const event = mockEvent({
+        cookie: COOKIE_TOKEN,
+        header: HEADER_TOKEN,
+        query: QUERY_TOKEN,
+      });
 
-      // when:
+      // when
       const result = getToken(event);
-      // then:
-      expect(result).toEqual('header-token')
+      // then
+      expect(result).toEqual(HEADER_TOKEN);
     });
 
     test('Fallback to query token when header not provided', () => {
-      // given:
-      const event = mockEvent({ cookie: 'cookie-token', query: 'query-token' });
+      // given
+      const event = mockEvent({ cookie: COOKIE_TOKEN, query: QUERY_TOKEN });
 
-      // when:
+      // when
       const result = getToken(event);
-      // then:
-      expect(result).toEqual('query-token')
+      // then
+      expect(result).toEqual(QUERY_TOKEN);
     });
 
     test('Fallback to cookie token when header and query not provided', () => {
-      // given:
-      const event = mockEvent({ cookie: 'cookie-token' });
+      // given
+      const event = mockEvent({ cookie: COOKIE_TOKEN });
 
-      // when:
+      // when
       const result = getToken(event);
-      // then:
-      expect(result).toEqual('cookie-token')
+      // then
+      expect(result).toEqual(COOKIE_TOKEN);
     });
   });
 });
 
-const mockEvent = ( params?: { cookie?: string, header?: string, query?: string }): APIGatewayRequestAuthorizerEvent => {
+const mockEvent = (params?: {
+  cookie?: string;
+  header?: string;
+  query?: string;
+}): APIGatewayRequestAuthorizerEvent => {
   const { cookie, header, query } = params ?? {};
 
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   const event: Record<string, any> = {};
   if (cookie) {
     if (!event.headers) {
       event.headers = {};
     }
-    event.headers.Cookie = `x-api-key=${cookie}; `;
+    event.headers.Cookie = `${AUTH_COOKIE_KEY}=${cookie}; `;
   }
   if (header) {
     if (!event.headers) {
       event.headers = {};
     }
-    event.headers['x-api-key'] = header;
+    event.headers[AUTH_HEADER_KEY] = header;
   }
   if (query) {
     if (!event.queryStringParameters) {
       event.queryStringParameters = {};
     }
-    event.queryStringParameters['x-api-key'] = query;
+    event.queryStringParameters[AUTH_QUERY_KEY] = query;
   }
 
   return event as unknown as APIGatewayRequestAuthorizerEvent;
-}
+};

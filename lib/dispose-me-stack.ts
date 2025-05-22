@@ -2,6 +2,7 @@ import * as path from 'node:path';
 import * as cdk from 'aws-cdk-lib';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as cm from 'aws-cdk-lib/aws-certificatemanager';
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as nodejs from 'aws-cdk-lib/aws-lambda-nodejs';
@@ -29,9 +30,9 @@ export class DisposeMeStack extends cdk.Stack {
     });
 
     const emailBucket = this.setupEmailBucket(domainName);
-
-    this.setupApiGateway(domainName, hostedZone, emailBucket);
-    this.setupEmailProcessing(domainName, hostedZone, emailBucket);
+    const emailTable = this.setupDatabase();
+    this.setupApiGateway(domainName, hostedZone, emailBucket, emailTable);
+    this.setupEmailProcessing(domainName, hostedZone, emailBucket, emailTable);
   }
 
   private setupEmailBucket = (domainName: string): s3.IBucket => {
@@ -49,10 +50,40 @@ export class DisposeMeStack extends cdk.Stack {
     });
   };
 
+  private setupDatabase = (): dynamodb.ITableV2 => {
+    const emailTable = new dynamodb.TableV2(this, 'EmailTable', {
+      tableName: 'dispose-me',
+      partitionKey: {
+        name: 'Username',
+        type: dynamodb.AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'Id',
+        type: dynamodb.AttributeType.STRING,
+      },
+      timeToLiveAttribute: 'ExpireAt',
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+    emailTable.addGlobalSecondaryIndex({
+      indexName: 'Username-ReceivedAt-index',
+      partitionKey: {
+        name: 'Username',
+        type: dynamodb.AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'ReceivedAt',
+        type: dynamodb.AttributeType.NUMBER,
+      },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+    return emailTable;
+  };
+
   private setupApiGateway = (
     domainName: string,
     hostedZone: route53.IHostedZone,
     emailBucket: s3.IBucket,
+    emailTable: dynamodb.ITableV2,
   ): void => {
     // Define Lambda function
     const apiLambdaHandler = new nodejs.NodejsFunction(this, 'ApiLambda', {
@@ -73,6 +104,7 @@ export class DisposeMeStack extends cdk.Stack {
       logRetention: RetentionDays.ONE_MONTH,
     });
     emailBucket.grantReadWrite(apiLambdaHandler);
+    emailTable.grantReadWriteData(apiLambdaHandler);
 
     // Define the API Gateway resource
     const certificate = this.setupCertificate(hostedZone, domainName);
@@ -202,6 +234,7 @@ export class DisposeMeStack extends cdk.Stack {
     domainName: string,
     hostedZone: route53.IHostedZone,
     emailBucket: s3.IBucket,
+    emailTable: dynamodb.ITableV2,
   ): void => {
     const processorLambdaHandler = new nodejs.NodejsFunction(this, 'ProcessorLambda', {
       functionName: 'dispose-me-processor',
@@ -209,6 +242,7 @@ export class DisposeMeStack extends cdk.Stack {
       code: lambda.AssetCode.fromAsset('dist/email-processor.zip'),
       handler: 'index.handler',
       environment: {
+        DOMAIN_NAME: process.env.DOMAIN_NAME ?? '',
         EMAIL_BUCKET_NAME: emailBucket.bucketName,
         LOG_LEVEL: '5',
       },
@@ -217,6 +251,7 @@ export class DisposeMeStack extends cdk.Stack {
       logRetention: RetentionDays.ONE_MONTH,
     });
     emailBucket.grantReadWrite(processorLambdaHandler);
+    emailTable.grantReadWriteData(processorLambdaHandler);
 
     new ses.EmailIdentity(this, 'EmailIdentity', {
       identity: ses.Identity.publicHostedZone(hostedZone),

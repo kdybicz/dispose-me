@@ -32,6 +32,7 @@ Dispose Me is a simple AWS-hosted disposable email service.
 
 - Api Gateway
 - CloudFormation
+- DynamoDB
 - Lambda with custom Authorizer
 - Route53
 - Simple Email Service

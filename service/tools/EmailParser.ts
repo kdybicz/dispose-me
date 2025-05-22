@@ -8,8 +8,7 @@ export type EmailAddress = {
   user: string;
 };
 
-export type Email = {
-  id?: string;
+export type ParsedEmail = {
   from: EmailAddress[];
   to: EmailAddress[];
   cc: EmailAddress[];
@@ -45,7 +44,7 @@ const parseEmailAddresses = (
 };
 
 export class EmailParser {
-  async parseEmail(emailContent: string): Promise<Email> {
+  async parseEmail(emailContent: string): Promise<ParsedEmail> {
     log.debug('Parsing email content to get sender and recipient information');
     const email = await parseEmail(emailContent);
 

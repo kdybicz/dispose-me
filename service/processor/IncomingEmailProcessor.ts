@@ -1,21 +1,17 @@
+import type { EmailDatabase } from '../tools/EmailDatabase';
 import type { EmailParser } from '../tools/EmailParser';
 import type { S3FileSystem } from '../tools/S3FileSystem';
-import { MAX_EPOCH } from '../tools/const';
 import log from '../tools/log';
 import { normalizeUsername } from '../tools/utils';
 
 export class IncomingEmailProcessor {
-  protected fileSystem: S3FileSystem;
-
-  protected emailParser: EmailParser;
-
-  protected bucketName: string;
-
-  constructor(fileSystem: S3FileSystem, bucketName: string, emailParser: EmailParser) {
-    this.fileSystem = fileSystem;
-    this.bucketName = bucketName;
-    this.emailParser = emailParser;
-  }
+  constructor(
+    protected fileSystem: S3FileSystem,
+    protected bucketName: string,
+    protected emailParser: EmailParser,
+    protected emailDatabase: EmailDatabase,
+    protected domainName: string,
+  ) {}
 
   async processEmail(messageId: string): Promise<void> {
     try {
@@ -43,24 +39,29 @@ export class IncomingEmailProcessor {
       );
 
       const allEmailAddresses = [...recipientEmails, ...carbonCopyEmails, ...blindCarbonCopyEmails];
+      const allMatchingEmailAddresses = allEmailAddresses.filter((emailAddress) =>
+        // excluding addresses from other domains
+        emailAddress.address.endsWith(`@${this.domainName}`),
+      );
 
       const uniqueNormalizedUsernames = new Set(
-        allEmailAddresses.map((emailAddress) => normalizeUsername(emailAddress.user)),
+        allMatchingEmailAddresses.map((emailAddress) => normalizeUsername(emailAddress.user)),
       );
       if (uniqueNormalizedUsernames.size === 0) {
         uniqueNormalizedUsernames.add('unknown');
       }
 
       const copyToUserInboxTasks = [...uniqueNormalizedUsernames].map((normalizedUsername) => {
-        const filename = `${MAX_EPOCH - emailContent.received.getTime()}`;
-        const targetFile = `${normalizedUsername}/${filename}`;
-
-        return this.fileSystem.copyObject(this.bucketName, messageId, targetFile);
+        return this.emailDatabase.store(
+          messageId,
+          normalizedUsername,
+          senderEmails[0].address,
+          emailContent.subject,
+          emailContent.received,
+        );
       });
 
       await Promise.all(copyToUserInboxTasks);
-
-      await this.fileSystem.deleteObject(this.bucketName, messageId);
     } catch (err) {
       log.error('Failed to process incoming email', err);
       throw err;

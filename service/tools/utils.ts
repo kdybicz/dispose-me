@@ -1,4 +1,5 @@
 import type { Request } from 'express';
+
 import { AUTH_COOKIE_KEY, AUTH_HEADER_KEY, AUTH_QUERY_KEY } from './const';
 
 export const normalizeUsername = (username: string): string => {
@@ -9,7 +10,10 @@ export const normalizeUsername = (username: string): string => {
   return decodeURIComponent(username).toLowerCase().replace(/\+.*/, '').replace(/\./g, '');
 };
 
-export const parseIntOrDefault = (value?: string, defaultValue?: number): number | undefined => {
+export const parsePositiveIntOrDefault = (
+  value?: string,
+  defaultValue?: number,
+): number | undefined => {
   if (!value) {
     return defaultValue;
   }
@@ -20,13 +24,13 @@ export const parseIntOrDefault = (value?: string, defaultValue?: number): number
 
 export const getToken = (req: Request): string | null => {
   const header = req.headersDistinct?.[AUTH_HEADER_KEY];
-  if (header) {
+  if (Array.isArray(header) && header.length > 0) {
     return header[0];
   }
 
   const query = req.query?.[AUTH_QUERY_KEY];
   if (query) {
-    return (Array.isArray(query) ? query[0] : query) as string;
+    return (Array.isArray(query) && query.length > 0 ? query[0] : query) as string;
   }
 
   return getCookie(req, AUTH_COOKIE_KEY);

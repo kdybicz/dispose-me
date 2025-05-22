@@ -1,13 +1,22 @@
 import { Feed, type Item } from 'feed';
-import type { Email } from '../tools/EmailParser';
+
+import type { EmailDetails } from '../api/InboxController';
 import { AUTH_QUERY_KEY } from './const';
 
-export const mapEmailToFeedItem = (email: Email, username: string, token: string): Item => ({
+export const mapEmailDetailsToFeedItem = (
+  email: EmailDetails,
+  username: string,
+  token: string,
+): Item => ({
   id: email.id,
   title: email.subject,
   link: `https://${process.env.DOMAIN_NAME}/inbox/${username}/${email.id}?${AUTH_QUERY_KEY}=${token}`,
   content: email.body,
-  author: email.from
+  author: email.from.map((email) => ({
+    name: email.user,
+    email: email.address,
+  })),
+  contributor: email.to
     .concat(email.cc)
     .concat(email.bcc)
     .map((email) => ({
@@ -17,9 +26,13 @@ export const mapEmailToFeedItem = (email: Email, username: string, token: string
   date: email.received,
 });
 
-export const mapEmailListToFeed = (emails: Email[], username: string, token: string): string => {
+export const mapEmailDetailsListToFeed = (
+  emails: EmailDetails[],
+  username: string,
+  token: string,
+): Feed => {
   let updated = new Date();
-  if (emails) {
+  if (emails.length > 0) {
     updated = emails[0].received;
   }
 
@@ -33,7 +46,7 @@ export const mapEmailListToFeed = (emails: Email[], username: string, token: str
     generator: 'Dispose Me',
   });
 
-  emails.forEach((email) => feed.addItem(mapEmailToFeedItem(email, username, token)));
+  emails.forEach((email) => feed.addItem(mapEmailDetailsToFeedItem(email, username, token)));
 
-  return feed.rss2();
+  return feed;
 };

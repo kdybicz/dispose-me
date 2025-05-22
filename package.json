@@ -1,6 +1,6 @@
 {
   "name": "dispose-me",
-  "version": "4.4.0",
+  "version": "5.0.0",
   "description": "Dispose Me is a simple AWS-hosted disposable email service.",
   "author": "Kamil Dybicz",
   "license": "MIT",
@@ -25,6 +25,7 @@
     "prestart": "cdk synth",
     "start": "yarn prestart && sam local start-api -t ./cdk.out/DisposeMeStack.template.json",
     "test": "jest",
+    "test:coverage": "jest --coverage",
     "test:ci": "jest -ci"
   },
   "devDependencies": {
@@ -38,6 +39,7 @@
     "@types/webpack-sources": "^3",
     "aws-cdk": "2.1016.0",
     "aws-cdk-lib": "2.196.0",
+    "aws-sdk-client-mock": "^4.1.0",
     "constructs": "^10.4.2",
     "copy-webpack-plugin": "^13.0.0",
     "dotenv": "^16.5.0",
@@ -54,13 +56,16 @@
     "zip-webpack-plugin": "^4.0.3"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.812.0",
     "@aws-sdk/client-s3": "^3.812.0",
+    "@aws-sdk/lib-dynamodb": "^3.812.0",
     "address-rfc2822": "^2.2.3",
+    "dayjs": "^1.11.13",
     "ejs": "^3.1.10",
     "email-addresses": "^5.0.0",
     "express": "^4.21.2",
     "express-validator": "^7.2.1",
-    "feed": "^5.0.1",
+    "feed": "^4.2.2",
     "mailparser": "^3.7.2",
     "serverless-http": "^3.2.0",
     "source-map-support": "^0.5.21"
