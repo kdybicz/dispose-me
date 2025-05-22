@@ -9,10 +9,9 @@ on:
     - cron: '49 4 * * 1'
 
 permissions:
-  # contents: read
   checks: write
-  pull-requests: write
-  # contents: write
+  # pull-requests: write
+  contents: write
 
 jobs:
   build:
