@@ -4,42 +4,42 @@ import { parse as parseEmailAddress } from 'address-rfc2822';
 
 describe('Email Processor', () => {
   test('Parse simple email body', async () => {
-    // given:
+    // given
     const email = await fs.readFileSync(`${__dirname}/data/simple.eml`).toString();
 
-    // when:
+    // when
     const result = await simpleParser(email);
-    // then:
+    // then
     expect(result?.from?.text).toEqual('"John Doe" <john.doe@example.com>');
   });
 
   test('Parse cc email', async () => {
-    // given:
+    // given
     const email = await fs.readFileSync(`${__dirname}/data/cc.eml`).toString();
 
-    // when:
+    // when
     const result = await simpleParser(email);
-    // then:
+    // then
     expect(result?.from?.text).toEqual('"John Doe" <john.doe@example.com>');
   });
 
   test('Parse bcc email', async () => {
-    // given:
+    // given
     const email = await fs.readFileSync(`${__dirname}/data/bcc.eml`).toString();
 
-    // when:
+    // when
     const result = await simpleParser(email);
-    // then:
+    // then
     expect(result?.from?.text).toEqual('"John Doe" <john.doe@example.com>');
   });
 
   test('Parse single email', () => {
-    // given:
+    // given
     const emailString = 'John Doe <john.doe@test.com>';
 
-    // when:
+    // when
     const result = parseEmailAddress(emailString);
-    // then:
+    // then
     expect(result[0].user()).toEqual('john.doe');
   });
 });

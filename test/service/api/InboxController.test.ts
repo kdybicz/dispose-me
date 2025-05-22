@@ -205,7 +205,7 @@ describe('InboxController', () => {
       });
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
-      MockedS3FileSystem.getObject.mockResolvedValueOnce({
+      MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
         Body: { transformToString: () => 'raw-email' },
       });
       MockedEmailParser.mockParseEmail.mockResolvedValueOnce({ from: 'a', subject: 'b' });
@@ -227,7 +227,7 @@ describe('InboxController', () => {
       });
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
-      MockedS3FileSystem.getObject.mockResolvedValueOnce({
+      MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
         Body: { transformToString: () => 'raw-email' },
       });
       MockedEmailParser.mockParseEmail.mockResolvedValueOnce({ from: 'a', subject: 'b' });
@@ -248,7 +248,7 @@ describe('InboxController', () => {
         });
         // and
         MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
-        MockedS3FileSystem.getObject.mockResolvedValueOnce({
+        MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
           Body: { transformToString: () => undefined },
         });
 
@@ -270,7 +270,7 @@ describe('InboxController', () => {
       });
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
-      MockedS3FileSystem.getObject.mockResolvedValueOnce({
+      MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
         Body: { transformToString: () => undefined },
       });
 
@@ -292,7 +292,7 @@ describe('InboxController', () => {
         });
         // and
         MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
-        MockedS3FileSystem.getObject.mockResolvedValueOnce({
+        MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
           Body: { transformToString: () => undefined },
         });
 
@@ -337,7 +337,7 @@ describe('InboxController', () => {
       const req = mockRequest<InboxEmailParams>({ params: { username, id } });
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
-      MockedS3FileSystem.getObject.mockResolvedValueOnce({
+      MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
         Body: { transformToString: jest.fn().mockResolvedValue('raw-email-data') },
       });
 
@@ -357,7 +357,7 @@ describe('InboxController', () => {
       const req = mockRequest<InboxEmailParams>({ params: { username, id } });
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
-      MockedS3FileSystem.getObject.mockResolvedValueOnce({
+      MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
         Body: { transformToString: jest.fn().mockResolvedValue(undefined) },
       });
 
@@ -461,7 +461,7 @@ describe('InboxController', () => {
         });
         // and
         MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
-        MockedS3FileSystem.getObject.mockResolvedValueOnce({
+        MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
           Body: { transformToString: jest.fn().mockResolvedValue('raw-email') },
         });
         MockedEmailParser.mockParseEmail.mockResolvedValueOnce({ from: 'a', subject: 'b' });
@@ -484,7 +484,7 @@ describe('InboxController', () => {
       });
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
-      MockedS3FileSystem.getObject.mockResolvedValueOnce({
+      MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
         Body: { transformToString: jest.fn().mockResolvedValue('raw-email') },
       });
       MockedEmailParser.mockParseEmail.mockResolvedValueOnce({ from: 'a', subject: 'b' });
@@ -507,7 +507,7 @@ describe('InboxController', () => {
         });
         // and
         MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
-        MockedS3FileSystem.getObject.mockResolvedValueOnce({
+        MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
           Body: { transformToString: jest.fn().mockResolvedValue(undefined) },
         });
 
@@ -529,7 +529,7 @@ describe('InboxController', () => {
       });
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
-      MockedS3FileSystem.getObject.mockResolvedValueOnce({
+      MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
         Body: { transformToString: jest.fn().mockResolvedValue(undefined) },
       });
 
@@ -551,7 +551,7 @@ describe('InboxController', () => {
         });
         // and
         MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
-        MockedS3FileSystem.getObject.mockResolvedValueOnce({
+        MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
           Body: { transformToString: jest.fn().mockResolvedValue(undefined) },
         });
 
@@ -684,7 +684,7 @@ describe('InboxController', () => {
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({
         Items: [{ Id: id1 }, { Id: id2 }],
       });
-      MockedS3FileSystem.getObjects.mockResolvedValueOnce([
+      MockedS3FileSystem.mockGetObjects.mockResolvedValueOnce([
         { Body: { transformToString: jest.fn().mockResolvedValue('raw1') } },
         { Body: { transformToString: jest.fn().mockResolvedValue('raw2') } },
       ]);
@@ -696,7 +696,7 @@ describe('InboxController', () => {
       await controller.listRss(req, res);
       // then
       expect(MockedEmailDatabase.mockListEmails).toHaveBeenCalledWith(normalizedUsername);
-      expect(MockedS3FileSystem.getObjects).toHaveBeenCalledWith('bucket', [id1, id2]);
+      expect(MockedS3FileSystem.mockGetObjects).toHaveBeenCalledWith('bucket', [id1, id2]);
       // and
       expect(res.type).toHaveBeenCalledWith('application/rss+xml');
       expect(res.send).toHaveBeenCalledWith(
@@ -736,7 +736,7 @@ describe('InboxController', () => {
       jest.useFakeTimers().setSystemTime(new Date('Sun, 01 Jan 2023 01:01:01 GMT'));
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [] });
-      MockedS3FileSystem.getObjects.mockResolvedValueOnce([]);
+      MockedS3FileSystem.mockGetObjects.mockResolvedValueOnce([]);
 
       // when
       await controller.listRss(req, res);
@@ -765,7 +765,7 @@ describe('InboxController', () => {
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({
         Items: [{ Id: id1 }, { Id: id2 }],
       });
-      MockedS3FileSystem.getObjects.mockResolvedValueOnce([
+      MockedS3FileSystem.mockGetObjects.mockResolvedValueOnce([
         { Body: { transformToString: jest.fn().mockResolvedValue('raw1') } },
         { Body: { transformToString: jest.fn().mockResolvedValue('raw2') } },
       ]);

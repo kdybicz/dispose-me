@@ -9,6 +9,7 @@ import { IncomingEmailProcessor } from '../service/processor/IncomingEmailProces
 
 export const COOKIE_TOKEN = 'cookie-token';
 export const HEADER_TOKEN = 'header-token';
+export const QUERY_TOKEN = 'query-token';
 
 export type RequestArgs<B> = {
   query?: Record<string, undefined | string>;
@@ -61,8 +62,8 @@ export const MockedEmailDatabase = EmailDatabase as unknown as {
 };
 
 export const MockedS3FileSystem = S3FileSystem as unknown as {
-  getObject: jest.Mock;
-  getObjects: jest.Mock;
+  mockGetObject: jest.Mock;
+  mockGetObjects: jest.Mock;
 };
 
 export const MockedEmailParser = EmailParser as unknown as {

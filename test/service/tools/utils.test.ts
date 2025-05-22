@@ -1,8 +1,25 @@
 import type { Request } from 'express';
-import { getCookie, getToken, normalizeUsername, parsePositiveIntOrDefault } from '../../../service/tools/utils';
-import { AUTH_COOKIE_KEY, AUTH_HEADER_KEY, AUTH_QUERY_KEY } from '../../../service/tools/const';
+import {
+  getCookie,
+  getToken,
+  normalizeUsername,
+  parsePositiveIntOrDefault,
+} from '../../../service/tools/utils';
+import {
+  AUTH_COOKIE_KEY,
+  AUTH_HEADER_KEY,
+  AUTH_QUERY_KEY,
+  REMEMBER_COOKIE_KEY,
+} from '../../../service/tools/const';
+import { HEADER_TOKEN, QUERY_TOKEN, COOKIE_TOKEN } from '../../utils';
 
-const mockRequest = (params: { cookie?: string, headers?: Record<string, string[]>, query?: Record<string, string | string[]>} = { headers: {}, query: {} }): Request => {
+const mockRequest = (
+  params: {
+    cookie?: string;
+    headers?: Record<string, string[]>;
+    query?: Record<string, string | string[]>;
+  } = { headers: {}, query: {} },
+): Request => {
   const req = {
     headers: { cookie: params.cookie },
     headersDistinct: params.headers,
@@ -24,9 +41,9 @@ describe('utils tests', () => {
       ['t.e.s.t+123+234', 'test'],
       ["t.e.s.t+12'3+234", 'test'],
     ])('normalizing %p and expecting %p', (input, expected) => {
-      // when:
+      // when
       const result = normalizeUsername(input);
-      // then:
+      // then
       expect(result).toEqual(expected);
     });
   });
@@ -39,29 +56,25 @@ describe('utils tests', () => {
       expect(result).toBeUndefined();
     });
 
-    test.each([
-      [''],
-      ['abc'],
-      ['-1'],
-      ['0'],
-    ])('return undefined if invalid %p value and default value not provided', (value) => {
-      // when
-      const result = parsePositiveIntOrDefault(value);
-      // then
-      expect(result).toBeUndefined();
-    });
+    test.each([[''], ['abc'], ['-1'], ['0']])(
+      'return undefined if invalid %p value and default value not provided',
+      (value) => {
+        // when
+        const result = parsePositiveIntOrDefault(value);
+        // then
+        expect(result).toBeUndefined();
+      },
+    );
 
-    test.each([
-      [''],
-      ['abc'],
-      ['-1'],
-      ['0'],
-    ])('return default value when invalid %p value provided', (value) => {
-      // when
-      const result = parsePositiveIntOrDefault(value, 10);
-      // then
-      expect(result).toEqual(10);
-    });
+    test.each([[''], ['abc'], ['-1'], ['0']])(
+      'return default value when invalid %p value provided',
+      (value) => {
+        // when
+        const result = parsePositiveIntOrDefault(value, 10);
+        // then
+        expect(result).toEqual(10);
+      },
+    );
 
     test('return parsed value, default value not provided', () => {
       // when
@@ -84,27 +97,29 @@ describe('utils tests', () => {
       const req = mockRequest();
 
       // when
-      const result = getCookie(req, 'token');
+      const result = getCookie(req, REMEMBER_COOKIE_KEY);
       // then
       expect(result).toBeNull();
     });
 
     test('return null when expected cookies not in header', () => {
       // given
-      const req = mockRequest({ cookie: 'remember=true; test=123' });
+      const req = mockRequest({ cookie: `${REMEMBER_COOKIE_KEY}=true; test=123` });
 
       // when
-      const result = getCookie(req, 'token');
+      const result = getCookie(req, AUTH_COOKIE_KEY);
       // then
       expect(result).toBeNull();
     });
 
     test('return value when cookies present in header', () => {
       // given
-      const req = mockRequest({ cookie: 'remember=true; token=n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW; test=123' });
+      const req = mockRequest({
+        cookie: `${REMEMBER_COOKIE_KEY}=true; ${AUTH_COOKIE_KEY}=n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW; test=123`,
+      });
 
       // when
-      const result = getCookie(req, 'token');
+      const result = getCookie(req, AUTH_COOKIE_KEY);
       // then
       expect(result).toEqual('n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW');
     });
@@ -123,69 +138,71 @@ describe('utils tests', () => {
 
     test('return token from array header', () => {
       // given
-      const req = mockRequest({ headers: { [AUTH_HEADER_KEY]: ['header-token'] }});
+      const req = mockRequest({ headers: { [AUTH_HEADER_KEY]: [HEADER_TOKEN] } });
 
       // when
       const result = getToken(req);
       // then
-      expect(result).toEqual('header-token');
+      expect(result).toEqual(HEADER_TOKEN);
     });
 
     test('return token from query', () => {
       // given
-      const req = mockRequest({ query: { [AUTH_QUERY_KEY]: 'query-token' }});
+      const req = mockRequest({ query: { [AUTH_QUERY_KEY]: QUERY_TOKEN } });
 
       // when
       const result = getToken(req);
       // then
-      expect(result).toEqual('query-token');
+      expect(result).toEqual(QUERY_TOKEN);
     });
 
     test('return token from array query', () => {
       // given
-      const req = mockRequest({ query: { [AUTH_QUERY_KEY]: ['query-token'] }});
+      const req = mockRequest({ query: { [AUTH_QUERY_KEY]: [QUERY_TOKEN] } });
 
       // when
       const result = getToken(req);
       // then
-      expect(result).toEqual('query-token');
+      expect(result).toEqual(QUERY_TOKEN);
     });
 
     test('return token from cookie', () => {
       // given
-      const req = mockRequest({ cookie: `remember=true; ${AUTH_COOKIE_KEY}=cookie-token; test=123` });
+      const req = mockRequest({
+        cookie: `${REMEMBER_COOKIE_KEY}=true; ${AUTH_COOKIE_KEY}=${COOKIE_TOKEN}; test=123`,
+      });
 
       // when
       const result = getToken(req);
       // then
-      expect(result).toEqual('cookie-token');
+      expect(result).toEqual(COOKIE_TOKEN);
     });
 
     test('return token from header if cookie, header and query provided', () => {
       // given
       const req = mockRequest({
-        cookie: `remember=true; ${AUTH_COOKIE_KEY}=cookie-token; test=123`,
-        headers: { [AUTH_HEADER_KEY]: ['header-token'] },
-        query: { [AUTH_QUERY_KEY]: ['query-token'] },
+        cookie: `${REMEMBER_COOKIE_KEY}=true; ${AUTH_COOKIE_KEY}=${COOKIE_TOKEN}; test=123`,
+        headers: { [AUTH_HEADER_KEY]: [HEADER_TOKEN] },
+        query: { [AUTH_QUERY_KEY]: [QUERY_TOKEN] },
       });
 
       // when
       const result = getToken(req);
       // then
-      expect(result).toEqual('header-token');
+      expect(result).toEqual(HEADER_TOKEN);
     });
 
     test('return token from query if cookie and query provided', () => {
       // given
       const req = mockRequest({
-        cookie: `remember=true; ${AUTH_COOKIE_KEY}=cookie-token; test=123`,
-        query: { [AUTH_QUERY_KEY]: ['query-token'] },
+        cookie: `${REMEMBER_COOKIE_KEY}=true; ${AUTH_COOKIE_KEY}=${COOKIE_TOKEN}; test=123`,
+        query: { [AUTH_QUERY_KEY]: [QUERY_TOKEN] },
       });
 
       // when
       const result = getToken(req);
       // then
-      expect(result).toEqual('query-token');
+      expect(result).toEqual(QUERY_TOKEN);
     });
   });
 });
