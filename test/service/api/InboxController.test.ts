@@ -1,4 +1,4 @@
-import { Request, type Response } from 'express';
+import type { Response } from 'express';
 import {
   type InboxAuthBody,
   InboxController,
@@ -858,6 +858,111 @@ describe('InboxController', () => {
           '    </channel>\n' +
           '</rss>',
       );
+    });
+  });
+
+  describe('Error Response Methods', () => {
+    test('render the 403 page as HTML by default', () => {
+      // given
+      const req = mockRequest({ query: {} });
+
+      // when
+      controller.render403Response(req, res);
+      // then
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.render).toHaveBeenCalledWith('pages/403');
+    });
+
+    test('render the 403 page as HTML', () => {
+      // given
+      const req = mockRequest({ query: { type: 'html' } });
+
+      // when
+      controller.render403Response(req, res);
+      // then
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.render).toHaveBeenCalledWith('pages/403');
+    });
+
+    test('render the 403 page as JSON', () => {
+      // given
+      const req = mockRequest({ query: { type: 'json' } });
+
+      // when
+      controller.render403Response(req, res);
+      // then
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({ message: 'You are not allowed to visit that page.' });
+    });
+
+    test('render the 404 page as HTML by default', () => {
+      // given
+      const req = mockRequest({ query: {} });
+
+      // when
+      controller.render404Response(req, res);
+      // then
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.render).toHaveBeenCalledWith('pages/404');
+    });
+
+    test('render the 404 page as HTML', () => {
+      // given
+      const req = mockRequest({ query: { type: 'html' } });
+
+      // when
+      controller.render404Response(req, res);
+      // then
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.render).toHaveBeenCalledWith('pages/404');
+    });
+
+    test('render the 404 page as JSON', () => {
+      // given
+      const req = mockRequest({ query: { type: 'json' } });
+      // when
+      controller.render404Response(req, res);
+      // then
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'The page you are looking for was not found.',
+      });
+    });
+
+    test('render the 500 page as HTML by default', () => {
+      // given
+      const req = mockRequest({ query: {} });
+      const error = new Error('some error');
+
+      // when
+      controller.render500Response(error, req, res);
+      // then
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.render).toHaveBeenCalledWith('pages/error', { error });
+    });
+
+    test('render the 500 page as HTML', () => {
+      // given
+      const req = mockRequest({ query: { type: 'html' } });
+      const error = new Error('some error');
+
+      // when
+      controller.render500Response(error, req, res);
+      // then
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.render).toHaveBeenCalledWith('pages/error', { error });
+    });
+
+    test('render the 500 page as JSON', () => {
+      // given
+      const req = mockRequest({ query: { type: 'json' } });
+      const error = new Error('some error');
+
+      // when
+      controller.render500Response(error, req, res);
+      // then
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ message: 'some error' });
     });
   });
 });

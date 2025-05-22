@@ -389,6 +389,6 @@ export class InboxController {
       return;
     }
 
-    res.status(500).json({ message: err.stack });
+    res.status(500).json({ message: err.message });
   };
 }
