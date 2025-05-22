@@ -1,45 +1,26 @@
-import * as fs from 'fs';
-import { simpleParser } from 'mailparser';
-import { parse as parseEmailAddress } from 'address-rfc2822';
+import type { Context, SESEvent } from 'aws-lambda';
 
-describe('Email Processor', () => {
-  test('Parse simple email body', async () => {
-    // given:
-    const email = await fs.readFileSync(`${__dirname}/data/simple.eml`).toString();
+import { handler } from '../../service/email-processor';
+import { MockedIncomingEmailProcessor } from '../utils';
 
-    // when:
-    const result = await simpleParser(email);
-    // then:
-    expect(result?.from?.text).toEqual('"John Doe" <john.doe@example.com>');
+jest.mock('../../service/processor/IncomingEmailProcessor');
+
+describe('email-processor', () => {
+  const messageId = 'message-id';
+
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  test('Parse cc email', async () => {
-    // given:
-    const email = await fs.readFileSync(`${__dirname}/data/cc.eml`).toString();
+  test('handle event', async () => {
+    // given
+    const event = {
+      Records: [{ ses: { mail: { messageId } } }],
+    } as SESEvent;
 
-    // when:
-    const result = await simpleParser(email);
-    // then:
-    expect(result?.from?.text).toEqual('"John Doe" <john.doe@example.com>');
-  });
-
-  test('Parse bcc email', async () => {
-    // given:
-    const email = await fs.readFileSync(`${__dirname}/data/bcc.eml`).toString();
-
-    // when:
-    const result = await simpleParser(email);
-    // then:
-    expect(result?.from?.text).toEqual('"John Doe" <john.doe@example.com>');
-  });
-
-  test('Parse single email', () => {
-    // given:
-    const emailString = 'John Doe <john.doe@test.com>';
-
-    // when:
-    const result = parseEmailAddress(emailString);
-    // then:
-    expect(result[0].user()).toEqual('john.doe');
+    // when
+    await handler(event, {} as unknown as Context, () => {});
+    // then
+    expect(MockedIncomingEmailProcessor.mockProcessEmail).toHaveBeenCalledWith(messageId);
   });
 });

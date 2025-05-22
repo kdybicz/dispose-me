@@ -4,82 +4,22 @@ import {
   InboxController,
   type InboxEmailParams,
   type InboxListParams,
-  type InboxRequest,
 } from '../../../service/api/InboxController';
-import { EmailDatabase } from '../../../service/tools/EmailDatabase';
-import { S3FileSystem } from '../../../service/tools/S3FileSystem';
-import { EmailParser, type ParsedEmail } from '../../../service/tools/EmailParser';
+import type { ParsedEmail } from '../../../service/tools/EmailParser';
+import { AUTH_COOKIE_KEY, REMEMBER_COOKIE_KEY } from '../../../service/tools/const';
 import {
-  AUTH_COOKIE_KEY,
-  AUTH_HEADER_KEY,
-  REMEMBER_COOKIE_KEY,
-} from '../../../service/tools/const';
+  COOKIE_TOKEN,
+  HEADER_TOKEN,
+  MockedEmailDatabase,
+  MockedEmailParser,
+  MockedS3FileSystem,
+  mockRequest,
+  mockResponse,
+} from '../../utils';
 
 jest.mock('../../../service/tools/EmailDatabase');
 jest.mock('../../../service/tools/EmailParser');
 jest.mock('../../../service/tools/S3FileSystem');
-
-const COOKIE_TOKEN = 'cookie-token';
-const HEADER_TOKEN = 'header-token';
-
-type RequestArgs<B> = {
-  query?: Record<string, undefined | string>;
-  params?: Record<string, string>;
-  cookies?: Record<string, string>;
-  body?: B;
-};
-
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-const mockRequest = <P = Record<string, string>, B = any>(
-  args?: RequestArgs<B>,
-): InboxRequest<P, B> => {
-  const { query = {}, params = {}, cookies, body } = args ?? {};
-  return {
-    query,
-    params,
-    headersDistinct: { [AUTH_HEADER_KEY]: [HEADER_TOKEN] },
-    headers: {
-      cookie:
-        cookies != null
-          ? Object.entries(cookies)
-              .map(([key, val]) => `${key}=${val}`)
-              .join('; ')
-          : undefined,
-    },
-    body,
-  } as unknown as InboxRequest<P>;
-};
-
-const mockResponse = (): Response => {
-  const mockRender = jest.fn();
-  return {
-    clearCookie: jest.fn(),
-    cookie: jest.fn(),
-    json: jest.fn(),
-    redirect: jest.fn(),
-    render: mockRender,
-    send: jest.fn(),
-    setHeader: jest.fn(),
-    status: jest.fn().mockReturnThis(),
-    type: jest.fn().mockReturnThis(),
-  } as unknown as Response;
-};
-
-const MockedEmailDatabase = EmailDatabase as unknown as {
-  mockStoreEmail: jest.Mock;
-  mockListEmails: jest.Mock;
-  mockEmailExist: jest.Mock;
-  mockDeleteEmail: jest.Mock;
-};
-
-const MockedS3FileSystem = S3FileSystem as unknown as {
-  getObject: jest.Mock;
-  getObjects: jest.Mock;
-};
-
-const MockedEmailParser = EmailParser as unknown as {
-  mockParseEmail: jest.Mock;
-};
 
 describe('InboxController', () => {
   let controller: InboxController;
