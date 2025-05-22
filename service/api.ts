@@ -86,7 +86,7 @@ app.all('*', (req, res) => {
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 app.use((err: any, req: any, res: any, _: any) => {
-  log.error(err.stack);
+  log.error('Error while processing request', err);
   inboxController.render500Response(err, req, res);
 });
 
