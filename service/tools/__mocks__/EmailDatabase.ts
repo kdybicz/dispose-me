@@ -1,5 +1,4 @@
 export class EmailDatabase {
-
   static mockStoreEmail = jest.fn();
   static mockListEmails = jest.fn();
   static mockEmailExist = jest.fn();

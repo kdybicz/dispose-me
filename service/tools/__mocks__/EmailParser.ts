@@ -1,5 +1,4 @@
 export class EmailParser {
-
   static mockParseEmail = jest.fn();
 
   async parseEmail(...args) {
