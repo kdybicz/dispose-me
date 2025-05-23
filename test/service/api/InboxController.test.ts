@@ -21,6 +21,8 @@ import {
   buildAuthValidationChain,
   buildDeleteEmailValidationChain,
   buildDownloadEmailValidationChain,
+  buildInboxValidationChain,
+  buildIndexValidationChain,
   buildLatestEmailValidationChain,
   buildListEmailsValidationChain,
   buildListRssValidationChain,
@@ -45,6 +47,7 @@ describe('InboxController', () => {
     test('renders index page as html by default', async () => {
       // given
       const req = mockRequest();
+      await validateRequest(req, buildIndexValidationChain());
 
       // when
       await controller.index(req, res);
@@ -58,6 +61,7 @@ describe('InboxController', () => {
       const req = mockRequest({
         query: { type },
       });
+      await validateRequest(req, buildIndexValidationChain());
 
       // when
       await controller.index(req, res);
@@ -72,6 +76,7 @@ describe('InboxController', () => {
       const req = mockRequest({
         query: { type },
       });
+      await validateRequest(req, buildIndexValidationChain());
 
       // when
       await controller.index(req, res);
@@ -84,6 +89,7 @@ describe('InboxController', () => {
       const req = mockRequest({
         cookies: { [AUTH_COOKIE_KEY]: COOKIE_TOKEN },
       });
+      await validateRequest(req, buildIndexValidationChain());
 
       // when
       await controller.index(req, res);
@@ -623,6 +629,7 @@ describe('InboxController', () => {
       const req = mockRequest<InboxListParams>({
         query: {},
       });
+      await validateRequest(req, buildInboxValidationChain());
 
       // when
       await controller.inbox(req, res);
@@ -635,6 +642,7 @@ describe('InboxController', () => {
       const req = mockRequest<InboxListParams>({
         query: { type: 'html' },
       });
+      await validateRequest(req, buildInboxValidationChain());
 
       // when
       await controller.inbox(req, res);
@@ -647,6 +655,7 @@ describe('InboxController', () => {
       const req = mockRequest<InboxListParams>({
         query: { type: 'json' },
       });
+      await validateRequest(req, buildInboxValidationChain());
 
       // when
       await controller.inbox(req, res);

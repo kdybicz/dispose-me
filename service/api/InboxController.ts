@@ -7,7 +7,7 @@ import { S3FileSystem } from '../tools/S3FileSystem';
 import { AUTH_COOKIE_KEY, AUTH_QUERY_KEY, REMEMBER_COOKIE_KEY } from '../tools/const';
 import { mapEmailDetailsListToFeed } from '../tools/feed';
 import log from '../tools/log';
-import { getCookie, getToken, normalizeUsername, parsePositiveIntOrDefault } from '../tools/utils';
+import { getCookie, getToken, normalizeUsername } from '../tools/utils';
 import dayjs = require('dayjs');
 
 export interface InboxListParams extends Record<string, string> {
@@ -68,7 +68,7 @@ export class InboxController {
       `Action: 'index' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { type = 'html' } = req.query;
+    const { type } = matchedData(req);
 
     const token = getCookie(req, AUTH_COOKIE_KEY);
     if (token) {
@@ -262,7 +262,7 @@ export class InboxController {
       `Action: 'inbox' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { type = 'html' } = req.query;
+    const { type } = matchedData(req);
 
     if (type === 'html') {
       return res.render('pages/inbox');

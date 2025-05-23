@@ -52,6 +52,10 @@ export const buildRememberBodyValidator = (): ValidationChain => {
     .customSanitizer((value) => value === 'on');
 };
 
+export const buildIndexValidationChain = (): ValidationChain[] => {
+  return [buildTypeQueryValidator()];
+};
+
 export const buildAuthValidationChain = (): ValidationChain[] => {
   return [buildTokenBodyValidator(), buildRememberBodyValidator()];
 };
@@ -87,4 +91,8 @@ export const buildListEmailsValidationChain = (): ValidationChain[] => {
     buildTypeQueryValidator(),
     buildLimitQueryValidator(),
   ];
+};
+
+export const buildInboxValidationChain = (): ValidationChain[] => {
+  return [buildTypeQueryValidator()];
 };

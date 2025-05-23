@@ -11,6 +11,8 @@ import {
   buildAuthValidationChain,
   buildDeleteEmailValidationChain,
   buildDownloadEmailValidationChain,
+  buildInboxValidationChain,
+  buildIndexValidationChain,
   buildLatestEmailValidationChain,
   buildListEmailsValidationChain,
   buildListRssValidationChain,
@@ -28,21 +30,6 @@ const asyncHandler =
     Promise.resolve(fn(req, res, next)).catch((error) => {
       next(error);
     });
-
-/**
- * @deprecated The method should be removed
- */
-const buildInboxRequestValidator = () => {
-  let blacklist: string[] = [];
-  try {
-    if (process.env.INBOX_BLACKLIST) {
-      blacklist = process.env.INBOX_BLACKLIST.split(',');
-    }
-  } catch (err) {
-    log.error('Unable to parse INBOX_BLACKLIST', err);
-  }
-  return param('username').not().isIn(blacklist);
-};
 
 app.use(express.json());
 
@@ -64,7 +51,7 @@ app.use((req, res, next) => {
 app.set('view engine', 'ejs');
 app.engine('ejs', require('ejs').__express); // workaround for webpack tree-shaking ejs out
 
-app.get('/', asyncHandler(inboxController.index));
+app.get('/', ...buildIndexValidationChain(), asyncHandler(inboxController.index));
 app.post('/', ...buildAuthValidationChain(), asyncHandler(inboxController.auth));
 app.get('/logout', asyncHandler(inboxController.logout));
 
@@ -98,7 +85,7 @@ app.get(
   ...buildListEmailsValidationChain(),
   asyncHandler(inboxController.list),
 );
-app.get('/inbox', buildInboxRequestValidator(), asyncHandler(inboxController.inbox));
+app.get('/inbox', ...buildInboxValidationChain(), asyncHandler(inboxController.inbox));
 
 app.all('*', (req, res) => {
   inboxController.render404Response(req, res);
