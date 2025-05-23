@@ -16,7 +16,7 @@ export const DEFAULT_TYPE = 'html';
 
 export const buildUsernameParamValidator = (): ValidationChain => {
   return param('username')
-    .matches(/[a-zA-Z0-9\.\-\_\+]*/)
+    .matches(/[a-zA-Z0-9.\-_+]*/)
     .toLowerCase()
     .customSanitizer((value: string) => {
       return value?.replace(/\+.*/, '')?.replace(/\./g, '') ?? '';
