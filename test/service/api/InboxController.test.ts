@@ -22,6 +22,7 @@ import {
   buildDeleteEmailValidationChain,
   buildDownloadEmailValidationChain,
   buildLatestEmailValidationChain,
+  buildListEmailsValidationChain,
   buildListRssValidationChain,
   buildShowEmailValidationChain,
 } from '../../../service/tools/validators';
@@ -665,6 +666,7 @@ describe('InboxController', () => {
         query: { sentAfter, limit, type },
         params: { username },
       });
+      await validateRequest(req, buildListEmailsValidationChain());
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [] });
 
@@ -687,6 +689,7 @@ describe('InboxController', () => {
         query: { sentAfter, limit, type },
         params: { username },
       });
+      await validateRequest(req, buildListEmailsValidationChain());
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [] });
 

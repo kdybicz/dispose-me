@@ -12,6 +12,7 @@ import {
   buildDeleteEmailValidationChain,
   buildDownloadEmailValidationChain,
   buildLatestEmailValidationChain,
+  buildListEmailsValidationChain,
   buildListRssValidationChain,
   buildShowEmailValidationChain,
 } from './tools/validators';
@@ -92,7 +93,11 @@ app.get(
   ...buildShowEmailValidationChain(),
   asyncHandler(inboxController.show),
 );
-app.get('/inbox/:username', buildInboxRequestValidator(), asyncHandler(inboxController.list));
+app.get(
+  '/inbox/:username',
+  ...buildListEmailsValidationChain(),
+  asyncHandler(inboxController.list),
+);
 app.get('/inbox', buildInboxRequestValidator(), asyncHandler(inboxController.inbox));
 
 app.all('*', (req, res) => {

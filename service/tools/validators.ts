@@ -79,3 +79,12 @@ export const buildShowEmailValidationChain = (): ValidationChain[] => {
     buildTypeQueryValidator(),
   ];
 };
+
+export const buildListEmailsValidationChain = (): ValidationChain[] => {
+  return [
+    buildUsernameParamValidator(),
+    buildSentAfterQueryValidator(),
+    buildTypeQueryValidator(),
+    buildLimitQueryValidator(),
+  ];
+};

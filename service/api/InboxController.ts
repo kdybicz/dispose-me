@@ -276,20 +276,20 @@ export class InboxController {
       `Action: 'list' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { sentAfter, limit, type = 'html' } = req.query;
-    const { username } = req.params;
-
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return this.render403Response(req, res);
     }
 
+    const { limit, sentAfter, type, username } = matchedData<{
+      limit?: number;
+      sentAfter?: number;
+      type: string;
+      username: string;
+    }>(req);
+
     const normalizedUsername = normalizeUsername(username);
-    const emailObjectList = await this.emailDatabase.list(
-      normalizedUsername,
-      parsePositiveIntOrDefault(sentAfter),
-      parsePositiveIntOrDefault(limit),
-    );
+    const emailObjectList = await this.emailDatabase.list(normalizedUsername, sentAfter, limit);
 
     const emails = (emailObjectList.Items ?? []).map<EmailListItem>((emailObject) => ({
       id: emailObject.Id,
