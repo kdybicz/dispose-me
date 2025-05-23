@@ -2,9 +2,6 @@ import type { Request } from 'express';
 
 import { AUTH_COOKIE_KEY, AUTH_HEADER_KEY, AUTH_QUERY_KEY } from './const';
 
-/**
- * @deprecated The method should be removed
- */
 export const normalizeUsername = (username: string): string => {
   if (!username) {
     return username;

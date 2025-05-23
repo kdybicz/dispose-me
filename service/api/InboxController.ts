@@ -1,3 +1,4 @@
+import dayjs = require('dayjs');
 import type { Request, Response } from 'express';
 import { matchedData, validationResult } from 'express-validator';
 
@@ -8,7 +9,7 @@ import { AUTH_COOKIE_KEY, AUTH_QUERY_KEY, REMEMBER_COOKIE_KEY } from '../tools/c
 import { mapEmailDetailsListToFeed } from '../tools/feed';
 import log from '../tools/log';
 import { getCookie, getToken, normalizeUsername } from '../tools/utils';
-import dayjs = require('dayjs');
+import { TYPE_DEFAULT } from '../tools/validators';
 
 export interface InboxListParams extends Record<string, string> {
   username: string;
@@ -68,7 +69,7 @@ export class InboxController {
       `Action: 'index' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { type = 'html' } = matchedData<{ type?: string }>(req);
+    const { type = TYPE_DEFAULT } = matchedData<{ type?: string }>(req);
 
     const token = getCookie(req, AUTH_COOKIE_KEY);
     if (token) {
@@ -138,7 +139,7 @@ export class InboxController {
 
     const {
       id,
-      type = 'html',
+      type = TYPE_DEFAULT,
       username,
     } = matchedData<{ id: string; type?: string; username: string }>(req);
 
@@ -231,7 +232,7 @@ export class InboxController {
 
     const {
       sentAfter,
-      type = 'html',
+      type = TYPE_DEFAULT,
       username,
     } = matchedData<{
       sentAfter?: number;
@@ -270,7 +271,7 @@ export class InboxController {
       `Action: 'inbox' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { type = 'html' } = matchedData<{ type?: string }>(req);
+    const { type = TYPE_DEFAULT } = matchedData<{ type?: string }>(req);
 
     if (type === 'html') {
       return res.render('pages/inbox');
@@ -292,7 +293,7 @@ export class InboxController {
     const {
       limit,
       sentAfter,
-      type = 'html',
+      type = TYPE_DEFAULT,
       username,
     } = matchedData<{
       limit?: number;
@@ -369,7 +370,7 @@ export class InboxController {
       `Action: '403' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { type = 'html' } = req.query;
+    const { type = TYPE_DEFAULT } = req.query;
 
     if (type === 'html') {
       res.status(403).render('pages/403');
@@ -384,7 +385,7 @@ export class InboxController {
       `Action: '404' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { type = 'html' } = req.query;
+    const { type = TYPE_DEFAULT } = req.query;
 
     if (type === 'html') {
       res.status(404).render('pages/404');
@@ -399,7 +400,7 @@ export class InboxController {
       `Action: '500' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { type = 'html' } = req.query;
+    const { type = TYPE_DEFAULT } = req.query;
 
     if (type === 'html') {
       res.status(500).render('pages/error', { error: err });
