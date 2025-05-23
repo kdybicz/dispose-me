@@ -198,12 +198,12 @@ export class InboxController {
       `Action: 'delete' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { id, username } = req.params;
-
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return this.render403Response(req, res);
     }
+
+    const { id, username } = matchedData<{ id: string; username: string }>(req);
 
     const normalizedUsername = normalizeUsername(username);
     const deletedFromDatabase = await this.emailDatabase.delete(normalizedUsername, id);

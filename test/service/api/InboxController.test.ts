@@ -19,6 +19,7 @@ import {
 } from '../../utils';
 import {
   buildAuthValidationChain,
+  buildDeleteEmailValidationChain,
   buildLatestEmailValidationChain,
   buildListRssValidationChain,
 } from '../../../service/tools/validators';
@@ -155,7 +156,7 @@ describe('InboxController', () => {
 
   describe('show()', () => {
     const username = 'username';
-    const id = 'message-id';
+    const id = 'messageid';
 
     test.skip('should return 403 if username or id is missing', async () => {
       // given
@@ -315,7 +316,7 @@ describe('InboxController', () => {
 
   describe('download()', () => {
     const username = 'username';
-    const id = 'message-id';
+    const id = 'messageid';
 
     test.skip('should return 403 if username or id is missing', async () => {
       // given
@@ -379,11 +380,12 @@ describe('InboxController', () => {
 
   describe('delete()', () => {
     const username = 'username';
-    const id = 'message-id';
+    const id = 'messageid';
 
     test.skip('should return 403 if username or id is missing', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({ params: {} });
+      await validateRequest(req, buildDeleteEmailValidationChain());
 
       // when
       await controller.delete(req, res);
@@ -397,6 +399,7 @@ describe('InboxController', () => {
       const req = mockRequest<InboxEmailParams>({
         params: { username, id },
       });
+      await validateRequest(req, buildDeleteEmailValidationChain());
       // and
       MockedEmailDatabase.mockDeleteEmail.mockResolvedValueOnce(true);
 
@@ -415,6 +418,7 @@ describe('InboxController', () => {
       const req = mockRequest<InboxEmailParams>({
         params: { username, id },
       });
+      await validateRequest(req, buildDeleteEmailValidationChain());
       // and
       MockedEmailDatabase.mockDeleteEmail.mockResolvedValueOnce(false);
 
@@ -430,7 +434,7 @@ describe('InboxController', () => {
 
   describe('latest()', () => {
     const username = 'username';
-    const id = 'message-id';
+    const id = 'messageid';
     const sentAfter = '123456789';
 
     test('should return 403 if username is missing', async () => {

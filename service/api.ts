@@ -9,6 +9,7 @@ import { InboxController } from './api/InboxController';
 import log from './tools/log';
 import {
   buildAuthValidationChain,
+  buildDeleteEmailValidationChain,
   buildLatestEmailValidationChain,
   buildListRssValidationChain,
 } from './tools/validators';
@@ -76,7 +77,7 @@ app.get(
 );
 app.get(
   '/inbox/:username/:id/delete',
-  buildInboxRequestValidator(),
+  ...buildDeleteEmailValidationChain(),
   asyncHandler(inboxController.delete),
 );
 app.get(
