@@ -71,3 +71,11 @@ export const buildDeleteEmailValidationChain = (): ValidationChain[] => {
 export const buildDownloadEmailValidationChain = (): ValidationChain[] => {
   return [buildUsernameParamValidator(), buildMessageIdParamValidation()];
 };
+
+export const buildShowEmailValidationChain = (): ValidationChain[] => {
+  return [
+    buildUsernameParamValidator(),
+    buildMessageIdParamValidation(),
+    buildTypeQueryValidator(),
+  ];
+};

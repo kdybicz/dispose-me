@@ -13,6 +13,7 @@ import {
   buildDownloadEmailValidationChain,
   buildLatestEmailValidationChain,
   buildListRssValidationChain,
+  buildShowEmailValidationChain,
 } from './tools/validators';
 
 const inboxController = new InboxController(process.env.EMAIL_BUCKET_NAME ?? '');
@@ -86,7 +87,11 @@ app.get(
   ...buildDownloadEmailValidationChain(),
   asyncHandler(inboxController.download),
 );
-app.get('/inbox/:username/:id', buildInboxRequestValidator(), asyncHandler(inboxController.show));
+app.get(
+  '/inbox/:username/:id',
+  ...buildShowEmailValidationChain(),
+  asyncHandler(inboxController.show),
+);
 app.get('/inbox/:username', buildInboxRequestValidator(), asyncHandler(inboxController.list));
 app.get('/inbox', buildInboxRequestValidator(), asyncHandler(inboxController.inbox));
 
