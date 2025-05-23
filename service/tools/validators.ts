@@ -67,3 +67,7 @@ export const buildListRssValidationChain = (): ValidationChain[] => {
 export const buildDeleteEmailValidationChain = (): ValidationChain[] => {
   return [buildUsernameParamValidator(), buildMessageIdParamValidation()];
 };
+
+export const buildDownloadEmailValidationChain = (): ValidationChain[] => {
+  return [buildUsernameParamValidator(), buildMessageIdParamValidation()];
+};

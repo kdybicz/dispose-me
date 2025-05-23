@@ -10,6 +10,7 @@ import log from './tools/log';
 import {
   buildAuthValidationChain,
   buildDeleteEmailValidationChain,
+  buildDownloadEmailValidationChain,
   buildLatestEmailValidationChain,
   buildListRssValidationChain,
 } from './tools/validators';
@@ -82,7 +83,7 @@ app.get(
 );
 app.get(
   '/inbox/:username/:id/download',
-  buildInboxRequestValidator(),
+  ...buildDownloadEmailValidationChain(),
   asyncHandler(inboxController.download),
 );
 app.get('/inbox/:username/:id', buildInboxRequestValidator(), asyncHandler(inboxController.show));

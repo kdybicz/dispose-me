@@ -20,6 +20,7 @@ import {
 import {
   buildAuthValidationChain,
   buildDeleteEmailValidationChain,
+  buildDownloadEmailValidationChain,
   buildLatestEmailValidationChain,
   buildListRssValidationChain,
 } from '../../../service/tools/validators';
@@ -321,6 +322,7 @@ describe('InboxController', () => {
     test.skip('should return 403 if username or id is missing', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({ params: {} });
+      await validateRequest(req, buildDownloadEmailValidationChain());
 
       // when
       await controller.download(req, res);
@@ -332,6 +334,7 @@ describe('InboxController', () => {
     test('should return 404 if email does not exist', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({ params: { username, id } });
+      await validateRequest(req, buildDownloadEmailValidationChain());
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(false);
 
@@ -344,6 +347,7 @@ describe('InboxController', () => {
     test('should set headers and send email file if it exists', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({ params: { username, id } });
+      await validateRequest(req, buildDownloadEmailValidationChain());
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
@@ -364,6 +368,7 @@ describe('InboxController', () => {
     test.skip('should return 404 if S3 object has no body', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({ params: { username, id } });
+      await validateRequest(req, buildDownloadEmailValidationChain());
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
