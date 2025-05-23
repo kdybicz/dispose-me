@@ -35,6 +35,16 @@ describe('validators', () => {
       expect(validationResult(req).isEmpty()).toBe(false);
     });
 
+    test('rejects not existing username', async () => {
+      // given
+      const req = mockRequest({ params: {} });
+
+      // when
+      await buildUsernameParamValidator().run(req);
+      // and
+      expect(validationResult(req).isEmpty()).toBe(false);
+    });
+
     test('removes dots, spaces, and parts after plus', async () => {
       // given
       const req = mockRequest({ params: { username: 'Va.l id+ignore this' } });
@@ -124,7 +134,7 @@ describe('validators', () => {
 
       // then
       expect(validationResult(req).isEmpty()).toBe(true);
-      expect(matchedData(req).sentAfter).toEqual(new Date('Fri May 23 2025 13:42:25 GMT'));
+      expect(matchedData(req).sentAfter).toEqual(1748007745);
     });
 
     test('accepts missing sentAfter', async () => {
@@ -139,9 +149,20 @@ describe('validators', () => {
       expect(matchedData(req)).toEqual({});
     });
 
-    test('rejects invalid sentAfter', async () => {
+    test('rejects sentAfter below min', async () => {
       // given
       const req = mockRequest({ query: { sentAfter: '-10' } });
+
+      // when
+      await buildSentAfterQueryValidator().run(req);
+
+      // then
+      expect(validationResult(req).isEmpty()).toBe(false);
+    });
+
+    test('rejects sentAfter above max', async () => {
+      // given
+      const req = mockRequest({ query: { sentAfter: '10000000000' } });
 
       // when
       await buildSentAfterQueryValidator().run(req);
@@ -295,7 +316,7 @@ describe('validators', () => {
 
       // then
       expect(validationResult(req).isEmpty()).toBe(true);
-      expect(matchedData(req)).toEqual({ remember: false  });
+      expect(matchedData(req)).toEqual({ remember: false });
     });
 
     test('rejects invalid remember value', async () => {

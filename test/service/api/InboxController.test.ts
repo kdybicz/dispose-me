@@ -17,7 +17,10 @@ import {
   mockResponse,
   validateRequest,
 } from '../../utils';
-import { buildAuthValidationChain } from '../../../service/tools/validators';
+import {
+  buildAuthValidationChain,
+  buildLatestEmailValidationChain,
+} from '../../../service/tools/validators';
 
 jest.mock('../../../service/tools/EmailDatabase');
 jest.mock('../../../service/tools/EmailParser');
@@ -429,9 +432,10 @@ describe('InboxController', () => {
     const id = 'message-id';
     const sentAfter = '123456789';
 
-    test.skip('should return 403 if username is missing', async () => {
+    test('should return 403 if username is missing', async () => {
       // given
       const req = mockRequest<InboxListParams>({ params: {} });
+      await validateRequest(req, buildLatestEmailValidationChain());
 
       // when
       await controller.latest(req, res);
@@ -446,6 +450,7 @@ describe('InboxController', () => {
         params: { username },
         query: { sentAfter },
       });
+      await validateRequest(req, buildLatestEmailValidationChain());
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: undefined });
 
@@ -463,6 +468,7 @@ describe('InboxController', () => {
           params: { username },
           query: { sentAfter, type },
         });
+        await validateRequest(req, buildLatestEmailValidationChain());
         // and
         MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
         MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
@@ -486,6 +492,7 @@ describe('InboxController', () => {
         params: { username },
         query: { sentAfter, type: 'json' },
       });
+      await validateRequest(req, buildLatestEmailValidationChain());
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
@@ -509,6 +516,7 @@ describe('InboxController', () => {
           params: { username },
           query: { type },
         });
+        await validateRequest(req, buildLatestEmailValidationChain());
         // and
         MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
         MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
@@ -531,6 +539,7 @@ describe('InboxController', () => {
         params: { username },
         query: { type: 'json' },
       });
+      await validateRequest(req, buildLatestEmailValidationChain());
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
@@ -553,6 +562,7 @@ describe('InboxController', () => {
           params: { username },
           query: { sentAfter, type },
         });
+        await validateRequest(req, buildLatestEmailValidationChain());
         // and
         MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
         MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({

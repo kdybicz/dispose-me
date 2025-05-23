@@ -7,7 +7,7 @@ import * as serverless from 'serverless-http';
 
 import { InboxController } from './api/InboxController';
 import log from './tools/log';
-import { buildAuthValidationChain } from './tools/validators';
+import { buildAuthValidationChain, buildLatestEmailValidationChain } from './tools/validators';
 
 const inboxController = new InboxController(process.env.EMAIL_BUCKET_NAME ?? '');
 const app = express();
@@ -59,7 +59,7 @@ app.get('/logout', asyncHandler(inboxController.logout));
 
 app.get(
   '/inbox/:username/latest',
-  buildInboxRequestValidator(),
+  ...buildLatestEmailValidationChain(),
   asyncHandler(inboxController.latest),
 );
 app.get(

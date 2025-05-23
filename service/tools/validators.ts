@@ -18,7 +18,7 @@ export const buildUsernameParamValidator = (): ValidationChain => {
   return param('username')
     .toLowerCase()
     .customSanitizer((value: string) => {
-      return value.replace(/\+.*/, '').replace(/\./g, '').replace(/\s*/g, '');
+      return value?.replace(/\+.*/, '')?.replace(/\./g, '')?.replace(/\s*/g, '');
     })
     .notEmpty()
     .not()
@@ -30,14 +30,7 @@ export const buildMessageIdParamValidation = (): ValidationChain => {
 };
 
 export const buildSentAfterQueryValidator = (): ValidationChain => {
-  return query('sentAfter')
-    .optional()
-    .toInt()
-    .isInt({ min: 0 })
-    .bail()
-    .customSanitizer((value: number) => {
-      return new Date(value * 1000);
-    });
+  return query('sentAfter').optional().toInt().isInt({ min: 0, max: 9999999999 });
 };
 
 export const buildLimitQueryValidator = (): ValidationChain => {
@@ -61,4 +54,8 @@ export const buildRememberBodyValidator = (): ValidationChain => {
 
 export const buildAuthValidationChain = (): ValidationChain[] => {
   return [buildTokenBodyValidator(), buildRememberBodyValidator()];
+};
+
+export const buildLatestEmailValidationChain = (): ValidationChain[] => {
+  return [buildUsernameParamValidator(), buildSentAfterQueryValidator(), buildTypeQueryValidator()];
 };

@@ -221,22 +221,21 @@ export class InboxController {
       `Action: 'latest' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { sentAfter, type = 'html' } = req.query;
-    const { username } = req.params;
-
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return this.render403Response(req, res);
     }
 
+    const { sentAfter, type, username } = matchedData<{
+      sentAfter?: number;
+      type: string;
+      username: string;
+    }>(req);
+
     let email: EmailDetails | undefined;
 
     const normalizedUsername = normalizeUsername(username);
-    const latestEmail = await this.emailDatabase.list(
-      normalizedUsername,
-      parsePositiveIntOrDefault(sentAfter),
-      1,
-    );
+    const latestEmail = await this.emailDatabase.list(normalizedUsername, sentAfter, 1);
     if (latestEmail.Items) {
       const messageId = latestEmail.Items[0].Id;
       const emailObject = await this.fileSystem.getObject(this.bucketName, messageId);
