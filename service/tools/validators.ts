@@ -2,13 +2,13 @@ import { type ValidationChain, body, param, query } from 'express-validator';
 
 import log from './log';
 
-let blacklist: string[] = [];
+let INBOX_BLACKLIST: string[] = [];
 try {
   if (process.env.INBOX_BLACKLIST) {
-    blacklist = process.env.INBOX_BLACKLIST.split(',');
+    INBOX_BLACKLIST = process.env.INBOX_BLACKLIST.split(',');
   }
 } catch (err) {
-  log.error('Unable to parse INBOX_BLACKLIST', err);
+  log.error(`Unable to parse process.env.INBOX_BLACKLIST: ${process.env.INBOX_BLACKLIST}`, err);
 }
 
 const ALLOWED_TYPES = ['html', 'json'];
@@ -23,7 +23,7 @@ export const buildUsernameParamValidator = (): ValidationChain => {
     })
     .isLength({ min: 3, max: 25 })
     .not()
-    .isIn(blacklist);
+    .isIn(INBOX_BLACKLIST);
 };
 
 export const buildMessageIdParamValidation = (): ValidationChain => {
