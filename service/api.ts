@@ -7,6 +7,7 @@ import * as serverless from 'serverless-http';
 
 import { InboxController } from './api/InboxController';
 import log from './tools/log';
+import { buildAuthValidationChain } from './tools/validators';
 
 const inboxController = new InboxController(process.env.EMAIL_BUCKET_NAME ?? '');
 const app = express();
@@ -53,7 +54,7 @@ app.set('view engine', 'ejs');
 app.engine('ejs', require('ejs').__express); // workaround for webpack tree-shaking ejs out
 
 app.get('/', asyncHandler(inboxController.index));
-app.post('/', asyncHandler(inboxController.auth));
+app.post('/', ...buildAuthValidationChain(), asyncHandler(inboxController.auth));
 app.get('/logout', asyncHandler(inboxController.logout));
 
 app.get(

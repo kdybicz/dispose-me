@@ -15,7 +15,9 @@ import {
   MockedS3FileSystem,
   mockRequest,
   mockResponse,
+  validateRequest,
 } from '../../utils';
+import { buildAuthValidationChain } from '../../../service/tools/validators';
 
 jest.mock('../../../service/tools/EmailDatabase');
 jest.mock('../../../service/tools/EmailParser');
@@ -87,16 +89,17 @@ describe('InboxController', () => {
 
     test('sets cookies and redirects to inbox if remember is true', async () => {
       // given
-      const remember = true;
+      const remember = 'on';
       // and
       const req = mockRequest<Record<string, never>, InboxAuthBody>({
         body: { token, remember },
       });
+      await validateRequest(req, buildAuthValidationChain());
 
       // when
       await controller.auth(req, res);
       // then
-      expect(res.cookie).toHaveBeenCalledWith(REMEMBER_COOKIE_KEY, remember, {
+      expect(res.cookie).toHaveBeenCalledWith(REMEMBER_COOKIE_KEY, true, {
         httpOnly: true,
         maxAge: 2592000000,
         sameSite: 'strict',
@@ -113,11 +116,12 @@ describe('InboxController', () => {
 
     test('sets cookie and redirects if remember is false', async () => {
       // given
-      const remember = false;
+      const remember = 'off';
       // and
       const req = mockRequest<Record<string, never>, InboxAuthBody>({
         body: { token, remember },
       });
+      await validateRequest(req, buildAuthValidationChain());
 
       // when
       await controller.auth(req, res);
