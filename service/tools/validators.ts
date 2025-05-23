@@ -59,3 +59,7 @@ export const buildAuthValidationChain = (): ValidationChain[] => {
 export const buildLatestEmailValidationChain = (): ValidationChain[] => {
   return [buildUsernameParamValidator(), buildSentAfterQueryValidator(), buildTypeQueryValidator()];
 };
+
+export const buildListRssValidationChain = (): ValidationChain[] => {
+  return [buildUsernameParamValidator()];
+};

@@ -2,6 +2,9 @@ import type { Request } from 'express';
 
 import { AUTH_COOKIE_KEY, AUTH_HEADER_KEY, AUTH_QUERY_KEY } from './const';
 
+/**
+ * @deprecated The method should be removed
+ */
 export const normalizeUsername = (username: string): string => {
   if (!username) {
     return username;
@@ -10,6 +13,9 @@ export const normalizeUsername = (username: string): string => {
   return decodeURIComponent(username).toLowerCase().replace(/\+.*/, '').replace(/\./g, '');
 };
 
+/**
+ * @deprecated The method should be removed
+ */
 export const parsePositiveIntOrDefault = (
   value?: string,
   defaultValue?: number,

@@ -20,6 +20,7 @@ import {
 import {
   buildAuthValidationChain,
   buildLatestEmailValidationChain,
+  buildListRssValidationChain,
 } from '../../../service/tools/validators';
 
 jest.mock('../../../service/tools/EmailDatabase');
@@ -673,6 +674,7 @@ describe('InboxController', () => {
     test.skip('should return 403 if username is missing', async () => {
       // given
       const req = mockRequest<InboxListParams>({ params: {} });
+      await validateRequest(req, buildListRssValidationChain());
 
       // when
       await controller.listRss(req, res);
@@ -694,6 +696,7 @@ describe('InboxController', () => {
     test('should render an RSS feed with emails', async () => {
       // given
       const req = mockRequest<InboxListParams>({ params: { username } });
+      await validateRequest(req, buildListRssValidationChain());
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({
         Items: [{ Id: id1 }, { Id: id2 }],
@@ -746,6 +749,7 @@ describe('InboxController', () => {
     test('should handle empty emails list gracefully', async () => {
       // given
       const req = mockRequest<InboxListParams>({ params: { username } });
+      await validateRequest(req, buildListRssValidationChain());
       // and
       jest.useFakeTimers().setSystemTime(new Date('Sun, 01 Jan 2023 01:01:01 GMT'));
       // and
@@ -775,6 +779,7 @@ describe('InboxController', () => {
     test('should skip null/failed parses and still return valid RSS', async () => {
       // given
       const req = mockRequest<InboxListParams>({ params: { username } });
+      await validateRequest(req, buildListRssValidationChain());
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({
         Items: [{ Id: id1 }, { Id: id2 }],

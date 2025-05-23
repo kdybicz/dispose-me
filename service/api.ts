@@ -7,7 +7,11 @@ import * as serverless from 'serverless-http';
 
 import { InboxController } from './api/InboxController';
 import log from './tools/log';
-import { buildAuthValidationChain, buildLatestEmailValidationChain } from './tools/validators';
+import {
+  buildAuthValidationChain,
+  buildLatestEmailValidationChain,
+  buildListRssValidationChain,
+} from './tools/validators';
 
 const inboxController = new InboxController(process.env.EMAIL_BUCKET_NAME ?? '');
 const app = express();
@@ -21,6 +25,9 @@ const asyncHandler =
       next(error);
     });
 
+/**
+ * @deprecated The method should be removed
+ */
 const buildInboxRequestValidator = () => {
   let blacklist: string[] = [];
   try {
@@ -64,7 +71,7 @@ app.get(
 );
 app.get(
   '/inbox/:username/feed/',
-  buildInboxRequestValidator(),
+  ...buildListRssValidationChain(),
   asyncHandler(inboxController.listRss),
 );
 app.get(

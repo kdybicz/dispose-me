@@ -312,12 +312,12 @@ export class InboxController {
       `Action: 'listRss' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { username } = req.params;
-
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return this.render403Response(req, res);
     }
+
+    const { username } = matchedData<{ username: string }>(req);
 
     const normalizedUsername = normalizeUsername(username);
     const emailList = await this.emailDatabase.list(normalizedUsername);
