@@ -13,21 +13,6 @@ export const normalizeUsername = (username: string): string => {
   return decodeURIComponent(username).toLowerCase().replace(/\+.*/, '').replace(/\./g, '');
 };
 
-/**
- * @deprecated The method should be removed
- */
-export const parsePositiveIntOrDefault = (
-  value?: string,
-  defaultValue?: number,
-): number | undefined => {
-  if (!value) {
-    return defaultValue;
-  }
-
-  const parsed = Number.parseInt(value, 10);
-  return Number.isNaN(parsed) || parsed <= 0 ? defaultValue : parsed;
-};
-
 export const getToken = (req: Request): string | null => {
   const header = req.headersDistinct?.[AUTH_HEADER_KEY];
   if (Array.isArray(header) && header.length > 0) {
