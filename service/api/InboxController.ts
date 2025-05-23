@@ -68,7 +68,7 @@ export class InboxController {
       `Action: 'index' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { type } = matchedData(req);
+    const { type = 'html' } = matchedData<{ type?: string }>(req);
 
     const token = getCookie(req, AUTH_COOKIE_KEY);
     if (token) {
@@ -136,7 +136,11 @@ export class InboxController {
       return this.render403Response(req, res);
     }
 
-    const { id, type, username } = matchedData<{ id: string; type: string; username: string }>(req);
+    const {
+      id,
+      type = 'html',
+      username,
+    } = matchedData<{ id: string; type?: string; username: string }>(req);
 
     let email: EmailDetails | undefined;
 
@@ -225,9 +229,13 @@ export class InboxController {
       return this.render403Response(req, res);
     }
 
-    const { sentAfter, type, username } = matchedData<{
+    const {
+      sentAfter,
+      type = 'html',
+      username,
+    } = matchedData<{
       sentAfter?: number;
-      type: string;
+      type?: string;
       username: string;
     }>(req);
 
@@ -262,7 +270,7 @@ export class InboxController {
       `Action: 'inbox' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { type } = matchedData(req);
+    const { type = 'html' } = matchedData<{ type?: string }>(req);
 
     if (type === 'html') {
       return res.render('pages/inbox');
@@ -281,10 +289,15 @@ export class InboxController {
       return this.render403Response(req, res);
     }
 
-    const { limit, sentAfter, type, username } = matchedData<{
+    const {
+      limit,
+      sentAfter,
+      type = 'html',
+      username,
+    } = matchedData<{
       limit?: number;
       sentAfter?: number;
-      type: string;
+      type?: string;
       username: string;
     }>(req);
 

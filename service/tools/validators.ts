@@ -11,8 +11,8 @@ try {
   log.error(`Unable to parse process.env.INBOX_BLACKLIST: ${process.env.INBOX_BLACKLIST}`, err);
 }
 
-const ALLOWED_TYPES = ['html', 'json'];
-export const DEFAULT_TYPE = 'html';
+const TYPE_ALLOWED_VALUES = ['html', 'json'];
+export const TYPE_DEFAULT = 'html';
 
 export const buildUsernameParamValidator = (): ValidationChain => {
   return param('username')
@@ -39,7 +39,7 @@ export const buildLimitQueryValidator = (): ValidationChain => {
 };
 
 export const buildTypeQueryValidator = (): ValidationChain => {
-  return query('type').default(DEFAULT_TYPE).toLowerCase().isIn(ALLOWED_TYPES);
+  return query('type').optional().toLowerCase().isIn(TYPE_ALLOWED_VALUES);
 };
 
 export const buildTokenBodyValidator = (): ValidationChain => {

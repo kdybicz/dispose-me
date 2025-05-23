@@ -8,7 +8,7 @@ import {
   buildTokenBodyValidator,
   buildTypeQueryValidator,
   buildUsernameParamValidator,
-  DEFAULT_TYPE,
+  TYPE_DEFAULT,
 } from '../../../service/tools/validators';
 import { mockRequest } from '../../utils';
 
@@ -217,7 +217,7 @@ describe('validators', () => {
       expect(matchedData(req)).toEqual({ type: 'html' });
     });
 
-    test('applies default if missing', async () => {
+    test('accepts if no type is provided', async () => {
       // given
       const req = mockRequest();
 
@@ -226,7 +226,7 @@ describe('validators', () => {
 
       // then
       expect(validationResult(req).isEmpty()).toBe(true);
-      expect(matchedData(req)).toEqual({ type: DEFAULT_TYPE });
+      expect(matchedData(req)).toEqual({});
     });
 
     test('rejects type not in allowed list', async () => {
