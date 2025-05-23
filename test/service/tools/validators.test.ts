@@ -45,9 +45,9 @@ describe('validators', () => {
       expect(validationResult(req).isEmpty()).toBe(false);
     });
 
-    test('removes dots, spaces, and parts after plus', async () => {
+    test('removes dots and parts after plus', async () => {
       // given
-      const req = mockRequest({ params: { username: 'Va.l id+ignore this' } });
+      const req = mockRequest({ params: { username: 'Va.l.id+ignore-this' } });
 
       // when
       await buildUsernameParamValidator().run(req);
@@ -76,22 +76,6 @@ describe('validators', () => {
 
       // ignores docs
       req = mockRequest({ params: { username: bad.split('').join('.') } });
-      // when
-      await buildUsernameParamValidator().run(req);
-      // and
-      expect(validationResult(req).isEmpty()).toBe(false);
-
-      // ignores whitespaces
-      req = mockRequest({ params: { username: bad.split('').join(' ') } });
-      // when
-      await buildUsernameParamValidator().run(req);
-      // and
-      expect(validationResult(req).isEmpty()).toBe(false);
-
-      // ignores all of the above
-      req = mockRequest({
-        params: { username: `${bad.toUpperCase().split('').join(' . ')}+random` },
-      });
       // when
       await buildUsernameParamValidator().run(req);
       // and

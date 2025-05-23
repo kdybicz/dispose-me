@@ -19,7 +19,7 @@
       <div class="input-group mb-3">
         <label for="username" class="col-sm-2 col-form-label">Your new inbox:</label>
         <div class="col-sm-4 p-0">
-          <input class="form-control" type="text" id="username" placeholder="Inbox name" aria-label="Inbox name" required pattern="[a-zA-Z0-9.+]{2,}">
+          <input class="form-control" type="text" id="username" placeholder="Inbox name" aria-label="Inbox name" required pattern="[a-zA-Z0-9\.\-\_\+]{3,25}">
           <input type="hidden" value="<%= query['x-api-key'] %>" name="x-api-key" <%= query['x-api-key'] ? "" : "disabled" %>>
         </div>
         <div class="input-group-append">

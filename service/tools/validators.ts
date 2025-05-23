@@ -16,11 +16,12 @@ export const DEFAULT_TYPE = 'html';
 
 export const buildUsernameParamValidator = (): ValidationChain => {
   return param('username')
+    .matches(/[a-zA-Z0-9\.\-\_\+]*/)
     .toLowerCase()
     .customSanitizer((value: string) => {
-      return value?.replace(/\+.*/, '')?.replace(/\./g, '')?.replace(/\s*/g, '');
+      return value?.replace(/\+.*/, '')?.replace(/\./g, '') ?? '';
     })
-    .notEmpty()
+    .isLength({ min: 3, max: 25 })
     .not()
     .isIn(blacklist);
 };
