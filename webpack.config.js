@@ -14,7 +14,7 @@ module.exports = {
   context: __dirname,
   mode: 'production',
   entry: entry,
-  // devtool: 'source-map',
+  devtool: 'source-map',
   stats: 'normal',
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.json'],
