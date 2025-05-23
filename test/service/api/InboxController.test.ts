@@ -716,7 +716,7 @@ describe('InboxController', () => {
 
   describe('listRss()', () => {
     const username = 'username';
-    const normalizedUsername = 'username'; // adjust if normalizeUsername transforms it
+    const normalizedUsername = 'username';
     const id1 = 'id1';
     const id2 = 'id2';
 
