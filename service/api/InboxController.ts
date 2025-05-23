@@ -236,7 +236,7 @@ export class InboxController {
 
     const normalizedUsername = normalizeUsername(username);
     const latestEmail = await this.emailDatabase.list(normalizedUsername, sentAfter, 1);
-    if (latestEmail.Items) {
+    if (latestEmail.Items && latestEmail.Items.length > 0) {
       const messageId = latestEmail.Items[0].Id;
       const emailObject = await this.fileSystem.getObject(this.bucketName, messageId);
       const emailBody = await emailObject.Body?.transformToString();

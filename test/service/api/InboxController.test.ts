@@ -453,12 +453,31 @@ describe('InboxController', () => {
       });
       await validateRequest(req, buildLatestEmailValidationChain());
       // and
-      MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: undefined });
+      MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [] });
 
       // when
       await controller.latest(req, res);
       // then
       expect(res.render).toHaveBeenCalledWith('pages/404');
+    });
+
+    test('should render last email even if it is not found - to be fixed', async () => {
+      // given
+      const req = mockRequest<InboxListParams>({
+        params: { username },
+        query: { sentAfter },
+      });
+      await validateRequest(req, buildLatestEmailValidationChain());
+      // and
+      MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [] });
+
+      // when
+      await controller.latest(req, res);
+      // then
+      expect(res.render).toHaveBeenCalledWith('pages/email', {
+        email: undefined,
+        token: 'header-token',
+      });
     });
 
     test.each([[undefined], ['html']])(
