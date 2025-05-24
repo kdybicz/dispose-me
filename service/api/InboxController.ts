@@ -1,5 +1,6 @@
+import dayjs = require('dayjs');
 import type { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
+import { matchedData, validationResult } from 'express-validator';
 
 import { EmailDatabase } from '../tools/EmailDatabase';
 import { EmailParser, type ParsedEmail } from '../tools/EmailParser';
@@ -7,8 +8,8 @@ import { S3FileSystem } from '../tools/S3FileSystem';
 import { AUTH_COOKIE_KEY, AUTH_QUERY_KEY, REMEMBER_COOKIE_KEY } from '../tools/const';
 import { mapEmailDetailsListToFeed } from '../tools/feed';
 import log from '../tools/log';
-import { getCookie, getToken, normalizeUsername, parsePositiveIntOrDefault } from '../tools/utils';
-import dayjs = require('dayjs');
+import { getCookie, getToken, normalizeUsername } from '../tools/utils';
+import { TYPE_DEFAULT } from '../tools/validators';
 
 export interface InboxListParams extends Record<string, string> {
   username: string;
@@ -27,7 +28,7 @@ export interface InboxQuery extends Record<string, undefined | string> {
 
 export interface InboxAuthBody {
   token: string;
-  remember: boolean;
+  remember: string;
 }
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -68,7 +69,7 @@ export class InboxController {
       `Action: 'index' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { type = 'html' } = req.query;
+    const { type = TYPE_DEFAULT } = matchedData<{ type?: string }>(req);
 
     const token = getCookie(req, AUTH_COOKIE_KEY);
     if (token) {
@@ -90,7 +91,13 @@ export class InboxController {
       `Action: 'auth' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { token, remember } = req.body;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      log.error(JSON.stringify(errors.array()));
+      return this.render403Response(req, res);
+    }
+
+    const { token, remember } = matchedData<{ token: string; remember: boolean }>(req);
 
     let maxAge: number | undefined = undefined;
     if (remember) {
@@ -125,13 +132,16 @@ export class InboxController {
       `Action: 'show' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { type = 'html' } = req.query;
-    const { id, username } = req.params;
-
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return this.render403Response(req, res);
     }
+
+    const {
+      id,
+      type = TYPE_DEFAULT,
+      username,
+    } = matchedData<{ id: string; type?: string; username: string }>(req);
 
     let email: EmailDetails | undefined;
 
@@ -165,12 +175,12 @@ export class InboxController {
       `Action: 'download' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { id, username } = req.params;
-
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return this.render403Response(req, res);
     }
+
+    const { id, username } = matchedData<{ id: string; username: string }>(req);
 
     const normalizedUsername = normalizeUsername(username);
     const existsForUser = await this.emailDatabase.exists(normalizedUsername, id);
@@ -192,12 +202,12 @@ export class InboxController {
       `Action: 'delete' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { id, username } = req.params;
-
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return this.render403Response(req, res);
     }
+
+    const { id, username } = matchedData<{ id: string; username: string }>(req);
 
     const normalizedUsername = normalizeUsername(username);
     const deletedFromDatabase = await this.emailDatabase.delete(normalizedUsername, id);
@@ -215,23 +225,26 @@ export class InboxController {
       `Action: 'latest' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { sentAfter, type = 'html' } = req.query;
-    const { username } = req.params;
-
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return this.render403Response(req, res);
     }
 
+    const {
+      sentAfter,
+      type = TYPE_DEFAULT,
+      username,
+    } = matchedData<{
+      sentAfter?: number;
+      type?: string;
+      username: string;
+    }>(req);
+
     let email: EmailDetails | undefined;
 
     const normalizedUsername = normalizeUsername(username);
-    const latestEmail = await this.emailDatabase.list(
-      normalizedUsername,
-      parsePositiveIntOrDefault(sentAfter),
-      1,
-    );
-    if (latestEmail.Items) {
+    const latestEmail = await this.emailDatabase.list(normalizedUsername, sentAfter, 1);
+    if (latestEmail.Items && latestEmail.Items.length > 0) {
       const messageId = latestEmail.Items[0].Id;
       const emailObject = await this.fileSystem.getObject(this.bucketName, messageId);
       const emailBody = await emailObject.Body?.transformToString();
@@ -258,7 +271,7 @@ export class InboxController {
       `Action: 'inbox' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { type = 'html' } = req.query;
+    const { type = TYPE_DEFAULT } = matchedData<{ type?: string }>(req);
 
     if (type === 'html') {
       return res.render('pages/inbox');
@@ -272,20 +285,25 @@ export class InboxController {
       `Action: 'list' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { sentAfter, limit, type = 'html' } = req.query;
-    const { username } = req.params;
-
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return this.render403Response(req, res);
     }
 
+    const {
+      limit,
+      sentAfter,
+      type = TYPE_DEFAULT,
+      username,
+    } = matchedData<{
+      limit?: number;
+      sentAfter?: number;
+      type?: string;
+      username: string;
+    }>(req);
+
     const normalizedUsername = normalizeUsername(username);
-    const emailObjectList = await this.emailDatabase.list(
-      normalizedUsername,
-      parsePositiveIntOrDefault(sentAfter),
-      parsePositiveIntOrDefault(limit),
-    );
+    const emailObjectList = await this.emailDatabase.list(normalizedUsername, sentAfter, limit);
 
     const emails = (emailObjectList.Items ?? []).map<EmailListItem>((emailObject) => ({
       id: emailObject.Id,
@@ -307,12 +325,12 @@ export class InboxController {
       `Action: 'listRss' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { username } = req.params;
-
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return this.render403Response(req, res);
     }
+
+    const { username } = matchedData<{ username: string }>(req);
 
     const normalizedUsername = normalizeUsername(username);
     const emailList = await this.emailDatabase.list(normalizedUsername);
@@ -352,7 +370,7 @@ export class InboxController {
       `Action: '403' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { type = 'html' } = req.query;
+    const { type = TYPE_DEFAULT } = req.query;
 
     if (type === 'html') {
       res.status(403).render('pages/403');
@@ -367,7 +385,7 @@ export class InboxController {
       `Action: '404' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { type = 'html' } = req.query;
+    const { type = TYPE_DEFAULT } = req.query;
 
     if (type === 'html') {
       res.status(404).render('pages/404');
@@ -382,7 +400,7 @@ export class InboxController {
       `Action: '500' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
     );
 
-    const { type = 'html' } = req.query;
+    const { type = TYPE_DEFAULT } = req.query;
 
     if (type === 'html') {
       res.status(500).render('pages/error', { error: err });

@@ -7,6 +7,17 @@ import * as serverless from 'serverless-http';
 
 import { InboxController } from './api/InboxController';
 import log from './tools/log';
+import {
+  buildAuthValidationChain,
+  buildDeleteEmailValidationChain,
+  buildDownloadEmailValidationChain,
+  buildInboxValidationChain,
+  buildIndexValidationChain,
+  buildLatestEmailValidationChain,
+  buildListEmailsValidationChain,
+  buildListRssValidationChain,
+  buildShowEmailValidationChain,
+} from './tools/validators';
 
 const inboxController = new InboxController(process.env.EMAIL_BUCKET_NAME ?? '');
 const app = express();
@@ -19,18 +30,6 @@ const asyncHandler =
     Promise.resolve(fn(req, res, next)).catch((error) => {
       next(error);
     });
-
-const buildInboxRequestValidator = () => {
-  let blacklist: string[] = [];
-  try {
-    if (process.env.INBOX_BLACKLIST) {
-      blacklist = process.env.INBOX_BLACKLIST.split(',');
-    }
-  } catch (err) {
-    log.error('Unable to parse INBOX_BLACKLIST', err);
-  }
-  return param('username').not().isIn(blacklist);
-};
 
 app.use(express.json());
 
@@ -52,33 +51,41 @@ app.use((req, res, next) => {
 app.set('view engine', 'ejs');
 app.engine('ejs', require('ejs').__express); // workaround for webpack tree-shaking ejs out
 
-app.get('/', asyncHandler(inboxController.index));
-app.post('/', asyncHandler(inboxController.auth));
+app.get('/', ...buildIndexValidationChain(), asyncHandler(inboxController.index));
+app.post('/', ...buildAuthValidationChain(), asyncHandler(inboxController.auth));
 app.get('/logout', asyncHandler(inboxController.logout));
 
 app.get(
   '/inbox/:username/latest',
-  buildInboxRequestValidator(),
+  ...buildLatestEmailValidationChain(),
   asyncHandler(inboxController.latest),
 );
 app.get(
   '/inbox/:username/feed/',
-  buildInboxRequestValidator(),
+  ...buildListRssValidationChain(),
   asyncHandler(inboxController.listRss),
 );
 app.get(
   '/inbox/:username/:id/delete',
-  buildInboxRequestValidator(),
+  ...buildDeleteEmailValidationChain(),
   asyncHandler(inboxController.delete),
 );
 app.get(
   '/inbox/:username/:id/download',
-  buildInboxRequestValidator(),
+  ...buildDownloadEmailValidationChain(),
   asyncHandler(inboxController.download),
 );
-app.get('/inbox/:username/:id', buildInboxRequestValidator(), asyncHandler(inboxController.show));
-app.get('/inbox/:username', buildInboxRequestValidator(), asyncHandler(inboxController.list));
-app.get('/inbox', buildInboxRequestValidator(), asyncHandler(inboxController.inbox));
+app.get(
+  '/inbox/:username/:id',
+  ...buildShowEmailValidationChain(),
+  asyncHandler(inboxController.show),
+);
+app.get(
+  '/inbox/:username',
+  ...buildListEmailsValidationChain(),
+  asyncHandler(inboxController.list),
+);
+app.get('/inbox', ...buildInboxValidationChain(), asyncHandler(inboxController.inbox));
 
 app.all('*', (req, res) => {
   inboxController.render404Response(req, res);

@@ -1,4 +1,5 @@
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
+import type { ValidationChain } from 'express-validator';
 
 import type { InboxRequest } from '../service/api/InboxController';
 import { AUTH_HEADER_KEY } from '../service/tools/const';
@@ -16,6 +17,10 @@ export type RequestArgs<B> = {
   params?: Record<string, string>;
   cookies?: Record<string, string>;
   body?: B;
+};
+
+export const validateRequest = async (req: Request, validators: ValidationChain[]) => {
+  return Promise.all(validators.map(async (validator) => validator.run(req)));
 };
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
