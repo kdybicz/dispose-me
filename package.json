@@ -20,6 +20,7 @@
     "build": "yarn prebuild && rm -Rf dist && webpack",
     "predeploy": "yarn build && yarn lint && yarn test",
     "deploy": "yarn predeploy && cdk deploy",
+    "deploy:force": "yarn build && cdk deploy",
     "lint": "biome check ./bin ./lib ./service",
     "lint:ci": "biome lint ./bin ./lib ./service",
     "prestart": "cdk synth",

@@ -99,7 +99,28 @@ describe('InboxController', () => {
   });
 
   describe('auth()', () => {
-    const token = 'token';
+    const token = 'n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
+
+    test('should return 422 and rerender index if the token is invalid', async () => {
+      // given
+      const req = mockRequest<Record<string, never>, InboxAuthBody>({
+        body: { token: 'invalid-token', remember: 'on' },
+      });
+      await validateRequest(req, buildAuthValidationChain());
+
+      // when
+      await controller.auth(req, res);
+      // then
+      expect(res.status).toHaveBeenCalledWith(422);
+      expect(res.render).toHaveBeenCalledWith('pages/index', {
+        errors: [
+          expect.objectContaining({
+            msg: 'The token must contain only letters and numbers (no special characters).',
+          }),
+          expect.objectContaining({ msg: 'The token must be between 20 and 50 characters long.' }),
+        ],
+      });
+    });
 
     test('sets cookies and redirects to inbox if remember is true', async () => {
       // given
@@ -668,6 +689,27 @@ describe('InboxController', () => {
     const username = 'username';
     const sentAfter = '123456789';
     const limit = '15';
+
+    test('should return 422 and rerender inbox if the username is invalid', async () => {
+      // given
+      const req = mockRequest<InboxListParams>({
+        params: { username: '!:' },
+      });
+      await validateRequest(req, buildListEmailsValidationChain());
+
+      // when
+      await controller.list(req, res);
+      // then
+      expect(res.status).toHaveBeenCalledWith(422);
+      expect(res.render).toHaveBeenCalledWith('pages/inbox', {
+        errors: [
+          expect.objectContaining({
+            msg: 'Username may only contain letters, numbers, dots (.), hyphens (-), underscores (_), and plus signs (+).',
+          }),
+          expect.objectContaining({ msg: 'Username must be between 3 and 25 characters long.' }),
+        ],
+      });
+    });
 
     test.each([[undefined], ['html']])('renders email list as html', async (type) => {
       // given

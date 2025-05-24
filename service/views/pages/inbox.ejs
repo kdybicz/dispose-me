@@ -18,10 +18,9 @@
     <form method="GET" action="/inbox">
       <div class="input-group mb-3">
         <label for="username" class="col-sm-2 col-form-label">Your new inbox:</label>
-        <div class="col-sm-4 p-0">
-          <input class="form-control" type="text" id="username" placeholder="Inbox name" aria-label="Inbox name" required pattern="[a-zA-Z0-9.\-_+]{3,25}">
-          <input type="hidden" value="<%= query['x-api-key'] %>" name="x-api-key" <%= query['x-api-key'] ? "" : "disabled" %>>
-        </div>
+        <% const usernameError = (locals.errors ?? []).find((error) => error.type === "field" && error.path === "username"); %>
+        <input class="form-control col-sm-4 <%= usernameError ? 'is-invalid' : '' %>" type="text" id="username" value="<%= usernameError?.value %>" placeholder="Inbox name" aria-label="Inbox name" required>
+        <input type="hidden" value="<%= query['x-api-key'] %>" name="x-api-key" <%= query['x-api-key'] ? "" : "disabled" %>>
         <div class="input-group-append">
           <span class="input-group-text">@<%= process.env.DOMAIN_NAME %></span>
           <button type="button" class="btn btn-outline-secondary" aria-label="Generate new username" onclick="generateUsername();">
@@ -31,6 +30,11 @@
             <i class="bi bi-box-arrow-in-right"></i>
           </button>
         </div>
+        <% if (usernameError) { %>
+          <div class="invalid-feedback">
+            <%= usernameError.msg %>
+          </div>
+        <% } %>
       </div>
     </form>
   </div>

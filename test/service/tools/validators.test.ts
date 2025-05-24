@@ -244,14 +244,15 @@ describe('validators', () => {
   describe('buildTokenBodyValidator()', () => {
     test('accepts alphanumeric token', async () => {
       // given
-      const req = mockRequest({ body: { token: 'ABC123' } });
+      const token = 'n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW'
+      const req = mockRequest({ body: { token } });
 
       // when
       await buildTokenBodyValidator().run(req);
 
       // then
       expect(validationResult(req).isEmpty()).toBe(true);
-      expect(matchedData(req)).toEqual({ token: 'ABC123' });
+      expect(matchedData(req)).toEqual({ token });
     });
 
     test('rejects non-alphanumeric token', async () => {
