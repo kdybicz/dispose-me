@@ -15,7 +15,19 @@ import {
   MockedS3FileSystem,
   mockRequest,
   mockResponse,
+  validateRequest,
 } from '../../utils';
+import {
+  buildAuthValidationChain,
+  buildDeleteEmailValidationChain,
+  buildDownloadEmailValidationChain,
+  buildInboxValidationChain,
+  buildIndexValidationChain,
+  buildLatestEmailValidationChain,
+  buildListEmailsValidationChain,
+  buildListRssValidationChain,
+  buildShowEmailValidationChain,
+} from '../../../service/tools/validators';
 
 jest.mock('../../../service/tools/EmailDatabase');
 jest.mock('../../../service/tools/EmailParser');
@@ -35,6 +47,7 @@ describe('InboxController', () => {
     test('renders index page as html by default', async () => {
       // given
       const req = mockRequest();
+      await validateRequest(req, buildIndexValidationChain());
 
       // when
       await controller.index(req, res);
@@ -48,6 +61,7 @@ describe('InboxController', () => {
       const req = mockRequest({
         query: { type },
       });
+      await validateRequest(req, buildIndexValidationChain());
 
       // when
       await controller.index(req, res);
@@ -62,6 +76,7 @@ describe('InboxController', () => {
       const req = mockRequest({
         query: { type },
       });
+      await validateRequest(req, buildIndexValidationChain());
 
       // when
       await controller.index(req, res);
@@ -74,6 +89,7 @@ describe('InboxController', () => {
       const req = mockRequest({
         cookies: { [AUTH_COOKIE_KEY]: COOKIE_TOKEN },
       });
+      await validateRequest(req, buildIndexValidationChain());
 
       // when
       await controller.index(req, res);
@@ -87,16 +103,17 @@ describe('InboxController', () => {
 
     test('sets cookies and redirects to inbox if remember is true', async () => {
       // given
-      const remember = true;
+      const remember = 'on';
       // and
       const req = mockRequest<Record<string, never>, InboxAuthBody>({
         body: { token, remember },
       });
+      await validateRequest(req, buildAuthValidationChain());
 
       // when
       await controller.auth(req, res);
       // then
-      expect(res.cookie).toHaveBeenCalledWith(REMEMBER_COOKIE_KEY, remember, {
+      expect(res.cookie).toHaveBeenCalledWith(REMEMBER_COOKIE_KEY, true, {
         httpOnly: true,
         maxAge: 2592000000,
         sameSite: 'strict',
@@ -113,11 +130,12 @@ describe('InboxController', () => {
 
     test('sets cookie and redirects if remember is false', async () => {
       // given
-      const remember = false;
+      const remember = 'off';
       // and
       const req = mockRequest<Record<string, never>, InboxAuthBody>({
         body: { token, remember },
       });
+      await validateRequest(req, buildAuthValidationChain());
 
       // when
       await controller.auth(req, res);
@@ -147,11 +165,12 @@ describe('InboxController', () => {
 
   describe('show()', () => {
     const username = 'username';
-    const id = 'message-id';
+    const id = 'messageid';
 
     test.skip('should return 403 if username or id is missing', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({ params: {} });
+      await validateRequest(req, buildShowEmailValidationChain());
 
       // when
       await controller.show(req, res);
@@ -168,6 +187,7 @@ describe('InboxController', () => {
           params: { username, id },
           query: { type },
         });
+        await validateRequest(req, buildShowEmailValidationChain());
         // and
         MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(false);
 
@@ -185,6 +205,7 @@ describe('InboxController', () => {
         params: { username, id },
         query: { type: 'json' },
       });
+      await validateRequest(req, buildShowEmailValidationChain());
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(false);
 
@@ -203,6 +224,7 @@ describe('InboxController', () => {
         params: { username, id },
         query: { type },
       });
+      await validateRequest(req, buildShowEmailValidationChain());
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
@@ -225,6 +247,7 @@ describe('InboxController', () => {
         params: { username, id },
         query: { type: 'json' },
       });
+      await validateRequest(req, buildShowEmailValidationChain());
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
@@ -246,6 +269,7 @@ describe('InboxController', () => {
           params: { username, id },
           query: { type },
         });
+        await validateRequest(req, buildShowEmailValidationChain());
         // and
         MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
         MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
@@ -268,6 +292,7 @@ describe('InboxController', () => {
         params: { username, id },
         query: { type: 'json' },
       });
+      await validateRequest(req, buildShowEmailValidationChain());
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
@@ -290,6 +315,7 @@ describe('InboxController', () => {
           params: { username, id },
           query: { type },
         });
+        await validateRequest(req, buildShowEmailValidationChain());
         // and
         MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
         MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
@@ -307,11 +333,12 @@ describe('InboxController', () => {
 
   describe('download()', () => {
     const username = 'username';
-    const id = 'message-id';
+    const id = 'messageid';
 
     test.skip('should return 403 if username or id is missing', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({ params: {} });
+      await validateRequest(req, buildDownloadEmailValidationChain());
 
       // when
       await controller.download(req, res);
@@ -323,6 +350,7 @@ describe('InboxController', () => {
     test('should return 404 if email does not exist', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({ params: { username, id } });
+      await validateRequest(req, buildDownloadEmailValidationChain());
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(false);
 
@@ -335,6 +363,7 @@ describe('InboxController', () => {
     test('should set headers and send email file if it exists', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({ params: { username, id } });
+      await validateRequest(req, buildDownloadEmailValidationChain());
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
@@ -355,6 +384,7 @@ describe('InboxController', () => {
     test.skip('should return 404 if S3 object has no body', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({ params: { username, id } });
+      await validateRequest(req, buildDownloadEmailValidationChain());
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
@@ -371,11 +401,12 @@ describe('InboxController', () => {
 
   describe('delete()', () => {
     const username = 'username';
-    const id = 'message-id';
+    const id = 'messageid';
 
     test.skip('should return 403 if username or id is missing', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({ params: {} });
+      await validateRequest(req, buildDeleteEmailValidationChain());
 
       // when
       await controller.delete(req, res);
@@ -389,6 +420,7 @@ describe('InboxController', () => {
       const req = mockRequest<InboxEmailParams>({
         params: { username, id },
       });
+      await validateRequest(req, buildDeleteEmailValidationChain());
       // and
       MockedEmailDatabase.mockDeleteEmail.mockResolvedValueOnce(true);
 
@@ -407,6 +439,7 @@ describe('InboxController', () => {
       const req = mockRequest<InboxEmailParams>({
         params: { username, id },
       });
+      await validateRequest(req, buildDeleteEmailValidationChain());
       // and
       MockedEmailDatabase.mockDeleteEmail.mockResolvedValueOnce(false);
 
@@ -422,12 +455,13 @@ describe('InboxController', () => {
 
   describe('latest()', () => {
     const username = 'username';
-    const id = 'message-id';
+    const id = 'messageid';
     const sentAfter = '123456789';
 
-    test.skip('should return 403 if username is missing', async () => {
+    test('should return 403 if username is missing', async () => {
       // given
       const req = mockRequest<InboxListParams>({ params: {} });
+      await validateRequest(req, buildLatestEmailValidationChain());
 
       // when
       await controller.latest(req, res);
@@ -442,13 +476,33 @@ describe('InboxController', () => {
         params: { username },
         query: { sentAfter },
       });
+      await validateRequest(req, buildLatestEmailValidationChain());
       // and
-      MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: undefined });
+      MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [] });
 
       // when
       await controller.latest(req, res);
       // then
       expect(res.render).toHaveBeenCalledWith('pages/404');
+    });
+
+    test('should render last email even if it is not found - to be fixed', async () => {
+      // given
+      const req = mockRequest<InboxListParams>({
+        params: { username },
+        query: { sentAfter },
+      });
+      await validateRequest(req, buildLatestEmailValidationChain());
+      // and
+      MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [] });
+
+      // when
+      await controller.latest(req, res);
+      // then
+      expect(res.render).toHaveBeenCalledWith('pages/email', {
+        email: undefined,
+        token: 'header-token',
+      });
     });
 
     test.each([[undefined], ['html']])(
@@ -459,6 +513,7 @@ describe('InboxController', () => {
           params: { username },
           query: { sentAfter, type },
         });
+        await validateRequest(req, buildLatestEmailValidationChain());
         // and
         MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
         MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
@@ -482,6 +537,7 @@ describe('InboxController', () => {
         params: { username },
         query: { sentAfter, type: 'json' },
       });
+      await validateRequest(req, buildLatestEmailValidationChain());
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
@@ -505,6 +561,7 @@ describe('InboxController', () => {
           params: { username },
           query: { type },
         });
+        await validateRequest(req, buildLatestEmailValidationChain());
         // and
         MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
         MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
@@ -527,6 +584,7 @@ describe('InboxController', () => {
         params: { username },
         query: { type: 'json' },
       });
+      await validateRequest(req, buildLatestEmailValidationChain());
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
@@ -549,6 +607,7 @@ describe('InboxController', () => {
           params: { username },
           query: { sentAfter, type },
         });
+        await validateRequest(req, buildLatestEmailValidationChain());
         // and
         MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
         MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
@@ -570,6 +629,7 @@ describe('InboxController', () => {
       const req = mockRequest<InboxListParams>({
         query: {},
       });
+      await validateRequest(req, buildInboxValidationChain());
 
       // when
       await controller.inbox(req, res);
@@ -582,6 +642,7 @@ describe('InboxController', () => {
       const req = mockRequest<InboxListParams>({
         query: { type: 'html' },
       });
+      await validateRequest(req, buildInboxValidationChain());
 
       // when
       await controller.inbox(req, res);
@@ -594,6 +655,7 @@ describe('InboxController', () => {
       const req = mockRequest<InboxListParams>({
         query: { type: 'json' },
       });
+      await validateRequest(req, buildInboxValidationChain());
 
       // when
       await controller.inbox(req, res);
@@ -613,6 +675,7 @@ describe('InboxController', () => {
         query: { sentAfter, limit, type },
         params: { username },
       });
+      await validateRequest(req, buildListEmailsValidationChain());
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [] });
 
@@ -635,6 +698,7 @@ describe('InboxController', () => {
         query: { sentAfter, limit, type },
         params: { username },
       });
+      await validateRequest(req, buildListEmailsValidationChain());
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [] });
 
@@ -652,13 +716,14 @@ describe('InboxController', () => {
 
   describe('listRss()', () => {
     const username = 'username';
-    const normalizedUsername = 'username'; // adjust if normalizeUsername transforms it
+    const normalizedUsername = 'username';
     const id1 = 'id1';
     const id2 = 'id2';
 
     test.skip('should return 403 if username is missing', async () => {
       // given
       const req = mockRequest<InboxListParams>({ params: {} });
+      await validateRequest(req, buildListRssValidationChain());
 
       // when
       await controller.listRss(req, res);
@@ -680,6 +745,7 @@ describe('InboxController', () => {
     test('should render an RSS feed with emails', async () => {
       // given
       const req = mockRequest<InboxListParams>({ params: { username } });
+      await validateRequest(req, buildListRssValidationChain());
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({
         Items: [{ Id: id1 }, { Id: id2 }],
@@ -732,6 +798,7 @@ describe('InboxController', () => {
     test('should handle empty emails list gracefully', async () => {
       // given
       const req = mockRequest<InboxListParams>({ params: { username } });
+      await validateRequest(req, buildListRssValidationChain());
       // and
       jest.useFakeTimers().setSystemTime(new Date('Sun, 01 Jan 2023 01:01:01 GMT'));
       // and
@@ -761,6 +828,7 @@ describe('InboxController', () => {
     test('should skip null/failed parses and still return valid RSS', async () => {
       // given
       const req = mockRequest<InboxListParams>({ params: { username } });
+      await validateRequest(req, buildListRssValidationChain());
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({
         Items: [{ Id: id1 }, { Id: id2 }],
