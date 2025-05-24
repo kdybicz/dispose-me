@@ -188,17 +188,20 @@ describe('InboxController', () => {
     const username = 'username';
     const id = 'messageid';
 
-    test.skip('should return 403 if username or id is missing', async () => {
-      // given
-      const req = mockRequest<InboxEmailParams>({ params: {} });
-      await validateRequest(req, buildShowEmailValidationChain());
+    test.each([[undefined], ['!:']])(
+      'should return 403 if username is missing or invalid',
+      async (username) => {
+        // given
+        const req = mockRequest<InboxEmailParams>({ params: { username } });
+        await validateRequest(req, buildShowEmailValidationChain());
 
-      // when
-      await controller.show(req, res);
-      // then
-      expect(res.status).toHaveBeenCalledWith(403);
-      expect(res.render).toHaveBeenCalledWith('pages/403');
-    });
+        // when
+        await controller.show(req, res);
+        // then
+        expect(res.status).toHaveBeenCalledWith(403);
+        expect(res.render).toHaveBeenCalledWith('pages/403');
+      },
+    );
 
     test.each([[undefined], ['html']])(
       'should return 404 as HTML if email does not exist',
@@ -356,17 +359,20 @@ describe('InboxController', () => {
     const username = 'username';
     const id = 'messageid';
 
-    test.skip('should return 403 if username or id is missing', async () => {
-      // given
-      const req = mockRequest<InboxEmailParams>({ params: {} });
-      await validateRequest(req, buildDownloadEmailValidationChain());
+    test.each([[undefined], ['!:']])(
+      'should return 403 if username is missing or invalid',
+      async (username) => {
+        // given
+        const req = mockRequest<InboxEmailParams>({ params: { username } });
+        await validateRequest(req, buildDownloadEmailValidationChain());
 
-      // when
-      await controller.download(req, res);
-      // then
-      expect(res.status).toHaveBeenCalledWith(403);
-      expect(res.render).toHaveBeenCalledWith('pages/403');
-    });
+        // when
+        await controller.download(req, res);
+        // then
+        expect(res.status).toHaveBeenCalledWith(403);
+        expect(res.render).toHaveBeenCalledWith('pages/403');
+      },
+    );
 
     test('should return 404 if email does not exist', async () => {
       // given
@@ -424,17 +430,20 @@ describe('InboxController', () => {
     const username = 'username';
     const id = 'messageid';
 
-    test.skip('should return 403 if username or id is missing', async () => {
-      // given
-      const req = mockRequest<InboxEmailParams>({ params: {} });
-      await validateRequest(req, buildDeleteEmailValidationChain());
+    test.each([[undefined], ['!:']])(
+      'should return 403 if username is missing or invalid',
+      async (username) => {
+        // given
+        const req = mockRequest<InboxEmailParams>({ params: { username } });
+        await validateRequest(req, buildDeleteEmailValidationChain());
 
-      // when
-      await controller.delete(req, res);
-      // then
-      expect(res.status).toHaveBeenCalledWith(403);
-      expect(res.render).toHaveBeenCalledWith('pages/403');
-    });
+        // when
+        await controller.delete(req, res);
+        // then
+        expect(res.status).toHaveBeenCalledWith(403);
+        expect(res.render).toHaveBeenCalledWith('pages/403');
+      },
+    );
 
     test('should redirect to inbox if deletion is successful', async () => {
       // given
@@ -762,17 +771,20 @@ describe('InboxController', () => {
     const id1 = 'id1';
     const id2 = 'id2';
 
-    test.skip('should return 403 if username is missing', async () => {
-      // given
-      const req = mockRequest<InboxListParams>({ params: {} });
-      await validateRequest(req, buildListRssValidationChain());
+    test.each([[undefined], ['!:']])(
+      'should return 403 if username is missing or invalid',
+      async (username) => {
+        // given
+        const req = mockRequest<InboxListParams>({ params: { username } });
+        await validateRequest(req, buildListRssValidationChain());
 
-      // when
-      await controller.listRss(req, res);
-      // then
-      expect(res.status).toHaveBeenCalledWith(403);
-      expect(res.render).toHaveBeenCalledWith('pages/403');
-    });
+        // when
+        await controller.listRss(req, res);
+        // then
+        expect(res.status).toHaveBeenCalledWith(403);
+        expect(res.render).toHaveBeenCalledWith('pages/403');
+      },
+    );
 
     const mockParsedEmail = (from: string, subject: string): ParsedEmail => ({
       from: [{ address: from, user: from }],
