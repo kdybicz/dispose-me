@@ -14,7 +14,7 @@ export const QUERY_TOKEN = 'query-token';
 
 export type RequestArgs<B> = {
   query?: Record<string, undefined | string>;
-  params?: Record<string, string>;
+  params?: Record<string, undefined | string>;
   cookies?: Record<string, string>;
   body?: B;
 };

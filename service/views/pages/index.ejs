@@ -19,7 +19,13 @@
       <div class="form-group row">
         <label for="token" class="col-sm-2 col-form-label">Provide Your token:</label>
         <div class="col-sm-4">
-          <input class="form-control" type="text" id="token" name="token" value="<%= query['x-api-key'] %>" placeholder="Token" aria-label="Token" required pattern="[a-zA-Z0-9]{2,}">
+          <% const tokenError = (locals.errors ?? []).find((error) => error.type === "field" && error.path === "token"); %>
+          <input class="form-control <%= tokenError ? 'is-invalid' : '' %>" type="text" id="token" name="token" value="<%= tokenError?.value ?? query['x-api-key'] %>" placeholder="Token" aria-label="Token" required>
+          <% if (tokenError) { %>
+            <div class="invalid-feedback">
+              <%= tokenError.msg %>
+            </div>
+          <% } %>
         </div>
         <div class="col-sm-2">
           <button type="submit" class="btn btn-primary" aria-label="Login">

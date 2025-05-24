@@ -93,8 +93,7 @@ export class InboxController {
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      log.error(JSON.stringify(errors.array()));
-      return this.render403Response(req, res);
+      return res.status(422).render('pages/index', { errors: errors.array() });
     }
 
     const { token, remember } = matchedData<{ token: string; remember: boolean }>(req);
@@ -287,7 +286,7 @@ export class InboxController {
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return this.render403Response(req, res);
+      return res.status(422).render('pages/inbox', { errors: errors.array() });
     }
 
     const {

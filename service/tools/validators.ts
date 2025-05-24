@@ -16,14 +16,19 @@ export const TYPE_DEFAULT = 'html';
 
 export const buildUsernameParamValidator = (): ValidationChain => {
   return param('username')
-    .matches(/[a-zA-Z0-9.\-_+]*/)
+    .matches(/^[a-zA-Z0-9.\-_+]*$/)
+    .withMessage(
+      'Username may only contain letters, numbers, dots (.), hyphens (-), underscores (_), and plus signs (+).',
+    )
     .toLowerCase()
     .customSanitizer((value: string) => {
       return value?.replace(/\+.*/, '')?.replace(/\./g, '') ?? '';
     })
     .isLength({ min: 3, max: 25 })
+    .withMessage('Username must be between 3 and 25 characters long.')
     .not()
-    .isIn(INBOX_BLACKLIST);
+    .isIn(INBOX_BLACKLIST)
+    .withMessage('This username is not allowed. Please choose a different one.');
 };
 
 export const buildMessageIdParamValidation = (): ValidationChain => {
@@ -43,7 +48,11 @@ export const buildTypeQueryValidator = (): ValidationChain => {
 };
 
 export const buildTokenBodyValidator = (): ValidationChain => {
-  return body('token').isAlphanumeric();
+  return body('token')
+    .isAlphanumeric()
+    .withMessage('The token must contain only letters and numbers (no special characters).')
+    .isLength({ min: 20, max: 50 })
+    .withMessage('The token must be between 20 and 50 characters long.');
 };
 
 export const buildRememberBodyValidator = (): ValidationChain => {
