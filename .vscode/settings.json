@@ -1,4 +1,12 @@
 {
     "editor.tabSize": 2,
-    "editor.detectIndentation": true
+    "editor.detectIndentation": true,
+    "cSpell.words": [
+        "amazonses",
+        "certificatemanager",
+        "disposeme",
+        "dmarc",
+        "mailparser",
+        "SECP"
+    ]
 }
