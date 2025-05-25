@@ -47,6 +47,19 @@ export const buildTypeQueryValidator = (): ValidationChain => {
   return query('type').optional().toLowerCase().isIn(TYPE_ALLOWED_VALUES);
 };
 
+export const buildTokeQueryValidator = (args: { required: boolean }): ValidationChain => {
+  let chain = query('x-api-key');
+  if (!args.required) {
+    chain = chain.optional();
+  }
+
+  return chain
+    .isAlphanumeric()
+    .withMessage('The x-api-key must contain only letters and numbers (no special characters).')
+    .isLength({ min: 20, max: 50 })
+    .withMessage('The x-api-key must be between 20 and 50 characters long.');
+};
+
 export const buildTokenBodyValidator = (): ValidationChain => {
   return body('token')
     .isAlphanumeric()
@@ -75,7 +88,7 @@ export const buildLatestEmailValidationChain = (): ValidationChain[] => {
 };
 
 export const buildListRssValidationChain = (): ValidationChain[] => {
-  return [buildUsernameParamValidator()];
+  return [buildUsernameParamValidator(), buildTokeQueryValidator({ required: true })];
 };
 
 export const buildDeleteEmailValidationChain = (): ValidationChain[] => {

@@ -6,11 +6,13 @@ import {
   buildRememberBodyValidator,
   buildSentAfterQueryValidator,
   buildTokenBodyValidator,
+  buildTokeQueryValidator,
   buildTypeQueryValidator,
   buildUsernameParamValidator,
   TYPE_DEFAULT,
 } from '../../../service/tools/validators';
 import { mockRequest } from '../../utils';
+import { AUTH_QUERY_KEY } from '../../../service/tools/const';
 
 describe('validators', () => {
   describe('buildUsernameParamValidator()', () => {
@@ -241,10 +243,58 @@ describe('validators', () => {
     });
   });
 
+  describe('buildTokeQueryValidator()', () => {
+    test('accepts missing token, when it is not required', async () => {
+      // given
+      const req = mockRequest({ query: {} });
+
+      // when
+      await buildTokeQueryValidator({ required: false }).run(req);
+
+      // then
+      expect(validationResult(req).isEmpty()).toBe(true);
+    });
+
+    test('accepts missing token, when it is required', async () => {
+      // given
+      const req = mockRequest({ query: {} });
+
+      // when
+      await buildTokeQueryValidator({ required: true }).run(req);
+
+      // then
+      expect(validationResult(req).isEmpty()).toBe(false);
+    });
+
+    test('accepts alphanumeric token', async () => {
+      // given
+      const token = 'n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
+      const req = mockRequest({ query: { [AUTH_QUERY_KEY]: token } });
+
+      // when
+      await buildTokeQueryValidator({ required: true }).run(req);
+
+      // then
+      expect(validationResult(req).isEmpty()).toBe(true);
+      expect(matchedData(req)).toEqual({ [AUTH_QUERY_KEY]: token });
+    });
+
+    test('rejects non-alphanumeric token', async () => {
+      // given
+      const req = mockRequest({ query: { [AUTH_QUERY_KEY]: 'not valid!' } });
+
+      // when
+      await buildTokeQueryValidator({ required: true }).run(req);
+
+      // then
+      expect(validationResult(req).isEmpty()).toBe(false);
+    });
+  });
+
   describe('buildTokenBodyValidator()', () => {
     test('accepts alphanumeric token', async () => {
       // given
-      const token = 'n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW'
+      const token = 'n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
       const req = mockRequest({ body: { token } });
 
       // when

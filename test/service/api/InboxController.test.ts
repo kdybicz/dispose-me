@@ -6,13 +6,14 @@ import {
   type InboxListParams,
 } from '../../../service/api/InboxController';
 import type { ParsedEmail } from '../../../service/tools/EmailParser';
-import { AUTH_COOKIE_KEY, REMEMBER_COOKIE_KEY } from '../../../service/tools/const';
+import { AUTH_COOKIE_KEY, AUTH_QUERY_KEY, REMEMBER_COOKIE_KEY } from '../../../service/tools/const';
 import {
   COOKIE_TOKEN,
   HEADER_TOKEN,
   MockedEmailDatabase,
   MockedEmailParser,
   MockedS3FileSystem,
+  mockParsedEmail,
   mockRequest,
   mockResponse,
   validateRequest,
@@ -28,6 +29,7 @@ import {
   buildListRssValidationChain,
   buildShowEmailValidationChain,
 } from '../../../service/tools/validators';
+import { error } from 'console';
 
 jest.mock('../../../service/tools/EmailDatabase');
 jest.mock('../../../service/tools/EmailParser');
@@ -766,39 +768,39 @@ describe('InboxController', () => {
   });
 
   describe('listRss()', () => {
+    const token = 'n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
     const username = 'username';
     const normalizedUsername = 'username';
     const id1 = 'id1';
     const id2 = 'id2';
 
-    test.each([[undefined], ['!:']])(
-      'should return 403 if username is missing or invalid',
-      async (username) => {
+    test.each([
+      [undefined, undefined, 3],
+      [undefined, 'a!', 3],
+      ['!:', undefined, 4],
+      ['!:', 'a!', 4],
+    ])(
+      'should return 422 if username and/or token are missing or invalid',
+      async (invalidUsername, invalidToken, expectedErrors) => {
         // given
-        const req = mockRequest<InboxListParams>({ params: { username } });
-        await validateRequest(req, buildListRssValidationChain());
+        const req = mockRequest<InboxListParams>({
+          params: { username: invalidUsername },
+          query: { [AUTH_QUERY_KEY]: invalidToken },
+        });
+        const errors = await validateRequest(req, buildListRssValidationChain());
 
         // when
         await controller.listRss(req, res);
         // then
-        expect(res.status).toHaveBeenCalledWith(403);
-        expect(res.render).toHaveBeenCalledWith('pages/403');
+        expect(errors).toHaveLength(expectedErrors);
+        expect(res.status).toHaveBeenCalledWith(422);
+        expect(res.render).toHaveBeenCalledWith('pages/422', { errors });
       },
     );
 
-    const mockParsedEmail = (from: string, subject: string): ParsedEmail => ({
-      from: [{ address: from, user: from }],
-      to: [],
-      cc: [],
-      bcc: [],
-      subject,
-      body: '',
-      received: new Date('Thu, 22 May 2025 09:26:56 GMT'),
-    });
-
     test('should render an RSS feed with emails', async () => {
       // given
-      const req = mockRequest<InboxListParams>({ params: { username } });
+      const req = mockRequest<InboxListParams>({ params: { username }, query: { [AUTH_QUERY_KEY]: token } });
       await validateRequest(req, buildListRssValidationChain());
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({
@@ -851,7 +853,7 @@ describe('InboxController', () => {
 
     test('should handle empty emails list gracefully', async () => {
       // given
-      const req = mockRequest<InboxListParams>({ params: { username } });
+      const req = mockRequest<InboxListParams>({ params: { username }, query: { [AUTH_QUERY_KEY]: token } });
       await validateRequest(req, buildListRssValidationChain());
       // and
       jest.useFakeTimers().setSystemTime(new Date('Sun, 01 Jan 2023 01:01:01 GMT'));
@@ -881,7 +883,7 @@ describe('InboxController', () => {
 
     test('should skip null/failed parses and still return valid RSS', async () => {
       // given
-      const req = mockRequest<InboxListParams>({ params: { username } });
+      const req = mockRequest<InboxListParams>({ params: { username }, query: { [AUTH_QUERY_KEY]: token } });
       await validateRequest(req, buildListRssValidationChain());
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({

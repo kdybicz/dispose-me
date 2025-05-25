@@ -1,6 +1,6 @@
 import dayjs = require('dayjs');
 import type { Request, Response } from 'express';
-import { matchedData, validationResult } from 'express-validator';
+import { type ValidationError, matchedData, validationResult } from 'express-validator';
 
 import { EmailDatabase } from '../tools/EmailDatabase';
 import { EmailParser, type ParsedEmail } from '../tools/EmailParser';
@@ -326,7 +326,7 @@ export class InboxController {
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return this.render403Response(req, res);
+      return this.render422Response(errors.array(), req, res);
     }
 
     const { username } = matchedData<{ username: string }>(req);
@@ -392,6 +392,26 @@ export class InboxController {
     }
 
     res.status(404).json({ message: 'The page you are looking for was not found.' });
+  };
+
+  render422Response = (
+    errors: ValidationError[],
+    req: Request,
+    res: Response,
+    view = 'pages/422',
+  ): void => {
+    log.debug(
+      `Action: '422' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
+    );
+
+    const { type = TYPE_DEFAULT } = req.query;
+
+    if (type === 'html') {
+      res.status(422).render(view, { errors });
+      return;
+    }
+
+    res.status(422).json({ errors });
   };
 
   render500Response = (err: Error, req: Request, res: Response): void => {
