@@ -258,6 +258,18 @@ export class DisposeMeStack extends cdk.Stack {
       dkimSigning: true,
     });
 
+    new route53.TxtRecord(this, 'SpfRecord', {
+      zone: hostedZone,
+      recordName: domainName,
+      values: ['v=spf1 include:amazonses.com -all'],
+    });
+
+    new route53.TxtRecord(this, 'DmarcRecord', {
+      zone: hostedZone,
+      recordName: `_dmarc.${domainName}`,
+      values: [`v=DMARC1; p=reject; rua=mailto:dmarc@${domainName}`],
+    });
+
     new route53.MxRecord(this, 'MxRecord', {
       values: [
         {
