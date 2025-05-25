@@ -276,7 +276,7 @@ export class InboxController {
       return res.render('pages/inbox');
     }
 
-    return res.json({ message: 'Go to /inbox/:username' });
+    return res.json({});
   };
 
   list = async (req: InboxRequest<InboxListParams>, res: Response): InboxResponse => {

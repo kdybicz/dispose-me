@@ -5,17 +5,24 @@ import {
   type InboxEmailParams,
   type InboxListParams,
 } from '../../../service/api/InboxController';
-import type { ParsedEmail } from '../../../service/tools/EmailParser';
-import { AUTH_COOKIE_KEY, AUTH_QUERY_KEY, REMEMBER_COOKIE_KEY } from '../../../service/tools/const';
 import {
+  AUTH_BODY_KEY,
+  AUTH_COOKIE_KEY,
+  AUTH_QUERY_KEY,
+  REMEMBER_COOKIE_KEY,
+} from '../../../service/tools/const';
+import {
+  BODY_TOKEN,
   COOKIE_TOKEN,
   HEADER_TOKEN,
+  INVALID_TOKEN,
   MockedEmailDatabase,
   MockedEmailParser,
   MockedS3FileSystem,
   mockParsedEmail,
   mockRequest,
   mockResponse,
+  QUERY_TOKEN,
   validateRequest,
 } from '../../utils';
 import {
@@ -29,7 +36,6 @@ import {
   buildListRssValidationChain,
   buildShowEmailValidationChain,
 } from '../../../service/tools/validators';
-import { error } from 'console';
 
 jest.mock('../../../service/tools/EmailDatabase');
 jest.mock('../../../service/tools/EmailParser');
@@ -101,12 +107,10 @@ describe('InboxController', () => {
   });
 
   describe('auth()', () => {
-    const token = 'n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
-
     test('should return 422 and rerender index if the token is invalid', async () => {
       // given
       const req = mockRequest<Record<string, never>, InboxAuthBody>({
-        body: { token: 'invalid-token', remember: 'on' },
+        body: { [AUTH_BODY_KEY]: INVALID_TOKEN, remember: 'on' },
       });
       await validateRequest(req, buildAuthValidationChain());
 
@@ -129,7 +133,7 @@ describe('InboxController', () => {
       const remember = 'on';
       // and
       const req = mockRequest<Record<string, never>, InboxAuthBody>({
-        body: { token, remember },
+        body: { [AUTH_BODY_KEY]: BODY_TOKEN, remember },
       });
       await validateRequest(req, buildAuthValidationChain());
 
@@ -142,7 +146,7 @@ describe('InboxController', () => {
         sameSite: 'strict',
         secure: true,
       });
-      expect(res.cookie).toHaveBeenCalledWith(AUTH_COOKIE_KEY, token, {
+      expect(res.cookie).toHaveBeenCalledWith(AUTH_COOKIE_KEY, BODY_TOKEN, {
         httpOnly: true,
         maxAge: 2592000000,
         sameSite: 'strict',
@@ -156,14 +160,14 @@ describe('InboxController', () => {
       const remember = 'off';
       // and
       const req = mockRequest<Record<string, never>, InboxAuthBody>({
-        body: { token, remember },
+        body: { [AUTH_BODY_KEY]: BODY_TOKEN, remember },
       });
       await validateRequest(req, buildAuthValidationChain());
 
       // when
       await controller.auth(req, res);
       // then
-      expect(res.cookie).toHaveBeenCalledWith(AUTH_COOKIE_KEY, token, {
+      expect(res.cookie).toHaveBeenCalledWith(AUTH_COOKIE_KEY, BODY_TOKEN, {
         httpOnly: true,
         sameSite: 'strict',
         secure: true,
@@ -533,7 +537,7 @@ describe('InboxController', () => {
       // then
       expect(res.render).toHaveBeenCalledWith('pages/email', {
         email: undefined,
-        token: 'header-token',
+        token: HEADER_TOKEN,
       });
     });
 
@@ -692,7 +696,7 @@ describe('InboxController', () => {
       // when
       await controller.inbox(req, res);
       // then
-      expect(res.json).toHaveBeenCalledWith({ message: 'Go to /inbox/:username' });
+      expect(res.json).toHaveBeenCalledWith({});
     });
   });
 
@@ -768,7 +772,6 @@ describe('InboxController', () => {
   });
 
   describe('listRss()', () => {
-    const token = 'n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
     const username = 'username';
     const normalizedUsername = 'username';
     const id1 = 'id1';
@@ -800,7 +803,10 @@ describe('InboxController', () => {
 
     test('should render an RSS feed with emails', async () => {
       // given
-      const req = mockRequest<InboxListParams>({ params: { username }, query: { [AUTH_QUERY_KEY]: token } });
+      const req = mockRequest<InboxListParams>({
+        params: { username },
+        query: { [AUTH_QUERY_KEY]: QUERY_TOKEN },
+      });
       await validateRequest(req, buildListRssValidationChain());
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({
@@ -822,11 +828,12 @@ describe('InboxController', () => {
       // and
       expect(res.type).toHaveBeenCalledWith('application/rss+xml');
       expect(res.send).toHaveBeenCalledWith(
+        // biome-ignore lint/style/useTemplate: <explanation>
         '<?xml version="1.0" encoding="utf-8"?>\n' +
           '<rss version="2.0">\n' +
           '    <channel>\n' +
           '        <title>Dispose Me</title>\n' +
-          '        <link>https://example.com/inbox/username?x-api-key=header-token</link>\n' +
+          `        <link>https://example.com/inbox/username?${AUTH_QUERY_KEY}=${HEADER_TOKEN}</link>\n` +
           '        <description>Dispose Me is a simple AWS-hosted disposable email service.</description>\n' +
           '        <lastBuildDate>Thu, 22 May 2025 09:26:56 GMT</lastBuildDate>\n' +
           '        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>\n' +
@@ -834,14 +841,14 @@ describe('InboxController', () => {
           '        <copyright>Dispose Me</copyright>\n' +
           '        <item>\n' +
           '            <title><![CDATA[b]]></title>\n' +
-          '            <link>https://example.com/inbox/username/id1?x-api-key=header-token</link>\n' +
+          `            <link>https://example.com/inbox/username/id1?${AUTH_QUERY_KEY}=${HEADER_TOKEN}</link>\n` +
           '            <guid>id1</guid>\n' +
           '            <pubDate>Thu, 22 May 2025 09:26:56 GMT</pubDate>\n' +
           '            <author>a (a)</author>\n' +
           '        </item>\n' +
           '        <item>\n' +
           '            <title><![CDATA[d]]></title>\n' +
-          '            <link>https://example.com/inbox/username/id2?x-api-key=header-token</link>\n' +
+          `            <link>https://example.com/inbox/username/id2?${AUTH_QUERY_KEY}=${HEADER_TOKEN}</link>\n` +
           '            <guid>id2</guid>\n' +
           '            <pubDate>Thu, 22 May 2025 09:26:56 GMT</pubDate>\n' +
           '            <author>c (c)</author>\n' +
@@ -853,7 +860,10 @@ describe('InboxController', () => {
 
     test('should handle empty emails list gracefully', async () => {
       // given
-      const req = mockRequest<InboxListParams>({ params: { username }, query: { [AUTH_QUERY_KEY]: token } });
+      const req = mockRequest<InboxListParams>({
+        params: { username },
+        query: { [AUTH_QUERY_KEY]: QUERY_TOKEN },
+      });
       await validateRequest(req, buildListRssValidationChain());
       // and
       jest.useFakeTimers().setSystemTime(new Date('Sun, 01 Jan 2023 01:01:01 GMT'));
@@ -866,11 +876,12 @@ describe('InboxController', () => {
       // then
       expect(res.type).toHaveBeenCalledWith('application/rss+xml');
       expect(res.send).toHaveBeenCalledWith(
+        // biome-ignore lint/style/useTemplate: <explanation>
         '<?xml version="1.0" encoding="utf-8"?>\n' +
           '<rss version="2.0">\n' +
           '    <channel>\n' +
           '        <title>Dispose Me</title>\n' +
-          '        <link>https://example.com/inbox/username?x-api-key=header-token</link>\n' +
+          `        <link>https://example.com/inbox/username?${AUTH_QUERY_KEY}=${HEADER_TOKEN}</link>\n` +
           '        <description>Dispose Me is a simple AWS-hosted disposable email service.</description>\n' +
           '        <lastBuildDate>Sun, 01 Jan 2023 01:01:01 GMT</lastBuildDate>\n' +
           '        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>\n' +
@@ -883,7 +894,10 @@ describe('InboxController', () => {
 
     test('should skip null/failed parses and still return valid RSS', async () => {
       // given
-      const req = mockRequest<InboxListParams>({ params: { username }, query: { [AUTH_QUERY_KEY]: token } });
+      const req = mockRequest<InboxListParams>({
+        params: { username },
+        query: { [AUTH_QUERY_KEY]: QUERY_TOKEN },
+      });
       await validateRequest(req, buildListRssValidationChain());
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({
@@ -902,11 +916,12 @@ describe('InboxController', () => {
       // then
       expect(res.type).toHaveBeenCalledWith('application/rss+xml');
       expect(res.send).toHaveBeenCalledWith(
+        // biome-ignore lint/style/useTemplate: <explanation>
         '<?xml version="1.0" encoding="utf-8"?>\n' +
           '<rss version="2.0">\n' +
           '    <channel>\n' +
           '        <title>Dispose Me</title>\n' +
-          '        <link>https://example.com/inbox/username?x-api-key=header-token</link>\n' +
+          `        <link>https://example.com/inbox/username?${AUTH_QUERY_KEY}=${HEADER_TOKEN}</link>\n` +
           '        <description>Dispose Me is a simple AWS-hosted disposable email service.</description>\n' +
           '        <lastBuildDate>Thu, 22 May 2025 09:26:56 GMT</lastBuildDate>\n' +
           '        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>\n' +
@@ -914,7 +929,7 @@ describe('InboxController', () => {
           '        <copyright>Dispose Me</copyright>\n' +
           '        <item>\n' +
           '            <title><![CDATA[b]]></title>\n' +
-          '            <link>https://example.com/inbox/username/id1?x-api-key=header-token</link>\n' +
+          `            <link>https://example.com/inbox/username/id1?${AUTH_QUERY_KEY}=${HEADER_TOKEN}</link>\n` +
           '            <guid>id1</guid>\n' +
           '            <pubDate>Thu, 22 May 2025 09:26:56 GMT</pubDate>\n' +
           '            <author>a (a)</author>\n' +

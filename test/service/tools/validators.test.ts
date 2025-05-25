@@ -9,10 +9,9 @@ import {
   buildTokeQueryValidator,
   buildTypeQueryValidator,
   buildUsernameParamValidator,
-  TYPE_DEFAULT,
 } from '../../../service/tools/validators';
-import { mockRequest } from '../../utils';
-import { AUTH_QUERY_KEY } from '../../../service/tools/const';
+import { BODY_TOKEN, INVALID_TOKEN, mockRequest, QUERY_TOKEN } from '../../utils';
+import { AUTH_BODY_KEY, AUTH_QUERY_KEY } from '../../../service/tools/const';
 
 describe('validators', () => {
   describe('buildUsernameParamValidator()', () => {
@@ -268,20 +267,19 @@ describe('validators', () => {
 
     test('accepts alphanumeric token', async () => {
       // given
-      const token = 'n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
-      const req = mockRequest({ query: { [AUTH_QUERY_KEY]: token } });
+      const req = mockRequest({ query: { [AUTH_QUERY_KEY]: QUERY_TOKEN } });
 
       // when
       await buildTokeQueryValidator({ required: true }).run(req);
 
       // then
       expect(validationResult(req).isEmpty()).toBe(true);
-      expect(matchedData(req)).toEqual({ [AUTH_QUERY_KEY]: token });
+      expect(matchedData(req)).toEqual({ [AUTH_QUERY_KEY]: QUERY_TOKEN });
     });
 
     test('rejects non-alphanumeric token', async () => {
       // given
-      const req = mockRequest({ query: { [AUTH_QUERY_KEY]: 'not valid!' } });
+      const req = mockRequest({ query: { [AUTH_QUERY_KEY]: INVALID_TOKEN } });
 
       // when
       await buildTokeQueryValidator({ required: true }).run(req);
@@ -294,20 +292,19 @@ describe('validators', () => {
   describe('buildTokenBodyValidator()', () => {
     test('accepts alphanumeric token', async () => {
       // given
-      const token = 'n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
-      const req = mockRequest({ body: { token } });
+      const req = mockRequest({ body: { [AUTH_BODY_KEY]: BODY_TOKEN } });
 
       // when
       await buildTokenBodyValidator().run(req);
 
       // then
       expect(validationResult(req).isEmpty()).toBe(true);
-      expect(matchedData(req)).toEqual({ token });
+      expect(matchedData(req)).toEqual({ [AUTH_BODY_KEY]: BODY_TOKEN });
     });
 
     test('rejects non-alphanumeric token', async () => {
       // given
-      const req = mockRequest({ body: { token: 'not valid!' } });
+      const req = mockRequest({ body: { [AUTH_BODY_KEY]: INVALID_TOKEN } });
 
       // when
       await buildTokenBodyValidator().run(req);

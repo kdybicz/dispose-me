@@ -1,5 +1,6 @@
 import { type ValidationChain, body, param, query } from 'express-validator';
 
+import { AUTH_BODY_KEY, AUTH_QUERY_KEY } from './const';
 import log from './log';
 
 let INBOX_BLACKLIST: string[] = [];
@@ -48,20 +49,22 @@ export const buildTypeQueryValidator = (): ValidationChain => {
 };
 
 export const buildTokeQueryValidator = (args: { required: boolean }): ValidationChain => {
-  let chain = query('x-api-key');
+  let chain = query(AUTH_QUERY_KEY);
   if (!args.required) {
     chain = chain.optional();
   }
 
   return chain
     .isAlphanumeric()
-    .withMessage('The x-api-key must contain only letters and numbers (no special characters).')
+    .withMessage(
+      `The ${AUTH_QUERY_KEY} must contain only letters and numbers (no special characters).`,
+    )
     .isLength({ min: 20, max: 50 })
-    .withMessage('The x-api-key must be between 20 and 50 characters long.');
+    .withMessage(`The ${AUTH_QUERY_KEY} must be between 20 and 50 characters long.`);
 };
 
 export const buildTokenBodyValidator = (): ValidationChain => {
-  return body('token')
+  return body(AUTH_BODY_KEY)
     .isAlphanumeric()
     .withMessage('The token must contain only letters and numbers (no special characters).')
     .isLength({ min: 20, max: 50 })
