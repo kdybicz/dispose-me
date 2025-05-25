@@ -6,7 +6,7 @@ import {
   buildRememberBodyValidator,
   buildSentAfterQueryValidator,
   buildTokenBodyValidator,
-  buildTokeQueryValidator,
+  buildTokenQueryValidator,
   buildTypeQueryValidator,
   buildUsernameParamValidator,
 } from '../../../service/tools/validators';
@@ -242,13 +242,13 @@ describe('validators', () => {
     });
   });
 
-  describe('buildTokeQueryValidator()', () => {
+  describe('buildTokenQueryValidator()', () => {
     test('accepts missing token, when it is not required', async () => {
       // given
       const req = mockRequest({ query: {} });
 
       // when
-      await buildTokeQueryValidator({ required: false }).run(req);
+      await buildTokenQueryValidator({ required: false }).run(req);
 
       // then
       expect(validationResult(req).isEmpty()).toBe(true);
@@ -259,7 +259,7 @@ describe('validators', () => {
       const req = mockRequest({ query: {} });
 
       // when
-      await buildTokeQueryValidator({ required: true }).run(req);
+      await buildTokenQueryValidator({ required: true }).run(req);
 
       // then
       expect(validationResult(req).isEmpty()).toBe(false);
@@ -270,19 +270,30 @@ describe('validators', () => {
       const req = mockRequest({ query: { [AUTH_QUERY_KEY]: QUERY_TOKEN } });
 
       // when
-      await buildTokeQueryValidator({ required: true }).run(req);
+      await buildTokenQueryValidator({ required: true }).run(req);
 
       // then
       expect(validationResult(req).isEmpty()).toBe(true);
       expect(matchedData(req)).toEqual({ [AUTH_QUERY_KEY]: QUERY_TOKEN });
     });
 
-    test('rejects non-alphanumeric token', async () => {
+    test('rejects non-alphanumeric token, when it is required', async () => {
       // given
       const req = mockRequest({ query: { [AUTH_QUERY_KEY]: INVALID_TOKEN } });
 
       // when
-      await buildTokeQueryValidator({ required: true }).run(req);
+      await buildTokenQueryValidator({ required: true }).run(req);
+
+      // then
+      expect(validationResult(req).isEmpty()).toBe(false);
+    });
+
+    test('rejects non-alphanumeric token, when it is not required', async () => {
+      // given
+      const req = mockRequest({ query: { [AUTH_QUERY_KEY]: INVALID_TOKEN } });
+
+      // when
+      await buildTokenQueryValidator({ required: false }).run(req);
 
       // then
       expect(validationResult(req).isEmpty()).toBe(false);

@@ -133,7 +133,7 @@ export class InboxController {
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return this.render403Response(req, res);
+      return this.render422Response(errors.array(), req, res);
     }
 
     const {
@@ -176,7 +176,7 @@ export class InboxController {
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return this.render403Response(req, res);
+      return this.render422Response(errors.array(), req, res);
     }
 
     const { id, username } = matchedData<{ id: string; username: string }>(req);
@@ -203,7 +203,7 @@ export class InboxController {
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return this.render403Response(req, res);
+      return this.render422Response(errors.array(), req, res);
     }
 
     const { id, username } = matchedData<{ id: string; username: string }>(req);
@@ -226,7 +226,7 @@ export class InboxController {
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return this.render403Response(req, res);
+      return this.render422Response(errors.array(), req, res);
     }
 
     const {

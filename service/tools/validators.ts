@@ -48,7 +48,7 @@ export const buildTypeQueryValidator = (): ValidationChain => {
   return query('type').optional().toLowerCase().isIn(TYPE_ALLOWED_VALUES);
 };
 
-export const buildTokeQueryValidator = (args: { required: boolean }): ValidationChain => {
+export const buildTokenQueryValidator = (args: { required: boolean }): ValidationChain => {
   let chain = query(AUTH_QUERY_KEY);
   if (!args.required) {
     chain = chain.optional();
@@ -87,19 +87,32 @@ export const buildAuthValidationChain = (): ValidationChain[] => {
 };
 
 export const buildLatestEmailValidationChain = (): ValidationChain[] => {
-  return [buildUsernameParamValidator(), buildSentAfterQueryValidator(), buildTypeQueryValidator()];
+  return [
+    buildUsernameParamValidator(),
+    buildSentAfterQueryValidator(),
+    buildTypeQueryValidator(),
+    buildTokenQueryValidator({ required: false }),
+  ];
 };
 
 export const buildListRssValidationChain = (): ValidationChain[] => {
-  return [buildUsernameParamValidator(), buildTokeQueryValidator({ required: true })];
+  return [buildUsernameParamValidator(), buildTokenQueryValidator({ required: true })];
 };
 
 export const buildDeleteEmailValidationChain = (): ValidationChain[] => {
-  return [buildUsernameParamValidator(), buildMessageIdParamValidation()];
+  return [
+    buildUsernameParamValidator(),
+    buildMessageIdParamValidation(),
+    buildTokenQueryValidator({ required: false }),
+  ];
 };
 
 export const buildDownloadEmailValidationChain = (): ValidationChain[] => {
-  return [buildUsernameParamValidator(), buildMessageIdParamValidation()];
+  return [
+    buildUsernameParamValidator(),
+    buildMessageIdParamValidation(),
+    buildTokenQueryValidator({ required: false }),
+  ];
 };
 
 export const buildShowEmailValidationChain = (): ValidationChain[] => {
@@ -107,6 +120,7 @@ export const buildShowEmailValidationChain = (): ValidationChain[] => {
     buildUsernameParamValidator(),
     buildMessageIdParamValidation(),
     buildTypeQueryValidator(),
+    buildTokenQueryValidator({ required: false }),
   ];
 };
 
