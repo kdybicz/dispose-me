@@ -150,13 +150,15 @@ export class InboxController {
       const emailObject = await this.fileSystem.getObject(this.bucketName, id);
       const emailBody = await emailObject.Body?.transformToString();
 
-      if (emailBody) {
-        const parsedEmail = await this.emailParser.parseEmail(emailBody);
-        email = {
-          ...parsedEmail,
-          id,
-        };
+      if (!emailBody) {
+        return this.render500Response(new Error('Email content not found!'), req, res);
       }
+
+      const parsedEmail = await this.emailParser.parseEmail(emailBody);
+      email = {
+        ...parsedEmail,
+        id,
+      };
 
       if (type === 'html') {
         const token = getToken(req);
@@ -186,6 +188,10 @@ export class InboxController {
     if (existsForUser) {
       const emailObject = await this.fileSystem.getObject(this.bucketName, id);
       const emailBody = await emailObject.Body?.transformToString();
+
+      if (!emailBody) {
+        return this.render500Response(new Error('Email content not found!'), req, res);
+      }
 
       res.setHeader('Content-disposition', `attachment; filename=${id}.eml`);
       res.type('application/octet-stream');

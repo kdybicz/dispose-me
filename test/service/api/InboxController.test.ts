@@ -280,7 +280,7 @@ describe('InboxController', () => {
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
-        Body: { transformToString: () => 'raw-email' },
+        Body: { transformToString: jest.fn().mockResolvedValueOnce('raw-email') },
       });
       MockedEmailParser.mockParseEmail.mockResolvedValueOnce({ from: 'a', subject: 'b' });
 
@@ -303,7 +303,7 @@ describe('InboxController', () => {
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
-        Body: { transformToString: () => 'raw-email' },
+        Body: { transformToString: jest.fn().mockResolvedValueOnce('raw-email') },
       });
       MockedEmailParser.mockParseEmail.mockResolvedValueOnce({ from: 'a', subject: 'b' });
 
@@ -314,7 +314,7 @@ describe('InboxController', () => {
     });
 
     test.each([[undefined], ['html']])(
-      'should return email details as HTML when email body not found - to be fixed',
+      'should return 500 as HTML if S3 or parser fails',
       async (type) => {
         // given
         const req = mockRequest<InboxEmailParams>({
@@ -325,20 +325,20 @@ describe('InboxController', () => {
         // and
         MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
         MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
-          Body: { transformToString: () => undefined },
+          Body: { transformToString: jest.fn().mockResolvedValueOnce(undefined) },
         });
 
         // when
         await controller.show(req, res);
         // then
-        expect(res.render).toHaveBeenCalledWith('pages/email', {
-          email: undefined,
-          token: HEADER_TOKEN,
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.render).toHaveBeenCalledWith('pages/error', {
+          error: new Error('Email content not found!'),
         });
       },
     );
 
-    test('should return email details as JSON when email body not found - to be fixed', async () => {
+    test('should return 500 as JSON if S3 or parser fails', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({
         params: { username: USERNAME, id: MESSAGE_ID },
@@ -348,39 +348,15 @@ describe('InboxController', () => {
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
-        Body: { transformToString: () => undefined },
+        Body: { transformToString: jest.fn().mockResolvedValueOnce(undefined) },
       });
 
       // when
       await controller.show(req, res);
       // then
-      expect(res.json).toHaveBeenCalledWith({
-        email: undefined,
-      });
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ message: 'Email content not found!' });
     });
-
-    test.skip.each([[undefined], ['html'], ['json']])(
-      'should return 404 if S3 or parser fails',
-      async (type) => {
-        // given
-        const req = mockRequest<InboxEmailParams>({
-          params: { username: USERNAME, id: MESSAGE_ID },
-          query: { type },
-        });
-        await validateRequest(req, buildShowEmailValidationChain());
-        // and
-        MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
-        MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
-          Body: { transformToString: () => undefined },
-        });
-
-        // when
-        await controller.show(req, res);
-        // then
-        expect(res.status).toHaveBeenCalledWith(404);
-        expect(res.render).toHaveBeenCalledWith('pages/404');
-      },
-    );
   });
 
   describe('download()', () => {
@@ -455,21 +431,23 @@ describe('InboxController', () => {
       expect(res.send).toHaveBeenCalledWith('raw-email-data');
     });
 
-    test.skip('should return 404 if S3 object has no body', async () => {
+    test('should return 500 if S3 object has no body', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({ params: { username: USERNAME, id: MESSAGE_ID } });
       await validateRequest(req, buildDownloadEmailValidationChain());
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
-        Body: { transformToString: jest.fn().mockResolvedValue(undefined) },
+        Body: { transformToString: jest.fn().mockResolvedValueOnce(undefined) },
       });
 
       // when
       await controller.download(req, res);
       // then
-      expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.render).toHaveBeenCalledWith('pages/404');
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.render).toHaveBeenCalledWith('pages/error', {
+        error: new Error('Email content not found!'),
+      });
     });
   });
 
@@ -589,22 +567,6 @@ describe('InboxController', () => {
       expect(res.render).toHaveBeenCalledWith('pages/422', { errors });
     });
 
-    test.skip('should return 404 if latest email is not found', async () => {
-      // given
-      const req = mockRequest<InboxListParams>({
-        params: { username: USERNAME },
-        query: { sentAfter },
-      });
-      await validateRequest(req, buildLatestEmailValidationChain());
-      // and
-      MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [] });
-
-      // when
-      await controller.latest(req, res);
-      // then
-      expect(res.render).toHaveBeenCalledWith('pages/404');
-    });
-
     test('should render last email even if it is not found - to be fixed', async () => {
       // given
       const req = mockRequest<InboxListParams>({
@@ -673,7 +635,7 @@ describe('InboxController', () => {
     });
 
     test.each([[undefined], ['html']])(
-      'should return email details as HTML when email body not found - to be fixed',
+      'should return empty email details as HTML when email body not found',
       async (type) => {
         // given
         const req = mockRequest<InboxEmailParams>({
@@ -697,7 +659,7 @@ describe('InboxController', () => {
       },
     );
 
-    test('should return email details as JSON when email body not found - to be fixed', async () => {
+    test('should return empty email details as JSON when email body not found', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({
         params: { username: USERNAME },
@@ -717,29 +679,6 @@ describe('InboxController', () => {
         email: undefined,
       });
     });
-
-    test.skip.each([[undefined], ['html'], ['json']])(
-      'should return 404 if S3 object returns no body',
-      async (type) => {
-        // given
-        const req = mockRequest<InboxListParams>({
-          params: { username: USERNAME },
-          query: { sentAfter, type },
-        });
-        await validateRequest(req, buildLatestEmailValidationChain());
-        // and
-        MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: MESSAGE_ID }] });
-        MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
-          Body: { transformToString: jest.fn().mockResolvedValue(undefined) },
-        });
-
-        // when
-        await controller.latest(req, res);
-        // then
-        expect(res.status).toHaveBeenCalledWith(404);
-        expect(res.render).toHaveBeenCalledWith('pages/404');
-      },
-    );
   });
 
   describe('inbox()', () => {
