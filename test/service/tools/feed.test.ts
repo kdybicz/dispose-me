@@ -1,7 +1,7 @@
 import type { EmailDetails } from '../../../service/api/InboxController';
 import { AUTH_QUERY_KEY } from '../../../service/tools/const';
 import { mapEmailDetailsListToFeed, mapEmailDetailsToFeedItem } from '../../../service/tools/feed';
-import { QUERY_TOKEN } from '../../utils';
+import { QUERY_TOKEN, USERNAME } from '../../utils';
 
 describe('feed tests', () => {
   describe('mapEmailDetailsToFeedItem', () => {
@@ -18,10 +18,9 @@ describe('feed tests', () => {
         body: 'body',
         received: date,
       };
-      const username = 'username';
 
       // when
-      const result = mapEmailDetailsToFeedItem(email, username, QUERY_TOKEN);
+      const result = mapEmailDetailsToFeedItem(email, USERNAME, QUERY_TOKEN);
       // then
       expect(result).toEqual({
         author: [
@@ -59,10 +58,9 @@ describe('feed tests', () => {
       jest.useFakeTimers().setSystemTime(new Date('Sun, 01 Jan 2023 01:01:01 GMT'));
       // and
       const emails: EmailDetails[] = [];
-      const username = 'username';
 
       // when
-      const result = mapEmailDetailsListToFeed(emails, username, QUERY_TOKEN).rss2();
+      const result = mapEmailDetailsListToFeed(emails, USERNAME, QUERY_TOKEN).rss2();
       // then
       expect(result).toEqual(
         // biome-ignore lint/style/useTemplate: <explanation>
@@ -97,10 +95,9 @@ describe('feed tests', () => {
           received: new Date('Mon, 01 Jan 2024 00:01:01 GMT'),
         },
       ];
-      const username = 'username';
 
       // when
-      const result = mapEmailDetailsListToFeed(emails, username, QUERY_TOKEN).rss2();
+      const result = mapEmailDetailsListToFeed(emails, USERNAME, QUERY_TOKEN).rss2();
       // then
       expect(result).toEqual(
         // biome-ignore lint/style/useTemplate: <explanation>

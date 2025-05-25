@@ -10,7 +10,14 @@ import {
   buildTypeQueryValidator,
   buildUsernameParamValidator,
 } from '../../../service/tools/validators';
-import { BODY_TOKEN, INVALID_TOKEN, mockRequest, QUERY_TOKEN } from '../../utils';
+import {
+  BODY_TOKEN,
+  INVALID_MESSAGE_ID,
+  INVALID_TOKEN,
+  mockRequest,
+  QUERY_TOKEN,
+  MESSAGE_ID,
+} from '../../utils';
 import { AUTH_BODY_KEY, AUTH_QUERY_KEY } from '../../../service/tools/const';
 
 describe('validators', () => {
@@ -87,19 +94,19 @@ describe('validators', () => {
   describe('buildMessageIdParamValidation()', () => {
     test('accepts valid alphanumeric message id', async () => {
       // given
-      const req = mockRequest({ params: { id: 'abc123XYZ' } });
+      const req = mockRequest({ params: { id: MESSAGE_ID } });
 
       // when
       await buildMessageIdParamValidation().run(req);
 
       // then
       expect(validationResult(req).isEmpty()).toBe(true);
-      expect(matchedData(req)).toEqual({ id: 'abc123XYZ' });
+      expect(matchedData(req)).toEqual({ id: MESSAGE_ID });
     });
 
     test('rejects non-alphanumeric message id', async () => {
       // given
-      const req = mockRequest({ params: { id: 'abc-123!' } });
+      const req = mockRequest({ params: { id: INVALID_MESSAGE_ID } });
 
       // when
       await buildMessageIdParamValidation().run(req);

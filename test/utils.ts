@@ -12,7 +12,13 @@ export const COOKIE_TOKEN = 'cookie0n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
 export const HEADER_TOKEN = 'header0n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
 export const QUERY_TOKEN = 'query0n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
 export const BODY_TOKEN = 'body0n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
-export const INVALID_TOKEN = 'invalid_token!';
+export const INVALID_TOKEN = 'a!';
+
+export const MESSAGE_ID = 'messageid';
+export const INVALID_MESSAGE_ID = 'message-id!';
+
+export const USERNAME = 'username';
+export const INVALID_USERNAME = '!:';
 
 export type RequestArgs<B> = {
   query?: Record<string, undefined | string>;
