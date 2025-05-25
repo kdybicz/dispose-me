@@ -1,5 +1,7 @@
 import type { EmailDetails } from '../../../service/api/InboxController';
+import { AUTH_QUERY_KEY } from '../../../service/tools/const';
 import { mapEmailDetailsListToFeed, mapEmailDetailsToFeedItem } from '../../../service/tools/feed';
+import { QUERY_TOKEN, USERNAME } from '../../utils';
 
 describe('feed tests', () => {
   describe('mapEmailDetailsToFeedItem', () => {
@@ -16,11 +18,9 @@ describe('feed tests', () => {
         body: 'body',
         received: date,
       };
-      const username = 'username';
-      const token = 'token';
 
       // when
-      const result = mapEmailDetailsToFeedItem(email, username, token);
+      const result = mapEmailDetailsToFeedItem(email, USERNAME, QUERY_TOKEN);
       // then
       expect(result).toEqual({
         author: [
@@ -46,7 +46,7 @@ describe('feed tests', () => {
         content: 'body',
         date: date,
         id: 'id',
-        link: 'https://example.com/inbox/username/id?x-api-key=token',
+        link: `https://example.com/inbox/username/id?${AUTH_QUERY_KEY}=${QUERY_TOKEN}`,
         title: 'subject',
       });
     });
@@ -58,18 +58,17 @@ describe('feed tests', () => {
       jest.useFakeTimers().setSystemTime(new Date('Sun, 01 Jan 2023 01:01:01 GMT'));
       // and
       const emails: EmailDetails[] = [];
-      const username = 'username';
-      const token = 'token';
 
       // when
-      const result = mapEmailDetailsListToFeed(emails, username, token).rss2();
+      const result = mapEmailDetailsListToFeed(emails, USERNAME, QUERY_TOKEN).rss2();
       // then
       expect(result).toEqual(
+        // biome-ignore lint/style/useTemplate: <explanation>
         '<?xml version="1.0" encoding="utf-8"?>\n' +
           '<rss version="2.0">\n' +
           '    <channel>\n' +
           '        <title>Dispose Me</title>\n' +
-          '        <link>https://example.com/inbox/username?x-api-key=token</link>\n' +
+          `        <link>https://example.com/inbox/username?${AUTH_QUERY_KEY}=${QUERY_TOKEN}</link>\n` +
           '        <description>Dispose Me is a simple AWS-hosted disposable email service.</description>\n' +
           '        <lastBuildDate>Sun, 01 Jan 2023 01:01:01 GMT</lastBuildDate>\n' +
           '        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>\n' +
@@ -96,18 +95,17 @@ describe('feed tests', () => {
           received: new Date('Mon, 01 Jan 2024 00:01:01 GMT'),
         },
       ];
-      const username = 'username';
-      const token = 'token';
 
       // when
-      const result = mapEmailDetailsListToFeed(emails, username, token).rss2();
+      const result = mapEmailDetailsListToFeed(emails, USERNAME, QUERY_TOKEN).rss2();
       // then
       expect(result).toEqual(
+        // biome-ignore lint/style/useTemplate: <explanation>
         '<?xml version="1.0" encoding="utf-8"?>\n' +
           '<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">\n' +
           '    <channel>\n' +
           '        <title>Dispose Me</title>\n' +
-          '        <link>https://example.com/inbox/username?x-api-key=token</link>\n' +
+          `        <link>https://example.com/inbox/username?${AUTH_QUERY_KEY}=${QUERY_TOKEN}</link>\n` +
           '        <description>Dispose Me is a simple AWS-hosted disposable email service.</description>\n' +
           '        <lastBuildDate>Mon, 01 Jan 2024 00:01:01 GMT</lastBuildDate>\n' +
           '        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>\n' +
@@ -115,7 +113,7 @@ describe('feed tests', () => {
           '        <copyright>Dispose Me</copyright>\n' +
           '        <item>\n' +
           '            <title><![CDATA[subject]]></title>\n' +
-          '            <link>https://example.com/inbox/username/id?x-api-key=token</link>\n' +
+          `            <link>https://example.com/inbox/username/id?${AUTH_QUERY_KEY}=${QUERY_TOKEN}</link>\n` +
           '            <guid>id</guid>\n' +
           '            <pubDate>Mon, 01 Jan 2024 00:01:01 GMT</pubDate>\n' +
           '            <content:encoded><![CDATA[body]]></content:encoded>\n' +

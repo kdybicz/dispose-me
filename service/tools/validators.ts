@@ -1,5 +1,6 @@
 import { type ValidationChain, body, param, query } from 'express-validator';
 
+import { AUTH_BODY_KEY, AUTH_QUERY_KEY } from './const';
 import log from './log';
 
 let INBOX_BLACKLIST: string[] = [];
@@ -47,8 +48,23 @@ export const buildTypeQueryValidator = (): ValidationChain => {
   return query('type').optional().toLowerCase().isIn(TYPE_ALLOWED_VALUES);
 };
 
+export const buildTokenQueryValidator = (args: { required: boolean }): ValidationChain => {
+  let chain = query(AUTH_QUERY_KEY);
+  if (!args.required) {
+    chain = chain.optional();
+  }
+
+  return chain
+    .isAlphanumeric()
+    .withMessage(
+      `The ${AUTH_QUERY_KEY} must contain only letters and numbers (no special characters).`,
+    )
+    .isLength({ min: 20, max: 50 })
+    .withMessage(`The ${AUTH_QUERY_KEY} must be between 20 and 50 characters long.`);
+};
+
 export const buildTokenBodyValidator = (): ValidationChain => {
-  return body('token')
+  return body(AUTH_BODY_KEY)
     .isAlphanumeric()
     .withMessage('The token must contain only letters and numbers (no special characters).')
     .isLength({ min: 20, max: 50 })
@@ -71,19 +87,32 @@ export const buildAuthValidationChain = (): ValidationChain[] => {
 };
 
 export const buildLatestEmailValidationChain = (): ValidationChain[] => {
-  return [buildUsernameParamValidator(), buildSentAfterQueryValidator(), buildTypeQueryValidator()];
+  return [
+    buildUsernameParamValidator(),
+    buildSentAfterQueryValidator(),
+    buildTypeQueryValidator(),
+    buildTokenQueryValidator({ required: false }),
+  ];
 };
 
 export const buildListRssValidationChain = (): ValidationChain[] => {
-  return [buildUsernameParamValidator()];
+  return [buildUsernameParamValidator(), buildTokenQueryValidator({ required: true })];
 };
 
 export const buildDeleteEmailValidationChain = (): ValidationChain[] => {
-  return [buildUsernameParamValidator(), buildMessageIdParamValidation()];
+  return [
+    buildUsernameParamValidator(),
+    buildMessageIdParamValidation(),
+    buildTokenQueryValidator({ required: false }),
+  ];
 };
 
 export const buildDownloadEmailValidationChain = (): ValidationChain[] => {
-  return [buildUsernameParamValidator(), buildMessageIdParamValidation()];
+  return [
+    buildUsernameParamValidator(),
+    buildMessageIdParamValidation(),
+    buildTokenQueryValidator({ required: false }),
+  ];
 };
 
 export const buildShowEmailValidationChain = (): ValidationChain[] => {
@@ -91,6 +120,7 @@ export const buildShowEmailValidationChain = (): ValidationChain[] => {
     buildUsernameParamValidator(),
     buildMessageIdParamValidation(),
     buildTypeQueryValidator(),
+    buildTokenQueryValidator({ required: false }),
   ];
 };
 

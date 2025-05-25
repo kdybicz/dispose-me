@@ -1,9 +1,5 @@
 import type { Request } from 'express';
-import {
-  getCookie,
-  getToken,
-  normalizeUsername,
-} from '../../../service/tools/utils';
+import { getCookie, getToken, normalizeUsername } from '../../../service/tools/utils';
 import {
   AUTH_COOKIE_KEY,
   AUTH_HEADER_KEY,
@@ -71,13 +67,13 @@ describe('utils tests', () => {
     test('return value when cookies present in header', () => {
       // given
       const req = mockRequest({
-        cookie: `${REMEMBER_COOKIE_KEY}=true; ${AUTH_COOKIE_KEY}=n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW; test=123`,
+        cookie: `${REMEMBER_COOKIE_KEY}=true; ${AUTH_COOKIE_KEY}=${COOKIE_TOKEN}; test=123`,
       });
 
       // when
       const result = getCookie(req, AUTH_COOKIE_KEY);
       // then
-      expect(result).toEqual('n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW');
+      expect(result).toEqual(COOKIE_TOKEN);
     });
   });
 

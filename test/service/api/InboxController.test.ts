@@ -5,16 +5,27 @@ import {
   type InboxEmailParams,
   type InboxListParams,
 } from '../../../service/api/InboxController';
-import type { ParsedEmail } from '../../../service/tools/EmailParser';
-import { AUTH_COOKIE_KEY, REMEMBER_COOKIE_KEY } from '../../../service/tools/const';
 import {
+  AUTH_BODY_KEY,
+  AUTH_COOKIE_KEY,
+  AUTH_QUERY_KEY,
+  REMEMBER_COOKIE_KEY,
+} from '../../../service/tools/const';
+import {
+  BODY_TOKEN,
   COOKIE_TOKEN,
   HEADER_TOKEN,
+  INVALID_TOKEN,
+  INVALID_USERNAME,
   MockedEmailDatabase,
   MockedEmailParser,
   MockedS3FileSystem,
+  mockParsedEmail,
   mockRequest,
   mockResponse,
+  QUERY_TOKEN,
+  MESSAGE_ID,
+  USERNAME,
   validateRequest,
 } from '../../utils';
 import {
@@ -99,12 +110,10 @@ describe('InboxController', () => {
   });
 
   describe('auth()', () => {
-    const token = 'n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
-
     test('should return 422 and rerender index if the token is invalid', async () => {
       // given
       const req = mockRequest<Record<string, never>, InboxAuthBody>({
-        body: { token: 'invalid-token', remember: 'on' },
+        body: { [AUTH_BODY_KEY]: INVALID_TOKEN, remember: 'on' },
       });
       await validateRequest(req, buildAuthValidationChain());
 
@@ -127,7 +136,7 @@ describe('InboxController', () => {
       const remember = 'on';
       // and
       const req = mockRequest<Record<string, never>, InboxAuthBody>({
-        body: { token, remember },
+        body: { [AUTH_BODY_KEY]: BODY_TOKEN, remember },
       });
       await validateRequest(req, buildAuthValidationChain());
 
@@ -140,7 +149,7 @@ describe('InboxController', () => {
         sameSite: 'strict',
         secure: true,
       });
-      expect(res.cookie).toHaveBeenCalledWith(AUTH_COOKIE_KEY, token, {
+      expect(res.cookie).toHaveBeenCalledWith(AUTH_COOKIE_KEY, BODY_TOKEN, {
         httpOnly: true,
         maxAge: 2592000000,
         sameSite: 'strict',
@@ -154,14 +163,14 @@ describe('InboxController', () => {
       const remember = 'off';
       // and
       const req = mockRequest<Record<string, never>, InboxAuthBody>({
-        body: { token, remember },
+        body: { [AUTH_BODY_KEY]: BODY_TOKEN, remember },
       });
       await validateRequest(req, buildAuthValidationChain());
 
       // when
       await controller.auth(req, res);
       // then
-      expect(res.cookie).toHaveBeenCalledWith(AUTH_COOKIE_KEY, token, {
+      expect(res.cookie).toHaveBeenCalledWith(AUTH_COOKIE_KEY, BODY_TOKEN, {
         httpOnly: true,
         sameSite: 'strict',
         secure: true,
@@ -185,30 +194,49 @@ describe('InboxController', () => {
   });
 
   describe('show()', () => {
-    const username = 'username';
-    const id = 'messageid';
-
-    test.each([[undefined], ['!:']])(
-      'should return 403 if username is missing or invalid',
-      async (username) => {
+    test.each([
+      [undefined, 1],
+      [INVALID_USERNAME, 2],
+    ])(
+      'should return 422 if username is missing or invalid',
+      async (invalidUsername, expectedErrors) => {
         // given
-        const req = mockRequest<InboxEmailParams>({ params: { username } });
-        await validateRequest(req, buildShowEmailValidationChain());
+        const req = mockRequest<InboxEmailParams>({
+          params: { username: invalidUsername, id: MESSAGE_ID },
+        });
+        const errors = await validateRequest(req, buildShowEmailValidationChain());
 
         // when
         await controller.show(req, res);
         // then
-        expect(res.status).toHaveBeenCalledWith(403);
-        expect(res.render).toHaveBeenCalledWith('pages/403');
+        expect(errors).toHaveLength(expectedErrors);
+        expect(res.status).toHaveBeenCalledWith(422);
+        expect(res.render).toHaveBeenCalledWith('pages/422', { errors });
       },
     );
+
+    test('should return 422 if token is invalid', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({
+        params: { username: USERNAME, id: MESSAGE_ID },
+        query: { [AUTH_QUERY_KEY]: INVALID_TOKEN },
+      });
+      const errors = await validateRequest(req, buildShowEmailValidationChain());
+
+      // when
+      await controller.show(req, res);
+      // then
+      expect(errors).toHaveLength(2);
+      expect(res.status).toHaveBeenCalledWith(422);
+      expect(res.render).toHaveBeenCalledWith('pages/422', { errors });
+    });
 
     test.each([[undefined], ['html']])(
       'should return 404 as HTML if email does not exist',
       async (type) => {
         // given
         const req = mockRequest<InboxEmailParams>({
-          params: { username, id },
+          params: { username: USERNAME, id: MESSAGE_ID },
           query: { type },
         });
         await validateRequest(req, buildShowEmailValidationChain());
@@ -226,7 +254,7 @@ describe('InboxController', () => {
     test('should return 404 as JSON if email does not exist', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({
-        params: { username, id },
+        params: { username: USERNAME, id: MESSAGE_ID },
         query: { type: 'json' },
       });
       await validateRequest(req, buildShowEmailValidationChain());
@@ -245,7 +273,7 @@ describe('InboxController', () => {
     test.each([[undefined], ['html']])('should render email details as HTML', async (type) => {
       // given
       const req = mockRequest<InboxEmailParams>({
-        params: { username, id },
+        params: { username: USERNAME, id: MESSAGE_ID },
         query: { type },
       });
       await validateRequest(req, buildShowEmailValidationChain());
@@ -260,7 +288,7 @@ describe('InboxController', () => {
       await controller.show(req, res);
       // then
       expect(res.render).toHaveBeenCalledWith('pages/email', {
-        email: expect.objectContaining({ id }),
+        email: expect.objectContaining({ id: MESSAGE_ID }),
         token: HEADER_TOKEN,
       });
     });
@@ -268,7 +296,7 @@ describe('InboxController', () => {
     test('should return email details as JSON', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({
-        params: { username, id },
+        params: { username: USERNAME, id: MESSAGE_ID },
         query: { type: 'json' },
       });
       await validateRequest(req, buildShowEmailValidationChain());
@@ -282,7 +310,7 @@ describe('InboxController', () => {
       // when
       await controller.show(req, res);
       // then
-      expect(res.json).toHaveBeenCalledWith({ email: expect.objectContaining({ id }) });
+      expect(res.json).toHaveBeenCalledWith({ email: expect.objectContaining({ id: MESSAGE_ID }) });
     });
 
     test.each([[undefined], ['html']])(
@@ -290,7 +318,7 @@ describe('InboxController', () => {
       async (type) => {
         // given
         const req = mockRequest<InboxEmailParams>({
-          params: { username, id },
+          params: { username: USERNAME, id: MESSAGE_ID },
           query: { type },
         });
         await validateRequest(req, buildShowEmailValidationChain());
@@ -313,7 +341,7 @@ describe('InboxController', () => {
     test('should return email details as JSON when email body not found - to be fixed', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({
-        params: { username, id },
+        params: { username: USERNAME, id: MESSAGE_ID },
         query: { type: 'json' },
       });
       await validateRequest(req, buildShowEmailValidationChain());
@@ -336,7 +364,7 @@ describe('InboxController', () => {
       async (type) => {
         // given
         const req = mockRequest<InboxEmailParams>({
-          params: { username, id },
+          params: { username: USERNAME, id: MESSAGE_ID },
           query: { type },
         });
         await validateRequest(req, buildShowEmailValidationChain());
@@ -356,27 +384,46 @@ describe('InboxController', () => {
   });
 
   describe('download()', () => {
-    const username = 'username';
-    const id = 'messageid';
-
-    test.each([[undefined], ['!:']])(
-      'should return 403 if username is missing or invalid',
-      async (username) => {
+    test.each([
+      [undefined, 1],
+      [INVALID_USERNAME, 2],
+    ])(
+      'should return 422 if username is missing or invalid',
+      async (invalidUsername, expectedErrors) => {
         // given
-        const req = mockRequest<InboxEmailParams>({ params: { username } });
-        await validateRequest(req, buildDownloadEmailValidationChain());
+        const req = mockRequest<InboxEmailParams>({
+          params: { username: invalidUsername, id: MESSAGE_ID },
+        });
+        const errors = await validateRequest(req, buildDownloadEmailValidationChain());
 
         // when
         await controller.download(req, res);
         // then
-        expect(res.status).toHaveBeenCalledWith(403);
-        expect(res.render).toHaveBeenCalledWith('pages/403');
+        expect(errors).toHaveLength(expectedErrors);
+        expect(res.status).toHaveBeenCalledWith(422);
+        expect(res.render).toHaveBeenCalledWith('pages/422', { errors });
       },
     );
 
+    test('should return 422 if token is invalid', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({
+        params: { username: USERNAME, id: MESSAGE_ID },
+        query: { [AUTH_QUERY_KEY]: INVALID_TOKEN },
+      });
+      const errors = await validateRequest(req, buildDownloadEmailValidationChain());
+
+      // when
+      await controller.download(req, res);
+      // then
+      expect(errors).toHaveLength(2);
+      expect(res.status).toHaveBeenCalledWith(422);
+      expect(res.render).toHaveBeenCalledWith('pages/422', { errors });
+    });
+
     test('should return 404 if email does not exist', async () => {
       // given
-      const req = mockRequest<InboxEmailParams>({ params: { username, id } });
+      const req = mockRequest<InboxEmailParams>({ params: { username: USERNAME, id: MESSAGE_ID } });
       await validateRequest(req, buildDownloadEmailValidationChain());
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(false);
@@ -389,7 +436,7 @@ describe('InboxController', () => {
 
     test('should set headers and send email file if it exists', async () => {
       // given
-      const req = mockRequest<InboxEmailParams>({ params: { username, id } });
+      const req = mockRequest<InboxEmailParams>({ params: { username: USERNAME, id: MESSAGE_ID } });
       await validateRequest(req, buildDownloadEmailValidationChain());
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
@@ -402,7 +449,7 @@ describe('InboxController', () => {
       // then
       expect(res.setHeader).toHaveBeenCalledWith(
         'Content-disposition',
-        `attachment; filename=${id}.eml`,
+        `attachment; filename=${MESSAGE_ID}.eml`,
       );
       expect(res.type).toHaveBeenCalledWith('application/octet-stream');
       expect(res.send).toHaveBeenCalledWith('raw-email-data');
@@ -410,7 +457,7 @@ describe('InboxController', () => {
 
     test.skip('should return 404 if S3 object has no body', async () => {
       // given
-      const req = mockRequest<InboxEmailParams>({ params: { username, id } });
+      const req = mockRequest<InboxEmailParams>({ params: { username: USERNAME, id: MESSAGE_ID } });
       await validateRequest(req, buildDownloadEmailValidationChain());
       // and
       MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
@@ -427,28 +474,47 @@ describe('InboxController', () => {
   });
 
   describe('delete()', () => {
-    const username = 'username';
-    const id = 'messageid';
-
-    test.each([[undefined], ['!:']])(
-      'should return 403 if username is missing or invalid',
-      async (username) => {
+    test.each([
+      [undefined, 1],
+      [INVALID_USERNAME, 2],
+    ])(
+      'should return 422 if username is missing or invalid',
+      async (invalidUsername, expectedErrors) => {
         // given
-        const req = mockRequest<InboxEmailParams>({ params: { username } });
-        await validateRequest(req, buildDeleteEmailValidationChain());
+        const req = mockRequest<InboxEmailParams>({
+          params: { username: invalidUsername, id: MESSAGE_ID },
+        });
+        const errors = await validateRequest(req, buildDeleteEmailValidationChain());
 
         // when
         await controller.delete(req, res);
         // then
-        expect(res.status).toHaveBeenCalledWith(403);
-        expect(res.render).toHaveBeenCalledWith('pages/403');
+        expect(errors).toHaveLength(expectedErrors);
+        expect(res.status).toHaveBeenCalledWith(422);
+        expect(res.render).toHaveBeenCalledWith('pages/422', { errors });
       },
     );
+
+    test('should return 422 if token is invalid', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({
+        params: { username: USERNAME, id: MESSAGE_ID },
+        query: { [AUTH_QUERY_KEY]: INVALID_TOKEN },
+      });
+      const errors = await validateRequest(req, buildDeleteEmailValidationChain());
+
+      // when
+      await controller.delete(req, res);
+      // then
+      expect(errors).toHaveLength(2);
+      expect(res.status).toHaveBeenCalledWith(422);
+      expect(res.render).toHaveBeenCalledWith('pages/422', { errors });
+    });
 
     test('should redirect to inbox if deletion is successful', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({
-        params: { username, id },
+        params: { username: USERNAME, id: MESSAGE_ID },
       });
       await validateRequest(req, buildDeleteEmailValidationChain());
       // and
@@ -457,17 +523,17 @@ describe('InboxController', () => {
       // when
       await controller.delete(req, res);
       // then
-      expect(MockedEmailDatabase.mockDeleteEmail).toHaveBeenCalledWith(username, id);
+      expect(MockedEmailDatabase.mockDeleteEmail).toHaveBeenCalledWith(USERNAME, MESSAGE_ID);
       // and
       expect(res.redirect).toHaveBeenCalledWith(
-        `/inbox/${username}?${new URLSearchParams(req.query as Record<string, string>)}`,
+        `/inbox/${USERNAME}?${new URLSearchParams(req.query as Record<string, string>)}`,
       );
     });
 
     test('should return 404 if deletion is unsuccessful', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({
-        params: { username, id },
+        params: { username: USERNAME, id: MESSAGE_ID },
       });
       await validateRequest(req, buildDeleteEmailValidationChain());
       // and
@@ -476,7 +542,7 @@ describe('InboxController', () => {
       // when
       await controller.delete(req, res);
       // then
-      expect(MockedEmailDatabase.mockDeleteEmail).toHaveBeenCalledWith(username, id);
+      expect(MockedEmailDatabase.mockDeleteEmail).toHaveBeenCalledWith(USERNAME, MESSAGE_ID);
       // and
       expect(res.status).toHaveBeenCalledWith(404);
       expect(res.render).toHaveBeenCalledWith('pages/404');
@@ -484,26 +550,49 @@ describe('InboxController', () => {
   });
 
   describe('latest()', () => {
-    const username = 'username';
-    const id = 'messageid';
     const sentAfter = '123456789';
 
-    test('should return 403 if username is missing', async () => {
+    test.each([
+      [undefined, 1],
+      [INVALID_USERNAME, 2],
+    ])(
+      'should return 422 if username is missing or invalid',
+      async (invalidUsername, expectedErrors) => {
+        // given
+        const req = mockRequest<InboxEmailParams>({
+          params: { username: invalidUsername, id: MESSAGE_ID },
+        });
+        const errors = await validateRequest(req, buildLatestEmailValidationChain());
+
+        // when
+        await controller.latest(req, res);
+        // then
+        expect(errors).toHaveLength(expectedErrors);
+        expect(res.status).toHaveBeenCalledWith(422);
+        expect(res.render).toHaveBeenCalledWith('pages/422', { errors });
+      },
+    );
+
+    test('should return 422 if token is invalid', async () => {
       // given
-      const req = mockRequest<InboxListParams>({ params: {} });
-      await validateRequest(req, buildLatestEmailValidationChain());
+      const req = mockRequest<InboxEmailParams>({
+        params: { username: USERNAME, id: MESSAGE_ID },
+        query: { [AUTH_QUERY_KEY]: INVALID_TOKEN },
+      });
+      const errors = await validateRequest(req, buildLatestEmailValidationChain());
 
       // when
       await controller.latest(req, res);
-      //then
-      expect(res.status).toHaveBeenCalledWith(403);
-      expect(res.render).toHaveBeenCalledWith('pages/403');
+      // then
+      expect(errors).toHaveLength(2);
+      expect(res.status).toHaveBeenCalledWith(422);
+      expect(res.render).toHaveBeenCalledWith('pages/422', { errors });
     });
 
     test.skip('should return 404 if latest email is not found', async () => {
       // given
       const req = mockRequest<InboxListParams>({
-        params: { username },
+        params: { username: USERNAME },
         query: { sentAfter },
       });
       await validateRequest(req, buildLatestEmailValidationChain());
@@ -519,7 +608,7 @@ describe('InboxController', () => {
     test('should render last email even if it is not found - to be fixed', async () => {
       // given
       const req = mockRequest<InboxListParams>({
-        params: { username },
+        params: { username: USERNAME },
         query: { sentAfter },
       });
       await validateRequest(req, buildLatestEmailValidationChain());
@@ -531,7 +620,7 @@ describe('InboxController', () => {
       // then
       expect(res.render).toHaveBeenCalledWith('pages/email', {
         email: undefined,
-        token: 'header-token',
+        token: HEADER_TOKEN,
       });
     });
 
@@ -540,12 +629,12 @@ describe('InboxController', () => {
       async (type) => {
         // given
         const req = mockRequest<InboxListParams>({
-          params: { username },
+          params: { username: USERNAME },
           query: { sentAfter, type },
         });
         await validateRequest(req, buildLatestEmailValidationChain());
         // and
-        MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
+        MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: MESSAGE_ID }] });
         MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
           Body: { transformToString: jest.fn().mockResolvedValue('raw-email') },
         });
@@ -555,7 +644,7 @@ describe('InboxController', () => {
         await controller.latest(req, res);
         // then
         expect(res.render).toHaveBeenCalledWith('pages/email', {
-          email: expect.objectContaining({ id }),
+          email: expect.objectContaining({ id: MESSAGE_ID }),
           token: HEADER_TOKEN,
         });
       },
@@ -564,12 +653,12 @@ describe('InboxController', () => {
     test('should return latest email as JSON if found and type=json', async () => {
       // given
       const req = mockRequest<InboxListParams>({
-        params: { username },
+        params: { username: USERNAME },
         query: { sentAfter, type: 'json' },
       });
       await validateRequest(req, buildLatestEmailValidationChain());
       // and
-      MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
+      MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: MESSAGE_ID }] });
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
         Body: { transformToString: jest.fn().mockResolvedValue('raw-email') },
       });
@@ -579,7 +668,7 @@ describe('InboxController', () => {
       await controller.latest(req, res);
       // then
       expect(res.json).toHaveBeenCalledWith({
-        email: expect.objectContaining({ id }),
+        email: expect.objectContaining({ id: MESSAGE_ID }),
       });
     });
 
@@ -588,12 +677,12 @@ describe('InboxController', () => {
       async (type) => {
         // given
         const req = mockRequest<InboxEmailParams>({
-          params: { username },
+          params: { username: USERNAME },
           query: { type },
         });
         await validateRequest(req, buildLatestEmailValidationChain());
         // and
-        MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
+        MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: MESSAGE_ID }] });
         MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
           Body: { transformToString: jest.fn().mockResolvedValue(undefined) },
         });
@@ -611,12 +700,12 @@ describe('InboxController', () => {
     test('should return email details as JSON when email body not found - to be fixed', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({
-        params: { username },
+        params: { username: USERNAME },
         query: { type: 'json' },
       });
       await validateRequest(req, buildLatestEmailValidationChain());
       // and
-      MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
+      MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: MESSAGE_ID }] });
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
         Body: { transformToString: jest.fn().mockResolvedValue(undefined) },
       });
@@ -634,12 +723,12 @@ describe('InboxController', () => {
       async (type) => {
         // given
         const req = mockRequest<InboxListParams>({
-          params: { username },
+          params: { username: USERNAME },
           query: { sentAfter, type },
         });
         await validateRequest(req, buildLatestEmailValidationChain());
         // and
-        MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: id }] });
+        MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({ Items: [{ Id: MESSAGE_ID }] });
         MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
           Body: { transformToString: jest.fn().mockResolvedValue(undefined) },
         });
@@ -690,19 +779,18 @@ describe('InboxController', () => {
       // when
       await controller.inbox(req, res);
       // then
-      expect(res.json).toHaveBeenCalledWith({ message: 'Go to /inbox/:username' });
+      expect(res.json).toHaveBeenCalledWith({});
     });
   });
 
   describe('list()', () => {
-    const username = 'username';
     const sentAfter = '123456789';
     const limit = '15';
 
     test('should return 422 and rerender inbox if the username is invalid', async () => {
       // given
       const req = mockRequest<InboxListParams>({
-        params: { username: '!:' },
+        params: { username: INVALID_USERNAME },
       });
       await validateRequest(req, buildListEmailsValidationChain());
 
@@ -724,7 +812,7 @@ describe('InboxController', () => {
       // given
       const req = mockRequest<InboxListParams>({
         query: { sentAfter, limit, type },
-        params: { username },
+        params: { username: USERNAME },
       });
       await validateRequest(req, buildListEmailsValidationChain());
       // and
@@ -734,7 +822,7 @@ describe('InboxController', () => {
       await controller.list(req, res);
       // then
       expect(MockedEmailDatabase.mockListEmails).toHaveBeenCalledWith(
-        username,
+        USERNAME,
         Number.parseInt(sentAfter),
         Number.parseInt(limit),
       );
@@ -747,7 +835,7 @@ describe('InboxController', () => {
       // and
       const req = mockRequest<InboxListParams>({
         query: { sentAfter, limit, type },
-        params: { username },
+        params: { username: USERNAME },
       });
       await validateRequest(req, buildListEmailsValidationChain());
       // and
@@ -757,7 +845,7 @@ describe('InboxController', () => {
       await controller.list(req, res);
       // then
       expect(MockedEmailDatabase.mockListEmails).toHaveBeenCalledWith(
-        username,
+        USERNAME,
         Number.parseInt(sentAfter),
         Number.parseInt(limit),
       );
@@ -766,39 +854,40 @@ describe('InboxController', () => {
   });
 
   describe('listRss()', () => {
-    const username = 'username';
-    const normalizedUsername = 'username';
+    const normalizedUsername = USERNAME;
     const id1 = 'id1';
     const id2 = 'id2';
 
-    test.each([[undefined], ['!:']])(
-      'should return 403 if username is missing or invalid',
-      async (username) => {
+    test.each([
+      [undefined, undefined, 3],
+      [undefined, INVALID_TOKEN, 3],
+      [INVALID_USERNAME, undefined, 4],
+      [INVALID_USERNAME, INVALID_TOKEN, 4],
+    ])(
+      'should return 422 if username and/or token are missing or invalid',
+      async (invalidUsername, invalidToken, expectedErrors) => {
         // given
-        const req = mockRequest<InboxListParams>({ params: { username } });
-        await validateRequest(req, buildListRssValidationChain());
+        const req = mockRequest<InboxListParams>({
+          params: { username: invalidUsername },
+          query: { [AUTH_QUERY_KEY]: invalidToken },
+        });
+        const errors = await validateRequest(req, buildListRssValidationChain());
 
         // when
         await controller.listRss(req, res);
         // then
-        expect(res.status).toHaveBeenCalledWith(403);
-        expect(res.render).toHaveBeenCalledWith('pages/403');
+        expect(errors).toHaveLength(expectedErrors);
+        expect(res.status).toHaveBeenCalledWith(422);
+        expect(res.render).toHaveBeenCalledWith('pages/422', { errors });
       },
     );
 
-    const mockParsedEmail = (from: string, subject: string): ParsedEmail => ({
-      from: [{ address: from, user: from }],
-      to: [],
-      cc: [],
-      bcc: [],
-      subject,
-      body: '',
-      received: new Date('Thu, 22 May 2025 09:26:56 GMT'),
-    });
-
     test('should render an RSS feed with emails', async () => {
       // given
-      const req = mockRequest<InboxListParams>({ params: { username } });
+      const req = mockRequest<InboxListParams>({
+        params: { username: USERNAME },
+        query: { [AUTH_QUERY_KEY]: QUERY_TOKEN },
+      });
       await validateRequest(req, buildListRssValidationChain());
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({
@@ -820,11 +909,12 @@ describe('InboxController', () => {
       // and
       expect(res.type).toHaveBeenCalledWith('application/rss+xml');
       expect(res.send).toHaveBeenCalledWith(
+        // biome-ignore lint/style/useTemplate: <explanation>
         '<?xml version="1.0" encoding="utf-8"?>\n' +
           '<rss version="2.0">\n' +
           '    <channel>\n' +
           '        <title>Dispose Me</title>\n' +
-          '        <link>https://example.com/inbox/username?x-api-key=header-token</link>\n' +
+          `        <link>https://example.com/inbox/username?${AUTH_QUERY_KEY}=${HEADER_TOKEN}</link>\n` +
           '        <description>Dispose Me is a simple AWS-hosted disposable email service.</description>\n' +
           '        <lastBuildDate>Thu, 22 May 2025 09:26:56 GMT</lastBuildDate>\n' +
           '        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>\n' +
@@ -832,14 +922,14 @@ describe('InboxController', () => {
           '        <copyright>Dispose Me</copyright>\n' +
           '        <item>\n' +
           '            <title><![CDATA[b]]></title>\n' +
-          '            <link>https://example.com/inbox/username/id1?x-api-key=header-token</link>\n' +
+          `            <link>https://example.com/inbox/username/id1?${AUTH_QUERY_KEY}=${HEADER_TOKEN}</link>\n` +
           '            <guid>id1</guid>\n' +
           '            <pubDate>Thu, 22 May 2025 09:26:56 GMT</pubDate>\n' +
           '            <author>a (a)</author>\n' +
           '        </item>\n' +
           '        <item>\n' +
           '            <title><![CDATA[d]]></title>\n' +
-          '            <link>https://example.com/inbox/username/id2?x-api-key=header-token</link>\n' +
+          `            <link>https://example.com/inbox/username/id2?${AUTH_QUERY_KEY}=${HEADER_TOKEN}</link>\n` +
           '            <guid>id2</guid>\n' +
           '            <pubDate>Thu, 22 May 2025 09:26:56 GMT</pubDate>\n' +
           '            <author>c (c)</author>\n' +
@@ -851,7 +941,10 @@ describe('InboxController', () => {
 
     test('should handle empty emails list gracefully', async () => {
       // given
-      const req = mockRequest<InboxListParams>({ params: { username } });
+      const req = mockRequest<InboxListParams>({
+        params: { username: USERNAME },
+        query: { [AUTH_QUERY_KEY]: QUERY_TOKEN },
+      });
       await validateRequest(req, buildListRssValidationChain());
       // and
       jest.useFakeTimers().setSystemTime(new Date('Sun, 01 Jan 2023 01:01:01 GMT'));
@@ -864,11 +957,12 @@ describe('InboxController', () => {
       // then
       expect(res.type).toHaveBeenCalledWith('application/rss+xml');
       expect(res.send).toHaveBeenCalledWith(
+        // biome-ignore lint/style/useTemplate: <explanation>
         '<?xml version="1.0" encoding="utf-8"?>\n' +
           '<rss version="2.0">\n' +
           '    <channel>\n' +
           '        <title>Dispose Me</title>\n' +
-          '        <link>https://example.com/inbox/username?x-api-key=header-token</link>\n' +
+          `        <link>https://example.com/inbox/username?${AUTH_QUERY_KEY}=${HEADER_TOKEN}</link>\n` +
           '        <description>Dispose Me is a simple AWS-hosted disposable email service.</description>\n' +
           '        <lastBuildDate>Sun, 01 Jan 2023 01:01:01 GMT</lastBuildDate>\n' +
           '        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>\n' +
@@ -881,7 +975,10 @@ describe('InboxController', () => {
 
     test('should skip null/failed parses and still return valid RSS', async () => {
       // given
-      const req = mockRequest<InboxListParams>({ params: { username } });
+      const req = mockRequest<InboxListParams>({
+        params: { username: USERNAME },
+        query: { [AUTH_QUERY_KEY]: QUERY_TOKEN },
+      });
       await validateRequest(req, buildListRssValidationChain());
       // and
       MockedEmailDatabase.mockListEmails.mockResolvedValueOnce({
@@ -900,11 +997,12 @@ describe('InboxController', () => {
       // then
       expect(res.type).toHaveBeenCalledWith('application/rss+xml');
       expect(res.send).toHaveBeenCalledWith(
+        // biome-ignore lint/style/useTemplate: <explanation>
         '<?xml version="1.0" encoding="utf-8"?>\n' +
           '<rss version="2.0">\n' +
           '    <channel>\n' +
           '        <title>Dispose Me</title>\n' +
-          '        <link>https://example.com/inbox/username?x-api-key=header-token</link>\n' +
+          `        <link>https://example.com/inbox/username?${AUTH_QUERY_KEY}=${HEADER_TOKEN}</link>\n` +
           '        <description>Dispose Me is a simple AWS-hosted disposable email service.</description>\n' +
           '        <lastBuildDate>Thu, 22 May 2025 09:26:56 GMT</lastBuildDate>\n' +
           '        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>\n' +
@@ -912,7 +1010,7 @@ describe('InboxController', () => {
           '        <copyright>Dispose Me</copyright>\n' +
           '        <item>\n' +
           '            <title><![CDATA[b]]></title>\n' +
-          '            <link>https://example.com/inbox/username/id1?x-api-key=header-token</link>\n' +
+          `            <link>https://example.com/inbox/username/id1?${AUTH_QUERY_KEY}=${HEADER_TOKEN}</link>\n` +
           '            <guid>id1</guid>\n' +
           '            <pubDate>Thu, 22 May 2025 09:26:56 GMT</pubDate>\n' +
           '            <author>a (a)</author>\n' +

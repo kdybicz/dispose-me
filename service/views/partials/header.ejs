@@ -6,7 +6,7 @@
   <% } %>
   <div class="collapse navbar-collapse" id="navbarCollapse">
     <ul class="navbar-nav mr-auto">
-      <% if (req.params.username) { %>
+      <% if (!locals.errorPage && req.params.username) { %>
         <li class="nav-item <%= req.path === `/inbox/${req.params.username}` ? 'active' : '' %>">
           <a class="nav-link" href="/inbox/<%= req.params.username %>?<%= new URLSearchParams(query) %>">Inbox</a>
         </li>

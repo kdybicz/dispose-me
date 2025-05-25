@@ -1,16 +1,24 @@
 import type { Request, Response } from 'express';
-import type { ValidationChain } from 'express-validator';
+import type { ValidationChain, ValidationError } from 'express-validator';
 
 import type { InboxRequest } from '../service/api/InboxController';
 import { AUTH_HEADER_KEY } from '../service/tools/const';
 import { EmailDatabase } from '../service/tools/EmailDatabase';
-import { EmailParser } from '../service/tools/EmailParser';
+import { EmailParser, type ParsedEmail } from '../service/tools/EmailParser';
 import { S3FileSystem } from '../service/tools/S3FileSystem';
 import { IncomingEmailProcessor } from '../service/processor/IncomingEmailProcessor';
 
-export const COOKIE_TOKEN = 'cookie-token';
-export const HEADER_TOKEN = 'header-token';
-export const QUERY_TOKEN = 'query-token';
+export const COOKIE_TOKEN = 'cookie0n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
+export const HEADER_TOKEN = 'header0n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
+export const QUERY_TOKEN = 'query0n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
+export const BODY_TOKEN = 'body0n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
+export const INVALID_TOKEN = 'a!';
+
+export const MESSAGE_ID = 'messageid';
+export const INVALID_MESSAGE_ID = 'message-id!';
+
+export const USERNAME = 'username';
+export const INVALID_USERNAME = '!:';
 
 export type RequestArgs<B> = {
   query?: Record<string, undefined | string>;
@@ -19,8 +27,13 @@ export type RequestArgs<B> = {
   body?: B;
 };
 
-export const validateRequest = async (req: Request, validators: ValidationChain[]) => {
-  return Promise.all(validators.map(async (validator) => validator.run(req)));
+export const validateRequest = async (
+  req: Request,
+  validators: ValidationChain[],
+): Promise<ValidationError[]> => {
+  const results = await Promise.all(validators.map(async (validator) => validator.run(req)));
+
+  return results.flatMap((result) => [...result.context.errors].reverse()).reverse();
 };
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -78,3 +91,13 @@ export const MockedEmailParser = EmailParser as unknown as {
 export const MockedIncomingEmailProcessor = IncomingEmailProcessor as unknown as {
   mockProcessEmail: jest.Mock;
 };
+
+export const mockParsedEmail = (from: string, subject: string): ParsedEmail => ({
+  from: [{ address: from, user: from }],
+  to: [],
+  cc: [],
+  bcc: [],
+  subject,
+  body: '',
+  received: new Date('Thu, 22 May 2025 09:26:56 GMT'),
+});

@@ -1,13 +1,11 @@
 import type { Context, SESEvent } from 'aws-lambda';
 
 import { handler } from '../../service/email-processor';
-import { MockedIncomingEmailProcessor } from '../utils';
+import { MockedIncomingEmailProcessor, MESSAGE_ID } from '../utils';
 
 jest.mock('../../service/processor/IncomingEmailProcessor');
 
 describe('email-processor', () => {
-  const messageId = 'message-id';
-
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -15,12 +13,12 @@ describe('email-processor', () => {
   test('handle event', async () => {
     // given
     const event = {
-      Records: [{ ses: { mail: { messageId } } }],
+      Records: [{ ses: { mail: { messageId: MESSAGE_ID } } }],
     } as SESEvent;
 
     // when
     await handler(event, {} as unknown as Context, () => {});
     // then
-    expect(MockedIncomingEmailProcessor.mockProcessEmail).toHaveBeenCalledWith(messageId);
+    expect(MockedIncomingEmailProcessor.mockProcessEmail).toHaveBeenCalledWith(MESSAGE_ID);
   });
 });
