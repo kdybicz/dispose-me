@@ -200,9 +200,14 @@ export class DisposeMeStack extends cdk.Stack {
       // new cdk.CfnOutput(this, 'ApiKeyValue', {
       //   value: getApiAccessKeyWithValue.value,
       // });
-      console.log("this should not be shown")
+
+      new cdk.CfnOutput(this, 'IsASecret', {
+        value: 'secret',
+      });
     }
-    console.log("this may be shown")
+    new cdk.CfnOutput(this, 'NotASecret', {
+      value: 'not-a-secret',
+    });
   };
 
   private setupCertificate = (
