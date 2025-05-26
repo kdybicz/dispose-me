@@ -39,7 +39,7 @@ export class EmailDatabase {
       },
     });
 
-    log.debug('Store Message details:', JSON.stringify(command));
+    log.debug('Store Message details:', JSON.stringify(command.input));
 
     await this.docClient.send(command);
   }
@@ -63,7 +63,7 @@ export class EmailDatabase {
       Limit: limit,
     });
 
-    log.debug('Listing Message details:', JSON.stringify(command));
+    log.debug('Listing Message details:', JSON.stringify(command.input));
 
     return this.docClient.send(command);
   }
@@ -80,7 +80,7 @@ export class EmailDatabase {
       Limit: 1,
     });
 
-    log.debug('Does Message exists:', JSON.stringify(command));
+    log.debug('Does Message exists:', JSON.stringify(command.input));
 
     const result = await this.docClient.send(command);
     return (result.Count ?? 0) > 0;
@@ -96,7 +96,7 @@ export class EmailDatabase {
       ReturnValues: 'ALL_OLD',
     });
 
-    log.debug('Deleting Message:', JSON.stringify(command));
+    log.debug('Deleting Message:', JSON.stringify(command.input));
 
     const result = await this.docClient.send(command);
     return result.Attributes != null;
