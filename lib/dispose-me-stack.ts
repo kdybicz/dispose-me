@@ -200,10 +200,8 @@ export class DisposeMeStack extends cdk.Stack {
       // new cdk.CfnOutput(this, 'ApiKeyValue', {
       //   value: getApiAccessKeyWithValue.value,
       // });
-      // biome-ignore lint/suspicious/noConsoleLog: <explanation>
       console.log("this should not be shown")
     }
-    // biome-ignore lint/suspicious/noConsoleLog: <explanation>
     console.log("this may be shown")
   };
 
