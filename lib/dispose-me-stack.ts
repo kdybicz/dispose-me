@@ -31,8 +31,13 @@ export class DisposeMeStack extends cdk.Stack {
 
     const emailBucket = this.setupEmailBucket(domainName);
     const emailTable = this.setupDatabase();
-    this.setupApiGateway(domainName, hostedZone, emailBucket, emailTable);
-    this.setupEmailProcessing(domainName, hostedZone, emailBucket, emailTable);
+    const emailIdentity = this.setupEmailProcessing(
+      domainName,
+      hostedZone,
+      emailBucket,
+      emailTable,
+    );
+    this.setupApiGateway(domainName, hostedZone, emailBucket, emailTable, emailIdentity);
   }
 
   private setupEmailBucket = (domainName: string): s3.IBucket => {
@@ -84,6 +89,7 @@ export class DisposeMeStack extends cdk.Stack {
     hostedZone: route53.IHostedZone,
     emailBucket: s3.IBucket,
     emailTable: dynamodb.ITableV2,
+    emailIdentity: ses.EmailIdentity,
   ): void => {
     // Define Lambda function
     const apiLambdaHandler = new nodejs.NodejsFunction(this, 'ApiLambda', {
@@ -105,6 +111,7 @@ export class DisposeMeStack extends cdk.Stack {
     });
     emailBucket.grantReadWrite(apiLambdaHandler);
     emailTable.grantReadWriteData(apiLambdaHandler);
+    emailIdentity.grantSendEmail(apiLambdaHandler);
 
     // Define the API Gateway resource
     const certificate = this.setupCertificate(hostedZone, domainName);
@@ -235,7 +242,7 @@ export class DisposeMeStack extends cdk.Stack {
     hostedZone: route53.IHostedZone,
     emailBucket: s3.IBucket,
     emailTable: dynamodb.ITableV2,
-  ): void => {
+  ): ses.EmailIdentity => {
     const processorLambdaHandler = new nodejs.NodejsFunction(this, 'ProcessorLambda', {
       functionName: 'dispose-me-processor',
       runtime: lambda.Runtime.NODEJS_20_X,
@@ -253,7 +260,7 @@ export class DisposeMeStack extends cdk.Stack {
     emailBucket.grantReadWrite(processorLambdaHandler);
     emailTable.grantReadWriteData(processorLambdaHandler);
 
-    new ses.EmailIdentity(this, 'EmailIdentity', {
+    const emailIdentity = new ses.EmailIdentity(this, 'EmailIdentity', {
       identity: ses.Identity.publicHostedZone(hostedZone),
       dkimSigning: true,
     });
@@ -334,5 +341,7 @@ export class DisposeMeStack extends cdk.Stack {
       ]),
       timeout: cdk.Duration.seconds(30),
     });
+
+    return emailIdentity;
   };
 }

@@ -4,6 +4,7 @@ import { type ValidationError, matchedData, validationResult } from 'express-val
 
 import { EmailDatabase } from '../tools/EmailDatabase';
 import { EmailParser, type ParsedEmail } from '../tools/EmailParser';
+import { EmailSender } from '../tools/EmailSender';
 import { S3FileSystem } from '../tools/S3FileSystem';
 import { AUTH_COOKIE_KEY, AUTH_QUERY_KEY, REMEMBER_COOKIE_KEY } from '../tools/const';
 import { mapEmailDetailsListToFeed } from '../tools/feed';
@@ -56,12 +57,14 @@ export class InboxController {
   protected emailDatabase: EmailDatabase;
   protected emailParser: EmailParser;
   protected fileSystem: S3FileSystem;
+  protected emailSender: EmailSender;
 
   constructor(bucketName: string) {
     this.bucketName = bucketName;
     this.emailDatabase = new EmailDatabase();
     this.emailParser = new EmailParser();
     this.fileSystem = new S3FileSystem();
+    this.emailSender = new EmailSender();
   }
 
   index = async (req: InboxRequest, res: Response): InboxResponse => {
@@ -197,6 +200,40 @@ export class InboxController {
       res.type('application/octet-stream');
 
       return res.send(emailBody);
+    }
+
+    return this.render404Response(req, res);
+  };
+
+  forward = async (req: InboxRequest<InboxEmailParams>, res: Response): InboxResponse => {
+    log.debug(
+      `Action: 'forward' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
+    );
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return this.render422Response(errors.array(), req, res);
+    }
+
+    const { id, username } = matchedData<{ id: string; username: string }>(req);
+
+    const normalizedUsername = normalizeUsername(username);
+    const existsForUser = await this.emailDatabase.exists(normalizedUsername, id);
+    if (existsForUser) {
+      const emailObject = await this.fileSystem.getObject(this.bucketName, id);
+      const emailBody = await emailObject.Body?.transformToString();
+
+      if (!emailBody) {
+        return this.render500Response(new Error('Email content not found!'), req, res);
+      }
+
+      const parsedEmail = await this.emailParser.parseEmail(emailBody);
+
+      await this.emailSender.send(parsedEmail);
+
+      return res.redirect(
+        `/inbox/${username}/${id}?${new URLSearchParams(req.query as Record<string, string>)}`,
+      );
     }
 
     return this.render404Response(req, res);

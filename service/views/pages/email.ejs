@@ -27,6 +27,9 @@
         <a class="action" href="/inbox/<%= req.params.username %>/<%= req.params.id ?? email.id %>/download?<%= new URLSearchParams(query) %>" title="Download the email">
           <i class="bi bi-download""></i>
         </a>
+        <a class="action" href="/inbox/<%= req.params.username %>/<%= req.params.id ?? email.id %>/forward?<%= new URLSearchParams(query) %>" title="Forward the email">
+          <i class="bi bi-send-check"></i>
+        </a>
       <% } %>
       <a class="action" href="<%= req.path %>?x-api-key=<%= token %>&type=json" title="JSON output of the email">
         <i class="bi bi-filetype-json""></i>

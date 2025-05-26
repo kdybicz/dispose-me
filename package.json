@@ -59,6 +59,7 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.816.0",
     "@aws-sdk/client-s3": "^3.816.0",
+    "@aws-sdk/client-ses": "^3.817.0",
     "@aws-sdk/lib-dynamodb": "^3.816.0",
     "address-rfc2822": "^2.2.3",
     "dayjs": "^1.11.13",

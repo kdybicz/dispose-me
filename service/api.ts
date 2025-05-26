@@ -76,6 +76,11 @@ app.get(
   asyncHandler(inboxController.download),
 );
 app.get(
+  '/inbox/:username/:id/forward',
+  ...buildDownloadEmailValidationChain(),
+  asyncHandler(inboxController.forward),
+);
+app.get(
   '/inbox/:username/:id',
   ...buildShowEmailValidationChain(),
   asyncHandler(inboxController.show),
