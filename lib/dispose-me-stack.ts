@@ -127,8 +127,8 @@ export class DisposeMeStack extends cdk.Stack {
     api.node.tryRemoveChild('Endpoint');
 
     if (!process.env.CI) {
-      // add your own output
-      // new cdk.CfnOutput(this, 'ApiGatewayEndpoint', { value: api.url });
+      // add our own output
+      new cdk.CfnOutput(this, 'ApiGatewayEndpoint', { value: api.url });
     }
 
     // Create API Authorizer
@@ -197,17 +197,10 @@ export class DisposeMeStack extends cdk.Stack {
     });
 
     if (!process.env.CI) {
-      // new cdk.CfnOutput(this, 'ApiKeyValue', {
-      //   value: getApiAccessKeyWithValue.value,
-      // });
-
-      new cdk.CfnOutput(this, 'IsASecret', {
-        value: 'secret',
+      new cdk.CfnOutput(this, 'ApiKeyValue', {
+        value: getApiAccessKeyWithValue.value,
       });
     }
-    new cdk.CfnOutput(this, 'NotASecret', {
-      value: 'not-a-secret',
-    });
   };
 
   private setupCertificate = (

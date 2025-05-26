@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
     - id: sets-a-secret
@@ -44,4 +44,4 @@ jobs:
         DOMAIN_NAME: ${{ secrets.DOMAIN_NAME }}
         INBOX_BLACKLIST: ${{ secrets.INBOX_BLACKLIST }}
         PRIVATE_ACCESS: ${{ secrets.PRIVATE_ACCESS }}
-      run: yarn deploy --require-approval never
+      run: yarn deploy:ci
