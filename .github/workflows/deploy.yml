@@ -12,6 +12,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    - id: sets-a-secret
+      name: Setup masks for the secrets
+      run: |
+        echo "::add-mask::${{secrets.AWS_ACCOUNT_ID}}"
+        echo "::add-mask::${{secrets.AWS_DEFAULT_REGION}}"
     - uses: actions/checkout@v4
     - name: Enable Corepack
       run: corepack enable

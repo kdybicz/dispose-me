@@ -123,6 +123,13 @@ export class DisposeMeStack extends cdk.Stack {
       endpointTypes: [apigateway.EndpointType.REGIONAL],
       proxy: false,
     });
+    // Removing the default output for the API Endpoint
+    api.node.tryRemoveChild('Endpoint');
+
+    if (!process.env.CI) {
+      // add your own output
+      // new cdk.CfnOutput(this, 'ApiGatewayEndpoint', { value: api.url });
+    }
 
     // Create API Authorizer
     const apiAuthorizer = this.setupApiAuthorizer();
@@ -189,9 +196,15 @@ export class DisposeMeStack extends cdk.Stack {
       apiKey: apiAccessKey,
     });
 
-    new cdk.CfnOutput(this, 'ApiKeyValue', {
-      value: getApiAccessKeyWithValue.value,
-    });
+    if (!process.env.CI) {
+      // new cdk.CfnOutput(this, 'ApiKeyValue', {
+      //   value: getApiAccessKeyWithValue.value,
+      // });
+      // biome-ignore lint/suspicious/noConsoleLog: <explanation>
+      console.log("this should not be shown")
+    }
+    // biome-ignore lint/suspicious/noConsoleLog: <explanation>
+    console.log("this may be shown")
   };
 
   private setupCertificate = (
