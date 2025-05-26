@@ -1,9 +1,8 @@
 name: 'Deploy'
 
 on:
-  push:
-    tags:
-    - '*'
+  release:
+    types: [created]
   workflow_dispatch:
 
 permissions:
