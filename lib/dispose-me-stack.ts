@@ -92,6 +92,7 @@ export class DisposeMeStack extends cdk.Stack {
       code: lambda.AssetCode.fromAsset('dist/api.zip'),
       handler: 'index.handler',
       environment: {
+        APP_VERSION: process.env.APP_VERSION ?? 'local-dev',
         AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
         EMAIL_BUCKET_NAME: process.env.DOMAIN_NAME ?? '',
         DOMAIN_NAME: process.env.DOMAIN_NAME ?? '',
