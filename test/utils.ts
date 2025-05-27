@@ -93,7 +93,7 @@ export const MockedIncomingEmailProcessor = IncomingEmailProcessor as unknown as
 };
 
 export const mockParsedEmail = (from: string, subject: string): ParsedEmail => ({
-  from: [{ address: from, user: from }],
+  from: { address: from, user: from },
   to: [],
   cc: [],
   bcc: [],

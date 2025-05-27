@@ -20,14 +20,14 @@ export class IncomingEmailProcessor {
 
       const emailContent = await this.emailParser.parseEmail(emailBody ?? '');
 
-      const senderEmails = emailContent.from;
+      const senderEmail = emailContent.from;
       const recipientEmails = emailContent.to;
       const carbonCopyEmails = emailContent.cc;
       const blindCarbonCopyEmails = emailContent.bcc;
 
       log.debug(
         'Processing emails sent from',
-        senderEmails.map((e) => e.address).join(', '),
+        senderEmail?.address,
         'to:',
         recipientEmails.map((e) => e.address).join(', '),
         'cc:',
@@ -55,7 +55,7 @@ export class IncomingEmailProcessor {
         return this.emailDatabase.store(
           messageId,
           normalizedUsername,
-          senderEmails[0].address,
+          senderEmail?.address ?? '',
           emailContent.subject,
           emailContent.received,
         );
