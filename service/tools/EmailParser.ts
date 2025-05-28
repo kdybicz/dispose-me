@@ -1,11 +1,11 @@
-import { parse as parseAddressObject } from 'address-rfc2822';
+import { Address, parse as parseAddressObject } from 'address-rfc2822';
 import { type AddressObject, simpleParser as parseEmail } from 'mailparser';
 
 import log from './log';
 
 export type EmailAddress = {
   address: string;
-  user: string;
+  user: null | string;
 };
 
 export type ParsedEmail = {
@@ -18,11 +18,6 @@ export type ParsedEmail = {
   received: Date;
 };
 
-type ParsedRfc2822EmailAddress = {
-  address: string;
-  user: () => string;
-};
-
 const parseEmailAddresses = (
   addresses: undefined | AddressObject | AddressObject[],
 ): EmailAddress[] => {
@@ -30,19 +25,21 @@ const parseEmailAddresses = (
     return [];
   }
 
-  let parsedAddresses: ParsedRfc2822EmailAddress[] = [];
+  let parsedAddresses: Address[] = [];
   if (Array.isArray(addresses)) {
-    parsedAddresses = addresses.flatMap((address) => parseAddressObject(address.text));
+    parsedAddresses = addresses
+      .flatMap((address) => parseAddressObject(address.text))
+      .filter((item): item is Address => item instanceof Address);
   } else {
-    parsedAddresses = parseAddressObject(addresses.text);
+    parsedAddresses = parseAddressObject(addresses.text).filter(
+      (item): item is Address => item instanceof Address,
+    );
   }
 
-  const mappedEmailAddresses = parsedAddresses
-    .filter((address: ParsedRfc2822EmailAddress) => address.constructor.name === 'Address')
-    .map<EmailAddress>((address) => ({
-      address: address.address,
-      user: address.user(),
-    }));
+  const mappedEmailAddresses = parsedAddresses.map<EmailAddress>((address) => ({
+    address: address.address,
+    user: address.user(),
+  }));
 
   return mappedEmailAddresses;
 };

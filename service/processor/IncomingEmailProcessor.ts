@@ -45,7 +45,9 @@ export class IncomingEmailProcessor {
       );
 
       const uniqueNormalizedUsernames = new Set(
-        allMatchingEmailAddresses.map((emailAddress) => normalizeUsername(emailAddress.user)),
+        allMatchingEmailAddresses
+          .map((emailAddress) => (emailAddress.user ? normalizeUsername(emailAddress.user) : null))
+          .filter((emailAddress) => emailAddress != null),
       );
       if (uniqueNormalizedUsernames.size === 0) {
         uniqueNormalizedUsernames.add('unknown');
@@ -63,7 +65,7 @@ export class IncomingEmailProcessor {
 
       await Promise.all(copyToUserInboxTasks);
     } catch (err) {
-      log.error('Failed to process incoming email', err);
+      log.error(`Failed to process incoming email with id ${messageId}`, err);
       throw err;
     }
   }

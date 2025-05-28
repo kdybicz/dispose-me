@@ -1,6 +1,6 @@
 import * as fs from 'node:fs';
 import { simpleParser } from 'mailparser';
-import { parse as parseEmailAddress } from 'address-rfc2822';
+import { Address, parse as parseEmailAddress } from 'address-rfc2822';
 
 describe('Email Processor', () => {
   test('Parse simple email body', async () => {
@@ -40,6 +40,7 @@ describe('Email Processor', () => {
     // when
     const result = parseEmailAddress(emailString);
     // then
-    expect(result[0].user()).toEqual('john.doe');
+    expect(result[0]).toBeInstanceOf(Address);
+    expect((result[0] as Address).user()).toEqual('john.doe');
   });
 });
