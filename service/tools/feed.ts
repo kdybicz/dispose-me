@@ -1,7 +1,13 @@
-import { Feed, type Item } from 'feed';
+import { type Author, Feed, type Item } from 'feed';
 
 import type { EmailDetails } from '../api/InboxController';
+import type { EmailAddress } from './EmailParser';
 import { AUTH_QUERY_KEY } from './const';
+
+const mapEmailAddressToAuthor = (address: null | EmailAddress): Author => ({
+  name: address?.displayName ?? '',
+  email: address?.address ?? '',
+});
 
 export const mapEmailDetailsToFeedItem = (
   email: EmailDetails,
@@ -12,17 +18,8 @@ export const mapEmailDetailsToFeedItem = (
   title: email.subject,
   link: `https://${process.env.DOMAIN_NAME}/inbox/${username}/${email.id}?${AUTH_QUERY_KEY}=${token}`,
   content: email.body,
-  author: email.from.map((email) => ({
-    name: email.user,
-    email: email.address,
-  })),
-  contributor: email.to
-    .concat(email.cc)
-    .concat(email.bcc)
-    .map((email) => ({
-      name: email.user,
-      email: email.address,
-    })),
+  author: [mapEmailAddressToAuthor(email.from)],
+  contributor: email.to.concat(email.cc).concat(email.bcc).map(mapEmailAddressToAuthor),
   date: email.received,
 });
 

@@ -184,7 +184,7 @@ dist
 !jest.config.js
 !webpack.config.js
 *.d.ts
-!types
+!types/*
 
 # package directories
 node_modules

@@ -20,14 +20,14 @@ export class IncomingEmailProcessor {
 
       const emailContent = await this.emailParser.parseEmail(emailBody ?? '');
 
-      const senderEmails = emailContent.from;
+      const senderEmail = emailContent.from;
       const recipientEmails = emailContent.to;
       const carbonCopyEmails = emailContent.cc;
       const blindCarbonCopyEmails = emailContent.bcc;
 
       log.debug(
         'Processing emails sent from',
-        senderEmails.map((e) => e.address).join(', '),
+        senderEmail?.address,
         'to:',
         recipientEmails.map((e) => e.address).join(', '),
         'cc:',
@@ -39,13 +39,16 @@ export class IncomingEmailProcessor {
       );
 
       const allEmailAddresses = [...recipientEmails, ...carbonCopyEmails, ...blindCarbonCopyEmails];
-      const allMatchingEmailAddresses = allEmailAddresses.filter((emailAddress) =>
-        // excluding addresses from other domains
-        emailAddress.address.endsWith(`@${this.domainName}`),
+      const allMatchingEmailAddresses = allEmailAddresses.filter(
+        (emailAddress) =>
+          // excluding addresses from other domains
+          emailAddress.host === this.domainName,
       );
 
       const uniqueNormalizedUsernames = new Set(
-        allMatchingEmailAddresses.map((emailAddress) => normalizeUsername(emailAddress.user)),
+        allMatchingEmailAddresses
+          .map((emailAddress) => (emailAddress.user ? normalizeUsername(emailAddress.user) : null))
+          .filter((emailAddress) => emailAddress != null),
       );
       if (uniqueNormalizedUsernames.size === 0) {
         uniqueNormalizedUsernames.add('unknown');
@@ -55,7 +58,7 @@ export class IncomingEmailProcessor {
         return this.emailDatabase.store(
           messageId,
           normalizedUsername,
-          senderEmails[0].address,
+          senderEmail?.address ?? '',
           emailContent.subject,
           emailContent.received,
         );
@@ -63,7 +66,7 @@ export class IncomingEmailProcessor {
 
       await Promise.all(copyToUserInboxTasks);
     } catch (err) {
-      log.error('Failed to process incoming email', err);
+      log.error(`Failed to process incoming email with id ${messageId}`, err);
       throw err;
     }
   }

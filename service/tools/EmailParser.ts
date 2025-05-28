@@ -1,15 +1,27 @@
-import { parse as parseEmailAddress } from 'address-rfc2822';
+import { Address, parse as parseAddressObject } from 'address-rfc2822';
 import { type AddressObject, simpleParser as parseEmail } from 'mailparser';
 
 import log from './log';
 
-export type EmailAddress = {
-  address: string;
-  user: string;
-};
+export class EmailAddress {
+  constructor(
+    public address: string,
+    public user: null | string,
+    public host: null | string,
+    public displayName: string,
+  ) {}
+
+  public format = (): string => {
+    if (this.displayName) {
+      return `${this.displayName} <${this.address}>`;
+    }
+
+    return this.address;
+  };
+}
 
 export type ParsedEmail = {
-  from: EmailAddress[];
+  from: null | EmailAddress;
   to: EmailAddress[];
   cc: EmailAddress[];
   bcc: EmailAddress[];
@@ -18,29 +30,29 @@ export type ParsedEmail = {
   received: Date;
 };
 
-type ParsedEmailAddress = {
-  address: string;
-  user: () => string;
-};
-
 const parseEmailAddresses = (
   addresses: undefined | AddressObject | AddressObject[],
-): ParsedEmailAddress[] => {
+): EmailAddress[] => {
   if (!addresses) {
     return [];
   }
 
-  // biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
-  let parsedAddresses;
+  let parsedAddresses: Address[] = [];
   if (Array.isArray(addresses)) {
-    parsedAddresses = addresses.flatMap((address) => parseEmailAddress(address.text));
+    parsedAddresses = addresses
+      .flatMap((address) => parseAddressObject(address.text))
+      .filter((item): item is Address => item instanceof Address);
   } else {
-    parsedAddresses = parseEmailAddress(addresses.text);
+    parsedAddresses = parseAddressObject(addresses.text).filter(
+      (item): item is Address => item instanceof Address,
+    );
   }
 
-  return parsedAddresses.filter(
-    (address: ParsedEmailAddress) => address.constructor.name === 'Address',
+  const mappedEmailAddresses = parsedAddresses.map<EmailAddress>(
+    (address) => new EmailAddress(address.address, address.user(), address.host(), address.name()),
   );
+
+  return mappedEmailAddresses;
 };
 
 export class EmailParser {
@@ -49,28 +61,12 @@ export class EmailParser {
     const email = await parseEmail(emailContent);
 
     log.debug('Parsing sender and recipient email addresses');
-    const senderEmails = parseEmailAddresses(email?.from);
-    const recipientEmails = parseEmailAddresses(email.to);
-    const carbonCopyEmails = parseEmailAddresses(email.cc);
-    const blindCarbonCopyEmails = parseEmailAddresses(email.bcc);
 
     return {
-      from: senderEmails.map((item) => ({
-        address: item.address,
-        user: item.user(),
-      })),
-      to: recipientEmails.map((item) => ({
-        address: item.address,
-        user: item.user(),
-      })),
-      cc: carbonCopyEmails.map((item) => ({
-        address: item.address,
-        user: item.user(),
-      })),
-      bcc: blindCarbonCopyEmails.map((item) => ({
-        address: item.address,
-        user: item.user(),
-      })),
+      from: parseEmailAddresses(email?.from).pop() ?? null,
+      to: parseEmailAddresses(email.to),
+      cc: parseEmailAddresses(email.cc),
+      bcc: parseEmailAddresses(email.bcc),
       subject: email.subject ?? '',
       body: (email.html !== false ? email.html : email.text) ?? '',
       received: email.date ?? new Date(0),
