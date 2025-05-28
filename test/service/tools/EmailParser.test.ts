@@ -1,6 +1,6 @@
 import * as fs from 'node:fs';
 
-import { EmailParser } from '../../../service/tools/EmailParser';
+import { EmailAddress, EmailParser } from '../../../service/tools/EmailParser';
 
 describe('EmailParser tests', () => {
   const parser = new EmailParser();
@@ -141,5 +141,21 @@ describe('EmailParser tests', () => {
     ]);
     expect(result.bcc).toEqual([]);
     expect(result.attachments).toEqual([]);
+  });
+
+  describe('EmailAddress', () => {
+    test('format email address with display name', () => {
+      // when
+      const result = new EmailAddress('john.doe@example.com', null, null, 'John Doe').format();
+      // then
+      expect(result).toEqual('John Doe <john.doe@example.com>');
+    });
+
+    test('format email address without display name', () => {
+      // when
+      const result = new EmailAddress('john.doe@example.com', null, null, '').format();
+      // then
+      expect(result).toEqual('john.doe@example.com');
+    });
   });
 });
