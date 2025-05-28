@@ -23,6 +23,8 @@ export class EmailAddress {
 export type AttachmentDetails = {
   filename?: string;
   size: number;
+  contentType: string;
+  content: Buffer<ArrayBufferLike>;
 };
 
 export type ParsedEmail = {
@@ -67,6 +69,8 @@ const mapAttachments = (attachments: Attachment[]): AttachmentDetails[] => {
     .map<AttachmentDetails>((attachment) => ({
       filename: attachment.filename,
       size: attachment.size,
+      contentType: attachment.contentType,
+      content: attachment.content,
     }));
 };
 

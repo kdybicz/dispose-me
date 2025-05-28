@@ -242,9 +242,9 @@ export class InboxController {
       }
 
       res.setHeader('Content-disposition', `attachment; filename=${attachment.filename}`);
-      res.type('application/octet-stream');
+      res.type(attachment.contentType);
 
-      return res.send('attachment');
+      return res.send(attachment.content);
     }
 
     return this.render404Response(req, res);

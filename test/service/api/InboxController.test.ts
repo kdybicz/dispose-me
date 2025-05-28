@@ -584,8 +584,11 @@ describe('InboxController', () => {
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
         Body: { transformToString: jest.fn().mockResolvedValue('raw-email-data') },
       });
+      // and
+      const contentType = 'text/html; charset=utf-8';
+      const content = Buffer.from('attachment data');
       MockedEmailParser.mockParseEmail.mockResolvedValueOnce({
-        attachments: [{ filename }],
+        attachments: [{ filename, contentType, content }],
       });
 
       // when
@@ -595,8 +598,8 @@ describe('InboxController', () => {
         'Content-disposition',
         `attachment; filename=${filename}`,
       );
-      expect(res.type).toHaveBeenCalledWith('application/octet-stream');
-      expect(res.send).toHaveBeenCalledWith('attachment');
+      expect(res.type).toHaveBeenCalledWith(contentType);
+      expect(res.send).toHaveBeenCalledWith(content);
     });
   });
 

@@ -69,6 +69,8 @@ describe('EmailParser tests', () => {
     expect(result.bcc).toEqual([]);
     expect(result.attachments).toEqual([
       {
+        content: Buffer.from('Some notes about this e-mail'),
+        contentType: 'text/plain',
         filename: 'notes.txt',
         size: 28,
       },
