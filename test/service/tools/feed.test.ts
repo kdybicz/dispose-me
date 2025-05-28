@@ -18,6 +18,7 @@ describe('feed tests', () => {
         subject: 'subject',
         body: 'body',
         received: date,
+        attachments: [],
       };
 
       // when
@@ -94,6 +95,7 @@ describe('feed tests', () => {
           subject: 'subject',
           body: 'body',
           received: new Date('Mon, 01 Jan 2024 00:01:01 GMT'),
+          attachments: [],
         },
       ];
 

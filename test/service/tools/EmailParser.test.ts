@@ -67,6 +67,12 @@ describe('EmailParser tests', () => {
     ]);
     expect(result.cc).toEqual([]);
     expect(result.bcc).toEqual([]);
+    expect(result.attachments).toEqual([
+      {
+        filename: 'notes.txt',
+        size: 28,
+      },
+    ]);
   });
 
   test('Parse blind carbon copy email', async () => {
@@ -96,6 +102,7 @@ describe('EmailParser tests', () => {
         user: 'hidden',
       }),
     ]);
+    expect(result.attachments).toEqual([]);
   });
 
   test('Parse carbon copy email', async () => {
@@ -131,5 +138,6 @@ describe('EmailParser tests', () => {
       }),
     ]);
     expect(result.bcc).toEqual([]);
+    expect(result.attachments).toEqual([]);
   });
 });

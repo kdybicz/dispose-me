@@ -30,6 +30,18 @@
       <th>Received:</th>
       <td><%= email.received.toGMTString() %></td>
     </tr>
+    <% if (email.attachments.length > 0) { %>
+    <tr>
+      <th>Attachments:</th>
+      <td>
+        <% for(var i = 0; i < email.attachments.length; i++) { %>
+          <span class="badge badge-pill badge-success">
+            <%= email.attachments[i].filename %>
+          </span>
+        <% } %>
+      </td>
+    </tr>
+    <% } %>
 </tbody>
 </table>
 
