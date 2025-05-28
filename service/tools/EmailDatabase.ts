@@ -26,6 +26,7 @@ export class EmailDatabase {
     sender: string,
     subject: string,
     received: Date,
+    hasAttachments: boolean,
   ): Promise<void> {
     const command = new PutCommand({
       TableName: 'dispose-me',
@@ -36,6 +37,7 @@ export class EmailDatabase {
         Subject: subject,
         ReceivedAt: dayjs(received).unix(),
         ExpireAt: dayjs(received).add(1, 'day').unix(),
+        HasAttachments: hasAttachments,
       },
     });
 

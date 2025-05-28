@@ -52,6 +52,7 @@ describe('IncomingEmailProcessor tests', () => {
       'john.doe@example.com',
       'test',
       new Date('2017-01-08T18:37:44.000Z'),
+      false,
     );
   });
 
@@ -83,6 +84,7 @@ describe('IncomingEmailProcessor tests', () => {
       'john.doe@example.com',
       'Nodemailer is unicode friendly ✔ (1476358788189)',
       new Date('2016-10-13T11:39:48.000Z'),
+      true,
     );
     expect(emailDatabase.store).toHaveBeenCalledWith(
       MESSAGE_ID,
@@ -90,6 +92,7 @@ describe('IncomingEmailProcessor tests', () => {
       'john.doe@example.com',
       'Nodemailer is unicode friendly ✔ (1476358788189)',
       new Date('2016-10-13T11:39:48.000Z'),
+      true,
     );
   });
 
@@ -121,6 +124,7 @@ describe('IncomingEmailProcessor tests', () => {
       'john.doe@example.com',
       'hidden',
       new Date('2022-02-09T16:55:11.000Z'),
+      false,
     );
     expect(emailDatabase.store).toHaveBeenCalledWith(
       MESSAGE_ID,
@@ -128,6 +132,7 @@ describe('IncomingEmailProcessor tests', () => {
       'john.doe@example.com',
       'hidden',
       new Date('2022-02-09T16:55:11.000Z'),
+      false,
     );
   });
 
@@ -159,6 +164,7 @@ describe('IncomingEmailProcessor tests', () => {
       'john.doe@example.com',
       'hidden',
       new Date('2022-02-09T16:55:11.000Z'),
+      false,
     );
   });
 });

@@ -102,5 +102,6 @@ export const mockParsedEmail = (from: string, subject: string): ParsedEmail => {
     subject,
     body: '',
     received: new Date('Thu, 22 May 2025 09:26:56 GMT'),
+    attachments: [],
   };
 };

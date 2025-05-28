@@ -1,5 +1,5 @@
 import { Address, parse as parseAddressObject } from 'address-rfc2822';
-import { type AddressObject, simpleParser as parseEmail } from 'mailparser';
+import { type AddressObject, type Attachment, simpleParser as parseEmail } from 'mailparser';
 
 import log from './log';
 
@@ -20,6 +20,13 @@ export class EmailAddress {
   };
 }
 
+export type AttachmentDetails = {
+  filename?: string;
+  size: number;
+  contentType: string;
+  content: Buffer<ArrayBufferLike>;
+};
+
 export type ParsedEmail = {
   from: null | EmailAddress;
   to: EmailAddress[];
@@ -28,6 +35,7 @@ export type ParsedEmail = {
   subject: string;
   body: string;
   received: Date;
+  attachments: AttachmentDetails[];
 };
 
 const parseEmailAddresses = (
@@ -55,6 +63,17 @@ const parseEmailAddresses = (
   return mappedEmailAddresses;
 };
 
+const mapAttachments = (attachments: Attachment[]): AttachmentDetails[] => {
+  return attachments
+    .filter((attachment) => !attachment.related && attachment.contentDisposition === 'attachment')
+    .map<AttachmentDetails>((attachment) => ({
+      filename: attachment.filename,
+      size: attachment.size,
+      contentType: attachment.contentType,
+      content: attachment.content,
+    }));
+};
+
 export class EmailParser {
   async parseEmail(emailContent: string): Promise<ParsedEmail> {
     log.debug('Parsing email content to get sender and recipient information');
@@ -70,6 +89,7 @@ export class EmailParser {
       subject: email.subject ?? '',
       body: (email.html !== false ? email.html : email.text) ?? '',
       received: email.date ?? new Date(0),
+      attachments: mapAttachments(email.attachments),
     };
   }
 }

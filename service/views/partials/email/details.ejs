@@ -30,6 +30,18 @@
       <th>Received:</th>
       <td><%= email.received.toGMTString() %></td>
     </tr>
+    <% if (email.attachments.length > 0) { %>
+    <tr>
+      <th>Attachments:</th>
+      <td>
+        <% for(var i = 0; i < email.attachments.length; i++) { %>
+          <a class="badge badge-info" href="/inbox/<%= req.params.username %>/<%= email.id %>/attachment?filename=<%= email.attachments[i].filename %>&<%= new URLSearchParams(query) %>" title="Download the attachment">
+            <%= email.attachments[i].filename %> <i class="bi bi-download ml-1"></i>
+          </a>
+        <% } %>
+      </td>
+    </tr>
+    <% } %>
 </tbody>
 </table>
 

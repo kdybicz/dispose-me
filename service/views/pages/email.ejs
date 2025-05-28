@@ -19,17 +19,17 @@
     <div class="col-md text-right">
       <% if (email) { %>
         <a class="action" href="/inbox/<%= req.params.username %>/<%= req.params.id ?? email.id %>/delete?<%= new URLSearchParams(query) %>" title="Delete the email" onclick="return confirm('Delete this email?');">
-          <i class="bi bi-trash""></i>
+          <i class="bi bi-trash"></i>
         </a>
         <a class="action" href="javascript:void(0);" onclick="window.print();" title="Print the email page">
-          <i class="bi bi-printer""></i>
+          <i class="bi bi-printer"></i>
         </a>
         <a class="action" href="/inbox/<%= req.params.username %>/<%= req.params.id ?? email.id %>/download?<%= new URLSearchParams(query) %>" title="Download the email">
-          <i class="bi bi-download""></i>
+          <i class="bi bi-download"></i>
         </a>
       <% } %>
       <a class="action" href="<%= req.path %>?x-api-key=<%= token %>&type=json" title="JSON output of the email">
-        <i class="bi bi-filetype-json""></i>
+        <i class="bi bi-filetype-json"></i>
       </a>
     </div>
   </div>

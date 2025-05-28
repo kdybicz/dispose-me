@@ -1,10 +1,38 @@
 import type { EmailDetails } from '../../../service/api/InboxController';
 import { AUTH_QUERY_KEY } from '../../../service/tools/const';
 import { EmailAddress } from '../../../service/tools/EmailParser';
-import { mapEmailDetailsListToFeed, mapEmailDetailsToFeedItem } from '../../../service/tools/feed';
+import {
+  mapEmailAddressToAuthor,
+  mapEmailDetailsListToFeed,
+  mapEmailDetailsToFeedItem,
+} from '../../../service/tools/feed';
 import { QUERY_TOKEN, USERNAME } from '../../utils';
 
 describe('feed tests', () => {
+  describe('mapEmailAddressToAuthor()', () => {
+    test('return Author with blank name and email if address not provided', () => {
+      // when
+      const result = mapEmailAddressToAuthor(null);
+      // then
+      expect(result).toEqual({
+        name: '',
+        email: '',
+      });
+    });
+
+    test('return Author with mapped name and email fields', () => {
+      // when
+      const result = mapEmailAddressToAuthor(
+        new EmailAddress('john.doe@example.com', null, null, 'John Doe'),
+      );
+      // then
+      expect(result).toEqual({
+        name: 'John Doe',
+        email: 'john.doe@example.com',
+      });
+    });
+  });
+
   describe('mapEmailDetailsToFeedItem', () => {
     test('map email details to feed item', () => {
       // given
@@ -18,6 +46,7 @@ describe('feed tests', () => {
         subject: 'subject',
         body: 'body',
         received: date,
+        attachments: [],
       };
 
       // when
@@ -94,6 +123,7 @@ describe('feed tests', () => {
           subject: 'subject',
           body: 'body',
           received: new Date('Mon, 01 Jan 2024 00:01:01 GMT'),
+          attachments: [],
         },
       ];
 

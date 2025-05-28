@@ -31,6 +31,7 @@ import {
 import {
   buildAuthValidationChain,
   buildDeleteEmailValidationChain,
+  buildDownloadEmailAttachmentValidationChain,
   buildDownloadEmailValidationChain,
   buildInboxValidationChain,
   buildIndexValidationChain,
@@ -410,7 +411,7 @@ describe('InboxController', () => {
       expect(res.render).toHaveBeenCalledWith('pages/404');
     });
 
-    test('should set headers and send email file if it exists', async () => {
+    test('should set headers and download file name if the email exists', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({ params: { username: USERNAME, id: MESSAGE_ID } });
       await validateRequest(req, buildDownloadEmailValidationChain());
@@ -448,6 +449,157 @@ describe('InboxController', () => {
       expect(res.render).toHaveBeenCalledWith('pages/error', {
         error: new Error('Email content not found!'),
       });
+    });
+  });
+
+  describe('downloadAttachment()', () => {
+    const filename = 'attachment.txt';
+
+    test.each([
+      [undefined, 1],
+      [INVALID_USERNAME, 2],
+    ])(
+      'should return 422 if username is missing or invalid',
+      async (invalidUsername, expectedErrors) => {
+        // given
+        const req = mockRequest<InboxEmailParams>({
+          params: { username: invalidUsername, id: MESSAGE_ID },
+          query: { filename },
+        });
+        const errors = await validateRequest(req, buildDownloadEmailAttachmentValidationChain());
+
+        // when
+        await controller.downloadAttachment(req, res);
+        // then
+        expect(errors).toHaveLength(expectedErrors);
+        expect(res.status).toHaveBeenCalledWith(422);
+        expect(res.render).toHaveBeenCalledWith('pages/422', { errors });
+      },
+    );
+
+    test('should return 422 if token is invalid', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({
+        params: { username: USERNAME, id: MESSAGE_ID },
+        query: { [AUTH_QUERY_KEY]: INVALID_TOKEN, filename },
+      });
+      const errors = await validateRequest(req, buildDownloadEmailAttachmentValidationChain());
+
+      // when
+      await controller.downloadAttachment(req, res);
+      // then
+      expect(errors).toHaveLength(2);
+      expect(res.status).toHaveBeenCalledWith(422);
+      expect(res.render).toHaveBeenCalledWith('pages/422', { errors });
+    });
+
+    test('should return 422 if filename is invalid', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({
+        params: { username: USERNAME, id: MESSAGE_ID },
+        query: { filename: '' },
+      });
+      const errors = await validateRequest(req, buildDownloadEmailAttachmentValidationChain());
+
+      // when
+      await controller.downloadAttachment(req, res);
+      // then
+      expect(errors).toHaveLength(1);
+      expect(res.status).toHaveBeenCalledWith(422);
+      expect(res.render).toHaveBeenCalledWith('pages/422', { errors });
+    });
+
+    test('should return 404 if email does not exist', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({
+        params: { username: USERNAME, id: MESSAGE_ID },
+        query: { filename },
+      });
+      await validateRequest(req, buildDownloadEmailAttachmentValidationChain());
+      // and
+      MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(false);
+
+      // when
+      await controller.downloadAttachment(req, res);
+      // then
+      expect(res.render).toHaveBeenCalledWith('pages/404');
+    });
+
+    test('should return 500 if S3 object has no body', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({
+        params: { username: USERNAME, id: MESSAGE_ID },
+        query: { filename },
+      });
+      await validateRequest(req, buildDownloadEmailAttachmentValidationChain());
+      // and
+      MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
+      MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
+        Body: { transformToString: jest.fn().mockResolvedValueOnce(undefined) },
+      });
+
+      // when
+      await controller.downloadAttachment(req, res);
+      // then
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.render).toHaveBeenCalledWith('pages/error', {
+        error: new Error('Email content not found!'),
+      });
+    });
+
+    test('should return 500 if attachment with given filename not found', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({
+        params: { username: USERNAME, id: MESSAGE_ID },
+        query: { filename },
+      });
+      await validateRequest(req, buildDownloadEmailAttachmentValidationChain());
+      // and
+      MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
+      MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
+        Body: { transformToString: jest.fn().mockResolvedValueOnce('raw-email-data') },
+      });
+      MockedEmailParser.mockParseEmail.mockResolvedValueOnce({
+        attachments: [{ filename: 'not-matching-name.txt' }],
+      });
+
+      // when
+      await controller.downloadAttachment(req, res);
+      // then
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.render).toHaveBeenCalledWith('pages/error', {
+        error: new Error('Email attachment not found!'),
+      });
+    });
+
+    test('should set headers and download file name if the attachment exists', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({
+        params: { username: USERNAME, id: MESSAGE_ID },
+        query: { filename },
+      });
+      await validateRequest(req, buildDownloadEmailAttachmentValidationChain());
+      // and
+      MockedEmailDatabase.mockEmailExist.mockResolvedValueOnce(true);
+      MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
+        Body: { transformToString: jest.fn().mockResolvedValue('raw-email-data') },
+      });
+      // and
+      const contentType = 'text/html; charset=utf-8';
+      const content = Buffer.from('attachment data');
+      MockedEmailParser.mockParseEmail.mockResolvedValueOnce({
+        attachments: [{ filename, contentType, content }],
+      });
+
+      // when
+      await controller.downloadAttachment(req, res);
+      // then
+      expect(res.setHeader).toHaveBeenCalledWith(
+        'Content-disposition',
+        `attachment; filename=${filename}`,
+      );
+      expect(res.type).toHaveBeenCalledWith(contentType);
+      expect(res.send).toHaveBeenCalledWith(content);
     });
   });
 
