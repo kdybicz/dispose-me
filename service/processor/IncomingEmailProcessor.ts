@@ -61,6 +61,7 @@ export class IncomingEmailProcessor {
           senderEmail?.address ?? '',
           emailContent.subject,
           emailContent.received,
+          emailContent.attachments.length > 0,
         );
       });
 

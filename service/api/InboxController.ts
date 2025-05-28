@@ -45,6 +45,7 @@ export type EmailListItem = {
   from: string;
   subject: string;
   received: Date;
+  hasAttachments: boolean;
 };
 
 export type EmailDetails = ParsedEmail & {
@@ -315,6 +316,7 @@ export class InboxController {
       from: emailObject.Sender,
       subject: emailObject.Subject,
       received: dayjs.unix(emailObject.ReceivedAt).toDate(),
+      hasAttachments: emailObject.HasAttachments,
     }));
 
     if (type === 'html') {

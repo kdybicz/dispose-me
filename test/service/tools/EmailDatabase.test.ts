@@ -22,8 +22,9 @@ describe("EmailDatabase tests", () => {
     const sender = "sender";
     const subject = "subject";
     const received = new Date("2024-01-01 01:01:01");
+    const hasAttachments = true;
     // and
-    let commandParams;
+    let commandParams = {};
     ddbMock.on(PutCommand).callsFakeOnce((input) => {
       commandParams = input;
       return;
@@ -31,7 +32,7 @@ describe("EmailDatabase tests", () => {
 
     // when
     const db = new EmailDatabase();
-    await db.store(messageId, username, sender, subject, received);
+    await db.store(messageId, username, sender, subject, received, hasAttachments);
     // then
     expect(commandParams).toMatchObject({
       Item: {
@@ -41,6 +42,7 @@ describe("EmailDatabase tests", () => {
         Sender: sender,
         Subject: subject,
         Username: username,
+        HasAttachments: hasAttachments,
       },
     });
   });
@@ -50,7 +52,7 @@ describe("EmailDatabase tests", () => {
     const username = "username";
     const defaultLimit = 10;
     // and
-    let commandParams;
+    let commandParams = {};
     ddbMock.on(QueryCommand).callsFakeOnce((input) => {
       commandParams = input;
       return;
@@ -78,7 +80,7 @@ describe("EmailDatabase tests", () => {
     const sentAfter = dayjs().unix();
     const limit = 15;
     // and
-    let commandParams;
+    let commandParams = {};
     ddbMock.on(QueryCommand).callsFakeOnce((input) => {
       commandParams = input;
       return;
@@ -110,7 +112,7 @@ describe("EmailDatabase tests", () => {
     const messageId = "id";
     const username = "username";
     // and
-    let commandParams;
+    let commandParams = {};
     ddbMock.on(QueryCommand).callsFakeOnce((input) => {
       commandParams = input;
       return { Count: count };
@@ -141,7 +143,7 @@ describe("EmailDatabase tests", () => {
     const messageId = "id";
     const username = "username";
     // and
-    let commandParams;
+    let commandParams = {};
     ddbMock.on(DeleteCommand).callsFakeOnce((input) => {
       commandParams = input;
       return { Attributes: attributes };
