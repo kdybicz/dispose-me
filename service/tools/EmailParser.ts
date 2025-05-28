@@ -6,6 +6,8 @@ import log from './log';
 export type EmailAddress = {
   address: string;
   user: null | string;
+  host: null | string;
+  displayName: string;
 };
 
 export type ParsedEmail = {
@@ -39,6 +41,8 @@ const parseEmailAddresses = (
   const mappedEmailAddresses = parsedAddresses.map<EmailAddress>((address) => ({
     address: address.address,
     user: address.user(),
+    host: address.host(),
+    displayName: address.name(),
   }));
 
   return mappedEmailAddresses;

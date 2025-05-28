@@ -16,11 +16,15 @@ describe('EmailParser tests', () => {
     expect(result.received).toEqual(new Date('Sun, 8 Jan 2017 20:37:44 +0200'));
     expect(result.from).toEqual({
       address: 'john.doe@example.com',
+      displayName: 'John Doe',
+      host: 'example.com',
       user: 'john.doe',
     });
     expect(result.to).toEqual([
       {
         address: 'jane.doe@example.com',
+        displayName: 'Jane Doe',
+        host: 'example.com',
         user: 'jane.doe',
       },
     ]);
@@ -39,15 +43,21 @@ describe('EmailParser tests', () => {
     expect(result.received).toEqual(new Date('Thu, 13 Oct 2016 13:39:48 +0200'));
     expect(result.from).toEqual({
       address: 'john.doe@example.com',
+      displayName: 'John Doe',
+      host: 'example.com',
       user: 'john.doe',
     });
     expect(result.to).toEqual([
       {
         address: 'john.doe+123@example.com',
+        displayName: 'John Doe+123',
+        host: 'example.com',
         user: 'john.doe+123',
       },
       {
         address: 'jane.doe@example.com',
+        displayName: 'Jane Doe',
+        host: 'example.com',
         user: 'jane.doe',
       },
     ]);
@@ -66,6 +76,8 @@ describe('EmailParser tests', () => {
     expect(result.received).toEqual(new Date('Wed, 9 Feb 2022 17:55:11 +0100'));
     expect(result.from).toEqual({
       address: 'john.doe@example.com',
+      displayName: 'John Doe',
+      host: 'example.com',
       user: 'john.doe',
     });
     expect(result.to).toEqual([]);
@@ -73,6 +85,8 @@ describe('EmailParser tests', () => {
     expect(result.bcc).toEqual([
       {
         address: 'hidden@example.com',
+        displayName: '',
+        host: 'example.com',
         user: 'hidden',
       },
     ]);
@@ -89,16 +103,22 @@ describe('EmailParser tests', () => {
     expect(result.received).toEqual(new Date('Wed, 9 Feb 2022 17:55:11 +0100'));
     expect(result.from).toEqual({
       address: 'john.doe@example.com',
+      displayName: 'John Doe',
+      host: 'example.com',
       user: 'john.doe',
     });
     expect(result.to).toEqual([]);
     expect(result.cc).toEqual([
       {
         address: 'jane.doe@example.com',
+        displayName: 'Jane Doe',
+        host: 'example.com',
         user: 'jane.doe',
       },
       {
         address: 'maria.doe@example.com',
+        displayName: 'Maria Doe',
+        host: 'example.com',
         user: 'maria.doe',
       },
     ]);
