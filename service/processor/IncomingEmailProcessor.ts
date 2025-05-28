@@ -39,9 +39,10 @@ export class IncomingEmailProcessor {
       );
 
       const allEmailAddresses = [...recipientEmails, ...carbonCopyEmails, ...blindCarbonCopyEmails];
-      const allMatchingEmailAddresses = allEmailAddresses.filter((emailAddress) =>
-        // excluding addresses from other domains
-        emailAddress.address.endsWith(`@${this.domainName}`),
+      const allMatchingEmailAddresses = allEmailAddresses.filter(
+        (emailAddress) =>
+          // excluding addresses from other domains
+          emailAddress.host === this.domainName,
       );
 
       const uniqueNormalizedUsernames = new Set(

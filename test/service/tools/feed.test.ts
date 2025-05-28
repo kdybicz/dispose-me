@@ -10,10 +10,31 @@ describe('feed tests', () => {
       const date = new Date('Mon, 01 Jan 2024 01:01:01 GMT');
       const email: EmailDetails = {
         id: 'id',
-        from: { address: 'john.doe@example.com', user: 'john.doe' },
-        to: [{ address: 'jane.doe@example.com', user: 'jane.doe' }],
-        cc: [{ address: 'maria.doe@example.com', user: 'maria.doe' }],
-        bcc: [{ address: 'hidden@example.com', user: 'hidden' }],
+        from: {
+          address: 'john.doe@example.com',
+          host: 'example.com',
+          displayName: 'john.doe',
+          user: 'john.doe',
+        },
+        to: [
+          {
+            address: 'jane.doe@example.com',
+            host: 'example.com',
+            displayName: 'jane.doe',
+            user: 'jane.doe',
+          },
+        ],
+        cc: [
+          {
+            address: 'maria.doe@example.com',
+            host: 'example.com',
+            displayName: 'maria.doe',
+            user: 'maria.doe',
+          },
+        ],
+        bcc: [
+          { address: 'hidden@example.com', host: 'example.com', displayName: '', user: 'hidden' },
+        ],
         subject: 'subject',
         body: 'body',
         received: date,
@@ -86,10 +107,31 @@ describe('feed tests', () => {
       const emails: EmailDetails[] = [
         {
           id: 'id',
-          from: { address: 'john.doe@example.com', user: 'john.doe' },
-          to: [{ address: 'jane.doe@example.com', user: 'jane.doe' }],
-          cc: [{ address: 'maria.doe@example.com', user: 'maria.doe' }],
-          bcc: [{ address: 'hidden@example.com', user: 'hidden' }],
+          from: {
+            address: 'john.doe@example.com',
+            host: 'example.com',
+            displayName: 'john.doe',
+            user: 'john.doe',
+          },
+          to: [
+            {
+              address: 'jane.doe@example.com',
+              host: 'example.com',
+              displayName: 'jane.doe',
+              user: 'jane.doe',
+            },
+          ],
+          cc: [
+            {
+              address: 'maria.doe@example.com',
+              host: 'example.com',
+              displayName: 'maria.doe',
+              user: 'maria.doe',
+            },
+          ],
+          bcc: [
+            { address: 'hidden@example.com', host: 'example.com', displayName: '', user: 'hidden' },
+          ],
           subject: 'subject',
           body: 'body',
           received: new Date('Mon, 01 Jan 2024 00:01:01 GMT'),
