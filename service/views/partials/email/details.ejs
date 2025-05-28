@@ -35,9 +35,9 @@
       <th>Attachments:</th>
       <td>
         <% for(var i = 0; i < email.attachments.length; i++) { %>
-          <span class="badge badge-pill badge-info">
+          <a class="badge badge-info" href="/inbox/<%= req.params.username %>/<%= email.id %>/attachment?filename=<%= email.attachments[i].filename %>&<%= new URLSearchParams(query) %>" title="Download the attachment">
             <%= email.attachments[i].filename %>
-          </span>
+          </a>
         <% } %>
       </td>
     </tr>

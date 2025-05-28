@@ -10,6 +10,7 @@ import log from './tools/log';
 import {
   buildAuthValidationChain,
   buildDeleteEmailValidationChain,
+  buildDownloadEmailAttachmentValidationChain,
   buildDownloadEmailValidationChain,
   buildInboxValidationChain,
   buildIndexValidationChain,
@@ -74,6 +75,11 @@ app.get(
   '/inbox/:username/:id/download',
   ...buildDownloadEmailValidationChain(),
   asyncHandler(inboxController.download),
+);
+app.get(
+  '/inbox/:username/:id/attachment',
+  ...buildDownloadEmailAttachmentValidationChain(),
+  asyncHandler(inboxController.downloadAttachment),
 );
 app.get(
   '/inbox/:username/:id',

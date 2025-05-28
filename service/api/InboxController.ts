@@ -203,6 +203,53 @@ export class InboxController {
     return this.render404Response(req, res);
   };
 
+  downloadAttachment = async (
+    req: InboxRequest<InboxEmailParams>,
+    res: Response,
+  ): InboxResponse => {
+    log.debug(
+      `Action: 'download attachment' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
+    );
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return this.render422Response(errors.array(), req, res);
+    }
+
+    const { id, username, filename } = matchedData<{
+      id: string;
+      username: string;
+      filename: string;
+    }>(req);
+
+    const normalizedUsername = normalizeUsername(username);
+    const existsForUser = await this.emailDatabase.exists(normalizedUsername, id);
+    if (existsForUser) {
+      const emailObject = await this.fileSystem.getObject(this.bucketName, id);
+      const emailBody = await emailObject.Body?.transformToString();
+
+      if (!emailBody) {
+        return this.render500Response(new Error('Email content not found!'), req, res);
+      }
+
+      const parsedEmail = await this.emailParser.parseEmail(emailBody);
+      const attachment = parsedEmail.attachments.find(
+        (attachment) => attachment.filename === filename,
+      );
+
+      if (!attachment) {
+        return this.render500Response(new Error('Email attachment not found!'), req, res);
+      }
+
+      res.setHeader('Content-disposition', `attachment; filename=${attachment.filename}`);
+      res.type('application/octet-stream');
+
+      return res.send('attachment');
+    }
+
+    return this.render404Response(req, res);
+  };
+
   delete = async (req: InboxRequest<InboxEmailParams>, res: Response): InboxResponse => {
     log.debug(
       `Action: 'delete' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,

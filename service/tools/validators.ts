@@ -78,6 +78,10 @@ export const buildRememberBodyValidator = (): ValidationChain => {
     .customSanitizer((value) => value === 'on');
 };
 
+export const buildFilenameQueryValidator = (): ValidationChain => {
+  return query('filename').isString().notEmpty();
+};
+
 export const buildIndexValidationChain = (): ValidationChain[] => {
   return [buildTypeQueryValidator()];
 };
@@ -112,6 +116,15 @@ export const buildDownloadEmailValidationChain = (): ValidationChain[] => {
     buildUsernameParamValidator(),
     buildMessageIdParamValidation(),
     buildTokenQueryValidator({ required: false }),
+  ];
+};
+
+export const buildDownloadEmailAttachmentValidationChain = (): ValidationChain[] => {
+  return [
+    buildUsernameParamValidator(),
+    buildMessageIdParamValidation(),
+    buildTokenQueryValidator({ required: false }),
+    buildFilenameQueryValidator(),
   ];
 };
 
