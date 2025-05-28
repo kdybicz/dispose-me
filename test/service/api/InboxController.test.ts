@@ -837,8 +837,8 @@ describe('InboxController', () => {
         { Body: { transformToString: jest.fn().mockResolvedValue('raw2') } },
       ]);
       MockedEmailParser.mockParseEmail
-        .mockResolvedValueOnce(mockParsedEmail('a', 'b'))
-        .mockResolvedValueOnce(mockParsedEmail('c', 'd'));
+        .mockResolvedValueOnce(mockParsedEmail('user_a@example.com', 'Subject a'))
+        .mockResolvedValueOnce(mockParsedEmail('user_b@example.com', 'Subject b'));
 
       // when
       await controller.listRss(req, res);
@@ -860,18 +860,18 @@ describe('InboxController', () => {
           '        <generator>Dispose Me</generator>\n' +
           '        <copyright>Dispose Me</copyright>\n' +
           '        <item>\n' +
-          '            <title><![CDATA[b]]></title>\n' +
+          '            <title><![CDATA[Subject a]]></title>\n' +
           `            <link>https://example.com/inbox/username/id1?${AUTH_QUERY_KEY}=${HEADER_TOKEN}</link>\n` +
           '            <guid>id1</guid>\n' +
           '            <pubDate>Thu, 22 May 2025 09:26:56 GMT</pubDate>\n' +
-          '            <author>a (a)</author>\n' +
+          '            <author>user_a@example.com (Display Name)</author>\n' +
           '        </item>\n' +
           '        <item>\n' +
-          '            <title><![CDATA[d]]></title>\n' +
+          '            <title><![CDATA[Subject b]]></title>\n' +
           `            <link>https://example.com/inbox/username/id2?${AUTH_QUERY_KEY}=${HEADER_TOKEN}</link>\n` +
           '            <guid>id2</guid>\n' +
           '            <pubDate>Thu, 22 May 2025 09:26:56 GMT</pubDate>\n' +
-          '            <author>c (c)</author>\n' +
+          '            <author>user_b@example.com (Display Name)</author>\n' +
           '        </item>\n' +
           '    </channel>\n' +
           '</rss>',
@@ -928,7 +928,7 @@ describe('InboxController', () => {
         { Body: { transformToString: jest.fn().mockResolvedValue('raw2') } },
       ]);
       MockedEmailParser.mockParseEmail
-        .mockResolvedValueOnce(mockParsedEmail('a', 'b'))
+        .mockResolvedValueOnce(mockParsedEmail('user_a@example.com', 'Subject a'))
         .mockResolvedValueOnce(null);
 
       // when
@@ -948,11 +948,11 @@ describe('InboxController', () => {
           '        <generator>Dispose Me</generator>\n' +
           '        <copyright>Dispose Me</copyright>\n' +
           '        <item>\n' +
-          '            <title><![CDATA[b]]></title>\n' +
+          '            <title><![CDATA[Subject a]]></title>\n' +
           `            <link>https://example.com/inbox/username/id1?${AUTH_QUERY_KEY}=${HEADER_TOKEN}</link>\n` +
           '            <guid>id1</guid>\n' +
           '            <pubDate>Thu, 22 May 2025 09:26:56 GMT</pubDate>\n' +
-          '            <author>a (a)</author>\n' +
+          '            <author>user_a@example.com (Display Name)</author>\n' +
           '        </item>\n' +
           '    </channel>\n' +
           '</rss>',

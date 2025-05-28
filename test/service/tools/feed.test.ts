@@ -1,5 +1,6 @@
 import type { EmailDetails } from '../../../service/api/InboxController';
 import { AUTH_QUERY_KEY } from '../../../service/tools/const';
+import { EmailAddress } from '../../../service/tools/EmailParser';
 import { mapEmailDetailsListToFeed, mapEmailDetailsToFeedItem } from '../../../service/tools/feed';
 import { QUERY_TOKEN, USERNAME } from '../../utils';
 
@@ -10,31 +11,10 @@ describe('feed tests', () => {
       const date = new Date('Mon, 01 Jan 2024 01:01:01 GMT');
       const email: EmailDetails = {
         id: 'id',
-        from: {
-          address: 'john.doe@example.com',
-          host: 'example.com',
-          displayName: 'john.doe',
-          user: 'john.doe',
-        },
-        to: [
-          {
-            address: 'jane.doe@example.com',
-            host: 'example.com',
-            displayName: 'jane.doe',
-            user: 'jane.doe',
-          },
-        ],
-        cc: [
-          {
-            address: 'maria.doe@example.com',
-            host: 'example.com',
-            displayName: 'maria.doe',
-            user: 'maria.doe',
-          },
-        ],
-        bcc: [
-          { address: 'hidden@example.com', host: 'example.com', displayName: '', user: 'hidden' },
-        ],
+        from: new EmailAddress('john.doe@example.com', 'john.doe', 'example.com', 'john.doe'),
+        to: [new EmailAddress('jane.doe@example.com', 'jane.doe', 'example.com', 'jane.doe')],
+        cc: [new EmailAddress('maria.doe@example.com', 'maria.doe', 'example.com', 'maria.doe')],
+        bcc: [new EmailAddress('hidden@example.com', 'hidden', 'example.com', '')],
         subject: 'subject',
         body: 'body',
         received: date,
@@ -61,7 +41,7 @@ describe('feed tests', () => {
           },
           {
             email: 'hidden@example.com',
-            name: 'hidden',
+            name: '',
           },
         ],
         content: 'body',
@@ -107,31 +87,10 @@ describe('feed tests', () => {
       const emails: EmailDetails[] = [
         {
           id: 'id',
-          from: {
-            address: 'john.doe@example.com',
-            host: 'example.com',
-            displayName: 'john.doe',
-            user: 'john.doe',
-          },
-          to: [
-            {
-              address: 'jane.doe@example.com',
-              host: 'example.com',
-              displayName: 'jane.doe',
-              user: 'jane.doe',
-            },
-          ],
-          cc: [
-            {
-              address: 'maria.doe@example.com',
-              host: 'example.com',
-              displayName: 'maria.doe',
-              user: 'maria.doe',
-            },
-          ],
-          bcc: [
-            { address: 'hidden@example.com', host: 'example.com', displayName: '', user: 'hidden' },
-          ],
+          from: new EmailAddress('john.doe@example.com', 'john.doe', 'example.com', 'john.doe'),
+          to: [new EmailAddress('jane.doe@example.com', 'jane.doe', 'example.com', 'jane.doe')],
+          cc: [new EmailAddress('maria.doe@example.com', 'maria.doe', 'example.com', 'maria.doe')],
+          bcc: [new EmailAddress('hidden@example.com', 'hidden', 'example.com', '')],
           subject: 'subject',
           body: 'body',
           received: new Date('Mon, 01 Jan 2024 00:01:01 GMT'),

@@ -3,12 +3,22 @@ import { type AddressObject, simpleParser as parseEmail } from 'mailparser';
 
 import log from './log';
 
-export type EmailAddress = {
-  address: string;
-  user: null | string;
-  host: null | string;
-  displayName: string;
-};
+export class EmailAddress {
+  constructor(
+    public address: string,
+    public user: null | string,
+    public host: null | string,
+    public displayName: string,
+  ) {}
+
+  public format = (): string => {
+    if (this.displayName) {
+      return `${this.displayName} <${this.address}>`;
+    }
+
+    return this.address;
+  };
+}
 
 export type ParsedEmail = {
   from: null | EmailAddress;
@@ -38,12 +48,9 @@ const parseEmailAddresses = (
     );
   }
 
-  const mappedEmailAddresses = parsedAddresses.map<EmailAddress>((address) => ({
-    address: address.address,
-    user: address.user(),
-    host: address.host(),
-    displayName: address.name(),
-  }));
+  const mappedEmailAddresses = parsedAddresses.map<EmailAddress>(
+    (address) => new EmailAddress(address.address, address.user(), address.host(), address.name()),
+  );
 
   return mappedEmailAddresses;
 };

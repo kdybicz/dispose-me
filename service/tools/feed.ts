@@ -5,7 +5,7 @@ import type { EmailAddress } from './EmailParser';
 import { AUTH_QUERY_KEY } from './const';
 
 const mapEmailAddressToAuthor = (address: null | EmailAddress): Author => ({
-  name: address?.user ?? '',
+  name: address?.displayName ?? '',
   email: address?.address ?? '',
 });
 
