@@ -22,7 +22,7 @@
         <input class="form-control col-sm-4 <%= usernameError ? 'is-invalid' : '' %>" type="text" id="username" value="<%= usernameError?.value %>" placeholder="Inbox name" aria-label="Inbox name" required>
         <input type="hidden" value="<%= query['x-api-key'] %>" name="x-api-key" <%= query['x-api-key'] ? "" : "disabled" %>>
         <div class="input-group-append">
-          <span class="input-group-text">@<%= process.env.DOMAIN_NAME %></span>
+          <span class="input-group-text">@example.com</span>
           <button type="button" class="btn btn-outline-secondary" aria-label="Generate new username" onclick="generateUsername();">
             <i class="bi bi-repeat"></i>
           </button>
