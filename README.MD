@@ -39,6 +39,18 @@ Dispose Me is a simple AWS-hosted disposable email service.
 - Simple Storage Service
 
 
+## API Documentation
+
+You can find the full OpenAPI (Swagger) schema for the Dispose Me API in the repository:
+
+- **Schema file:** [`docs/schema.yaml`](docs/schema.yaml)
+
+You can also view and explore the API interactively using the online Swagger UI:
+
+- **Online schema viewer:**  
+  [https://petstore.swagger.io/?url=https://raw.githubusercontent.com/kdybicz/dispose-me/refs/heads/master/docs/schema.yaml](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/kdybicz/dispose-me/refs/heads/master/docs/schema.yaml)
+
+
 ## Setup process
 
 ### Environment
