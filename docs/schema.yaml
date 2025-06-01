@@ -245,6 +245,8 @@ paths:
       responses:
         '200':
           description: Returns the content of the email
+          content:
+            application/octet-stream: {}
         '403':
           description: Forbidden
         '404':
@@ -320,7 +322,7 @@ components:
   schemas:
     EmailItem:
       type: object
-      retuired:
+      required:
         - id
         - from
         - subject
@@ -345,7 +347,7 @@ components:
           examples: [false]
     EmailList:
       type: object
-      retuired:
+      required:
         - emails
       properties:
         emails:
@@ -354,7 +356,7 @@ components:
             $ref: '#/components/schemas/EmailItem'
     EmailAddress:
       type: object
-      retuired:
+      required:
         - address
         - user
         - host
