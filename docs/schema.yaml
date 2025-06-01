@@ -155,6 +155,11 @@ paths:
       responses:
         '200':
           description: Returns the attachment data
+          content:
+            "*/*":
+              schema:
+                type: string
+                format: binary
         '403':
           description: Forbidden
         '404':
