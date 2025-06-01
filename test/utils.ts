@@ -4,7 +4,12 @@ import type { ValidationChain, ValidationError } from 'express-validator';
 import type { InboxRequest } from '../service/api/InboxController';
 import { AUTH_HEADER_KEY } from '../service/tools/const';
 import { EmailDatabase } from '../service/tools/EmailDatabase';
-import { EmailAddress, EmailParser, type ParsedEmail } from '../service/tools/EmailParser';
+import {
+  type AttachmentDetails,
+  EmailAddress,
+  EmailParser,
+  type ParsedEmail,
+} from '../service/tools/EmailParser';
 import { S3FileSystem } from '../service/tools/S3FileSystem';
 import { IncomingEmailProcessor } from '../service/processor/IncomingEmailProcessor';
 
@@ -94,7 +99,11 @@ export const MockedIncomingEmailProcessor = IncomingEmailProcessor as unknown as
   mockProcessEmail: jest.Mock;
 };
 
-export const mockParsedEmail = (from: string, subject: string): ParsedEmail => {
+export const mockParsedEmail = (
+  from: string,
+  subject: string,
+  attachments: AttachmentDetails[] = [],
+): ParsedEmail => {
   const fromAddress = new EmailAddress(from, from, 'example.com', 'Display Name');
   return {
     from: fromAddress,
@@ -104,6 +113,6 @@ export const mockParsedEmail = (from: string, subject: string): ParsedEmail => {
     subject,
     body: '',
     received: new Date('Thu, 22 May 2025 09:26:56 GMT'),
-    attachments: [],
+    attachments,
   };
 };

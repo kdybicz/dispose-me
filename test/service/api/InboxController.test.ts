@@ -283,7 +283,7 @@ describe('InboxController', () => {
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
         Body: { transformToString: jest.fn().mockResolvedValueOnce('raw-email') },
       });
-      MockedEmailParser.mockParseEmail.mockResolvedValueOnce({ from: 'a', subject: 'b' });
+      MockedEmailParser.mockParseEmail.mockResolvedValueOnce(mockParsedEmail('a', 'b'));
 
       // when
       await controller.show(req, res);
@@ -306,7 +306,7 @@ describe('InboxController', () => {
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
         Body: { transformToString: jest.fn().mockResolvedValueOnce('raw-email') },
       });
-      MockedEmailParser.mockParseEmail.mockResolvedValueOnce({ from: 'a', subject: 'b' });
+      MockedEmailParser.mockParseEmail.mockResolvedValueOnce(mockParsedEmail('a', 'b'));
 
       // when
       await controller.show(req, res);
@@ -556,9 +556,16 @@ describe('InboxController', () => {
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
         Body: { transformToString: jest.fn().mockResolvedValueOnce('raw-email-data') },
       });
-      MockedEmailParser.mockParseEmail.mockResolvedValueOnce({
-        attachments: [{ filename: 'not-matching-name.txt' }],
-      });
+      MockedEmailParser.mockParseEmail.mockResolvedValueOnce(
+        mockParsedEmail('a', 'b', [
+          {
+            filename: 'not-matching-name.txt',
+            size: 1337,
+            contentType: 'plain/txt',
+            content: Buffer.from(''),
+          },
+        ]),
+      );
 
       // when
       await controller.downloadAttachment(req, res);
@@ -584,9 +591,16 @@ describe('InboxController', () => {
       // and
       const contentType = 'text/html; charset=utf-8';
       const content = Buffer.from('attachment data');
-      MockedEmailParser.mockParseEmail.mockResolvedValueOnce({
-        attachments: [{ filename, contentType, content }],
-      });
+      MockedEmailParser.mockParseEmail.mockResolvedValueOnce(
+        mockParsedEmail('a', 'b', [
+          {
+            filename,
+            size: content.byteLength,
+            contentType,
+            content,
+          },
+        ]),
+      );
 
       // when
       await controller.downloadAttachment(req, res);
@@ -746,7 +760,7 @@ describe('InboxController', () => {
         MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
           Body: { transformToString: jest.fn().mockResolvedValue('raw-email') },
         });
-        MockedEmailParser.mockParseEmail.mockResolvedValueOnce({ from: 'a', subject: 'b' });
+        MockedEmailParser.mockParseEmail.mockResolvedValueOnce(mockParsedEmail('a', 'b'));
 
         // when
         await controller.latest(req, res);
@@ -770,7 +784,7 @@ describe('InboxController', () => {
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
         Body: { transformToString: jest.fn().mockResolvedValue('raw-email') },
       });
-      MockedEmailParser.mockParseEmail.mockResolvedValueOnce({ from: 'a', subject: 'b' });
+      MockedEmailParser.mockParseEmail.mockResolvedValueOnce(mockParsedEmail('a', 'b'));
 
       // when
       await controller.latest(req, res);

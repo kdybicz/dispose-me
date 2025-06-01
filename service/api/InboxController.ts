@@ -3,7 +3,7 @@ import type { Request, Response } from 'express';
 import { type ValidationError, matchedData, validationResult } from 'express-validator';
 
 import { EmailDatabase } from '../tools/EmailDatabase';
-import { EmailParser, type ParsedEmail } from '../tools/EmailParser';
+import { type AttachmentDetails, EmailParser, type ParsedEmail } from '../tools/EmailParser';
 import { S3FileSystem } from '../tools/S3FileSystem';
 import { AUTH_COOKIE_KEY, AUTH_QUERY_KEY, REMEMBER_COOKIE_KEY } from '../tools/const';
 import { mapEmailDetailsListToFeed } from '../tools/feed';
@@ -159,6 +159,9 @@ export class InboxController {
       email = {
         ...parsedEmail,
         id,
+        attachments: parsedEmail.attachments.map(
+          (attachment) => ({ ...attachment, content: undefined }) as unknown as AttachmentDetails,
+        ),
       };
 
       if (type === 'html') {
@@ -307,6 +310,9 @@ export class InboxController {
         email = {
           ...parsedEmail,
           id: messageId,
+          attachments: parsedEmail.attachments.map(
+            (attachment) => ({ ...attachment, content: undefined }) as unknown as AttachmentDetails,
+          ),
         };
       }
     }
