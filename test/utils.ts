@@ -60,8 +60,10 @@ export const mockRequest = <P = Record<string, string>, B = any>(
 export const mockResponse = (): Response => {
   const mockRender = jest.fn();
   return {
+    attachment: jest.fn(),
     clearCookie: jest.fn(),
     cookie: jest.fn(),
+    end: jest.fn(),
     json: jest.fn(),
     redirect: jest.fn(),
     render: mockRender,

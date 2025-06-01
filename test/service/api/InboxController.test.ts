@@ -424,10 +424,7 @@ describe('InboxController', () => {
       // when
       await controller.download(req, res);
       // then
-      expect(res.setHeader).toHaveBeenCalledWith(
-        'Content-disposition',
-        `attachment; filename=${MESSAGE_ID}.eml`,
-      );
+      expect(res.attachment).toHaveBeenCalledWith(`${MESSAGE_ID}.eml`);
       expect(res.type).toHaveBeenCalledWith('application/octet-stream');
       expect(res.send).toHaveBeenCalledWith('raw-email-data');
     });
@@ -594,10 +591,7 @@ describe('InboxController', () => {
       // when
       await controller.downloadAttachment(req, res);
       // then
-      expect(res.setHeader).toHaveBeenCalledWith(
-        'Content-disposition',
-        `attachment; filename=${filename}`,
-      );
+      expect(res.attachment).toHaveBeenCalledWith(filename);
       expect(res.type).toHaveBeenCalledWith(contentType);
       expect(res.send).toHaveBeenCalledWith(content);
     });

@@ -2,7 +2,6 @@ import 'source-map-support/register';
 
 import * as express from 'express';
 import type { NextFunction, Request, Response } from 'express';
-import { param } from 'express-validator';
 import * as serverless from 'serverless-http';
 
 import { InboxController } from './api/InboxController';
@@ -103,4 +102,4 @@ app.use((err: any, req: any, res: any, _: any) => {
   inboxController.render500Response(err, req, res);
 });
 
-export const handler = serverless(app);
+export const handler = serverless(app, { binary: ['*/*'] });

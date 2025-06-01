@@ -194,7 +194,7 @@ export class InboxController {
         return this.render500Response(new Error('Email content not found!'), req, res);
       }
 
-      res.setHeader('Content-disposition', `attachment; filename=${id}.eml`);
+      res.attachment(`${id}.eml`);
       res.type('application/octet-stream');
 
       return res.send(emailBody);
@@ -241,7 +241,7 @@ export class InboxController {
         return this.render500Response(new Error('Email attachment not found!'), req, res);
       }
 
-      res.setHeader('Content-disposition', `attachment; filename=${attachment.filename}`);
+      res.attachment(attachment.filename);
       res.type(attachment.contentType);
 
       return res.send(attachment.content);
