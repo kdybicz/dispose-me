@@ -123,6 +123,7 @@ export class DisposeMeStack extends cdk.Stack {
       minCompressionSize: cdk.Size.bytes(1024),
       endpointTypes: [apigateway.EndpointType.REGIONAL],
       proxy: false,
+      binaryMediaTypes: ['*/*'],
     });
     // Removing the default output for the API Endpoint
     api.node.tryRemoveChild('Endpoint');
