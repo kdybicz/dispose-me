@@ -649,7 +649,7 @@ describe('InboxController', () => {
       expect(res.render).toHaveBeenCalledWith('pages/422', { errors });
     });
 
-    test('should redirect to inbox if deletion is successful', async () => {
+    test('should redirect to inbox if deletion is successful via GET request', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({
         params: { username: USERNAME, id: MESSAGE_ID },
@@ -666,6 +666,25 @@ describe('InboxController', () => {
       expect(res.redirect).toHaveBeenCalledWith(
         `/inbox/${USERNAME}?${new URLSearchParams(req.query as Record<string, string>)}`,
       );
+    });
+
+    test('should redirect to inbox if deletion is successful via DELETE request', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({
+        params: { username: USERNAME, id: MESSAGE_ID },
+        method: 'DELETE',
+      });
+      await validateRequest(req, buildDeleteEmailValidationChain());
+      // and
+      MockedEmailDatabase.mockDeleteEmail.mockResolvedValueOnce(true);
+
+      // when
+      await controller.delete(req, res);
+      // then
+      expect(MockedEmailDatabase.mockDeleteEmail).toHaveBeenCalledWith(USERNAME, MESSAGE_ID);
+      // and
+      expect(res.status).toHaveBeenCalledWith(204);
+      expect(res.end).toHaveBeenCalled();
     });
 
     test('should return 404 if deletion is unsuccessful', async () => {

@@ -30,6 +30,7 @@ export type RequestArgs<B> = {
   params?: Record<string, undefined | string>;
   cookies?: Record<string, string>;
   body?: B;
+  method?: 'GET' | 'POST' | 'DELETE';
 };
 
 export const validateRequest = async (
@@ -45,7 +46,7 @@ export const validateRequest = async (
 export const mockRequest = <P = Record<string, string>, B = any>(
   args?: RequestArgs<B>,
 ): InboxRequest<P, B> => {
-  const { query = {}, params = {}, cookies, body } = args ?? {};
+  const { query = {}, params = {}, cookies, body, method = 'GET' } = args ?? {};
   return {
     query,
     params,
@@ -59,6 +60,7 @@ export const mockRequest = <P = Record<string, string>, B = any>(
           : undefined,
     },
     body,
+    method,
   } as unknown as InboxRequest<P>;
 };
 

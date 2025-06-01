@@ -268,6 +268,10 @@ export class InboxController {
     const normalizedUsername = normalizeUsername(username);
     const deletedFromDatabase = await this.emailDatabase.delete(normalizedUsername, id);
     if (deletedFromDatabase) {
+      if (req.method === 'DELETE') {
+        return res.status(204).end();
+      }
+
       return res.redirect(
         `/inbox/${username}?${new URLSearchParams(req.query as Record<string, string>)}`,
       );

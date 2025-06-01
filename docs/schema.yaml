@@ -186,7 +186,7 @@ paths:
         - api_token_cookie: []
 
   /inbox/{username}/{id}/delete:
-    get:
+    delete:
       summary: Delete given email
       description: Allows to delete the email with given ID.
       tags:
@@ -206,7 +206,7 @@ paths:
           schema:
             type: string
       responses:
-        '302':
+        '204':
           description: Email successfully deleted
         '403':
           description: Forbidden
