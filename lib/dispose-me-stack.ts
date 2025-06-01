@@ -165,6 +165,11 @@ export class DisposeMeStack extends cdk.Stack {
       authorizer: apiAuthorizer,
       authorizationType: apigateway.AuthorizationType.CUSTOM,
     });
+    proxyResource.addMethod('DELETE', undefined, {
+      apiKeyRequired: privateAccess,
+      authorizer: apiAuthorizer,
+      authorizationType: apigateway.AuthorizationType.CUSTOM,
+    });
 
     // Point domain to the API Gateway
     new route53.ARecord(this, 'AliasRecord', {

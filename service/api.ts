@@ -70,6 +70,11 @@ app.get(
   ...buildDeleteEmailValidationChain(),
   asyncHandler(inboxController.delete),
 );
+app.delete(
+  '/inbox/:username/:id/delete',
+  ...buildDeleteEmailValidationChain(),
+  asyncHandler(inboxController.delete),
+);
 app.get(
   '/inbox/:username/:id/download',
   ...buildDownloadEmailValidationChain(),
