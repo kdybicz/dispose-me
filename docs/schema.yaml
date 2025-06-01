@@ -4,6 +4,20 @@ info:
   title: Dispose Me
   description: |-
     Dispose Me is a simple AWS-hosted disposable email service with API capabilities.
+
+    ### Authentication
+    An API token is required for all endpoints. For flexibility, users can provide the token in **one** of three ways:
+      - HTTP Header: `x-api-key`
+      - Query Parameter: `x-api-key`
+      - Cookie: `x-api-key`
+    Choose whichever method best suits your use case.
+  contact:
+    name: Dispose Me Maintainers
+    url: https://github.com/kdybicz/dispose-me
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
 servers:
   - url: https://{hostname}
     variables:
@@ -20,12 +34,13 @@ paths:
     get:
       summary: List emails in the inbox
       description: List all emails sent to the inbox for a given username.
+      operationId: listInboxEmails
       tags:
         - Inbox
       parameters:
         - name: username
           in: path
-          description: The username
+          description: The username associated with the disposable inbox.
           required: true
           schema:
             type: string
@@ -34,19 +49,20 @@ paths:
             maxLength: 25
         - name: type
           in: query
-          description: Output format
+          description: Response output format.
           schema:
             type: string
             enum: ["json", "html"]
             default: "html"
         - name: sentAfter
           in: query
-          description: Show only emails send after a date, represented as a Unix epoch time, with seconds precision.
+          description: Show only emails sent after this Unix epoch time (seconds).
           schema:
             type: integer
+            format: int64
         - name: limit
           in: query
-          description: Change maximal number of shown messages
+          description: Maximum number of messages to return.
           schema:
             type: integer
             minimum: 0
@@ -54,15 +70,19 @@ paths:
             default: 10
       responses:
         '200':
-          description: Return list of emails in the inbox
+          description: Returns the list of emails in the inbox.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/EmailList'
         '403':
-          description: Forbidden
+          description: Forbidden – Invalid or missing API token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '422':
-          description: Invalid parameters
+          description: Invalid parameters.
           content:
             application/json:
               schema:
@@ -75,47 +95,52 @@ paths:
   /inbox/{username}/{id}:
     get:
       summary: Show details of an email
-      description: Show the content of the email, including author, all recipients, subject, body, and information about attachments.
+      description: Returns the content of an email, including author, recipients, subject, body, and attachment information.
+      operationId: getEmailDetails
       tags:
         - Inbox
       parameters:
         - name: username
           in: path
-          description: The username
+          description: The username associated with the disposable inbox.
           required: true
           schema:
             type: string
             pattern: ^[a-zA-Z0-9.\-_+]*$
         - name: id
           in: path
-          description: Email ID
+          description: Unique identifier for the email.
           required: true
           schema:
             type: string
         - name: type
           in: query
-          description: Output format
+          description: Response output format.
           schema:
             type: string
             enum: ["json", "html"]
             default: "html"
       responses:
         '200':
-          description: Show email details
+          description: Returns email details.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/EmailDetails'
         '403':
-          description: Forbidden
+          description: Forbidden – Invalid or missing API token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '404':
-          description: Email with given ID not found
+          description: Email with the given ID was not found.
           content: 
             application/json: 
               schema: 
                 $ref: '#/components/schemas/Error'
         '422':
-          description: Invalid parameters
+          description: Invalid parameters.
           content:
             application/json:
               schema:
@@ -127,55 +152,74 @@ paths:
 
   /inbox/{username}/{id}/attachment:
     get:
-      summary: Download given attachment
-      description: Allows to download an attachment.
+      summary: Download a specific attachment from an email
+      description: |
+        Download an attachment from the specified email.
+        The `Content-Type` header will match the attachment's MIME type (e.g., `image/png`, `application/pdf`, etc.).
+        The `Content-Disposition` header is set for proper file downloads.
+      operationId: downloadEmailAttachment
       tags:
         - Inbox
       parameters:
         - name: username
           in: path
-          description: The username
+          description: The username associated with the disposable inbox.
           required: true
           schema:
             type: string
             pattern: ^[a-zA-Z0-9.\-_+]*$
         - name: id
           in: path
-          description: Email ID
+          description: Unique identifier for the email.
           required: true
           schema:
             type: string
         - name: filename
           in: query
-          description: Filename of the attachment
+          description: The filename of the attachment to download.
           required: true
           schema:
             type: string
             examples: ["image.png"]
       responses:
         '200':
-          description: Returns the attachment data
+          description: The attachment file data.
+          headers:
+            Content-Type:
+              description: The MIME type of the file.
+              schema:
+                type: string
+                examples: ["image/png"]
+            Content-Disposition:
+              description: Suggests a default filename for saving.
+              schema:
+                type: string
+                examples: ['attachment; filename="image.png"']
           content:
             "*/*":
               schema:
                 type: string
                 format: binary
         '403':
-          description: Forbidden
+          description: Forbidden – Invalid or missing API token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '404':
-          description: Email with given ID not found
+          description: Email with the given ID was not found.
           content: 
             application/json: 
               schema: 
                 $ref: '#/components/schemas/Error'
         '422':
-          description: Invalid parameters
+          description: Invalid parameters.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationError'
         '500':
-          description: Invalid email content or missing attachment
+          description: Invalid email content or missing attachment.
           content: 
             application/json: 
               schema: 
@@ -187,37 +231,42 @@ paths:
 
   /inbox/{username}/{id}/delete:
     delete:
-      summary: Delete given email
-      description: Allows to delete the email with given ID.
+      summary: Delete a specific email
+      description: Deletes the email with the specified ID from the inbox.
+      operationId: deleteEmail
       tags:
         - Inbox
       parameters:
         - name: username
           in: path
-          description: The username
+          description: The username associated with the disposable inbox.
           required: true
           schema:
             type: string
             pattern: ^[a-zA-Z0-9.\-_+]*$
         - name: id
           in: path
-          description: Email ID
+          description: Unique identifier for the email.
           required: true
           schema:
             type: string
       responses:
         '204':
-          description: Email successfully deleted
+          description: Email successfully deleted. No content is returned.
         '403':
-          description: Forbidden
+          description: Forbidden – Invalid or missing API token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '404':
-          description: Email with given ID not found
+          description: Email with the given ID was not found.
           content: 
             application/json: 
               schema: 
                 $ref: '#/components/schemas/Error'
         '422':
-          description: Invalid parameters
+          description: Invalid parameters.
           content:
             application/json:
               schema:
@@ -229,45 +278,64 @@ paths:
 
   /inbox/{username}/{id}/download:
     get:
-      summary: Download given email
-      description: Allows to download the email as an `.eml` file.
+      summary: Download an email as an `.eml` file
+      description: Download the full email as a standard `.eml` file.
+      operationId: downloadEmailAsEml
       tags:
         - Inbox
       parameters:
         - name: username
           in: path
-          description: The username
+          description: The username associated with the disposable inbox.
           required: true
           schema:
             type: string
             pattern: ^[a-zA-Z0-9.\-_+]*$
         - name: id
           in: path
-          description: Email ID
+          description: Unique identifier for the email.
           required: true
           schema:
             type: string
       responses:
         '200':
-          description: Returns the content of the email
+          description: The email content as an `.eml` file.
+          headers:
+            Content-Type:
+              description: The MIME type of the file `application/octet-stream`.
+              schema:
+                type: string
+                examples: ["application/octet-stream"]
+            Content-Disposition:
+              description: Suggests a default filename for saving.
+              schema:
+                type: string
+                examples: ['attachment; filename="email.eml"']
           content:
-            application/octet-stream: {}
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
         '403':
-          description: Forbidden
+          description: Forbidden – Invalid or missing API token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '404':
-          description: Email with given ID not found
+          description: Email with the given ID was not found.
           content: 
             application/json: 
               schema: 
                 $ref: '#/components/schemas/Error'
         '422':
-          description: Invalid parameters
+          description: Invalid parameters.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationError'
         '500':
-          description: Invalid email content
+          description: Invalid email content.
           content: 
             application/json: 
               schema: 
@@ -280,40 +348,46 @@ paths:
   /inbox/{username}/latest:
     get:
       summary: Show details of the latest email
-      description: Show the content of the latest email, including author, all recipients, subject, body, and information about attachments.
+      description: Returns the content of the latest email, including author, recipients, subject, body, and attachment information.
+      operationId: getLatestEmail
       tags:
         - Inbox
       parameters:
         - name: username
           in: path
-          description: The username
+          description: The username associated with the disposable inbox.
           required: true
           schema:
             type: string
             pattern: ^[a-zA-Z0-9.\-_+]*$
         - name: sentAfter
           in: query
-          description: Show only email if it was send after a date, represented as a Unix epoch time, with seconds precision.
+          description: Show only the latest email if it was sent after this Unix epoch time (seconds).
           schema:
             type: integer
+            format: int64
         - name: type
           in: query
-          description: Output format
+          description: Response output format.
           schema:
             type: string
             enum: ["json", "html"]
             default: "html"
       responses:
         '200':
-          description: Show email details
+          description: Returns the details of the latest email.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/EmailDetails'
         '403':
-          description: Forbidden
+          description: Forbidden – Invalid or missing API token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '422':
-          description: Invalid parameters
+          description: Invalid parameters.
           content:
             application/json:
               schema:
@@ -336,19 +410,24 @@ components:
       properties:
         id:
           type: string
+          description: Unique identifier for the email.
           examples: ["223pfcdcrjar5jukmha0s67k7bdn1l1gidasbuo1"]
         from:
           type: string
           format: email
+          description: Sender's email address.
           examples: ["jane.doe@example.com"]
         subject:
           type: string
+          description: Subject of the email.
           examples: ["Subject of the email"]
         received:
           type: string
           format: date-time
+          description: The timestamp when the email was received (RFC 3339 format).
         hasAttachments:
           type: boolean
+          description: Indicates if the email has any attachments.
           examples: [false]
     EmailList:
       type: object
@@ -357,6 +436,7 @@ components:
       properties:
         emails:
           type: array
+          description: Array of email items in the inbox.
           items: 
             $ref: '#/components/schemas/EmailItem'
     EmailAddress:
@@ -369,16 +449,20 @@ components:
         address:
           type: string
           format: email
+          description: Full email address (e.g., user@domain.com).
           examples: ["john.doe@example.com"]
         user:
           type: string
+          description: Local part of the email address (before @).
           examples: ["john.doe"]
         host:
           type: string
           format: hostname
+          description: Domain part of the email address.
           examples: ["example.com"]
         displayName:
           type: string
+          description: Display name of the sender or recipient.
           examples: ["John Doe"]
     Attachment:
       type: object
@@ -389,12 +473,15 @@ components:
       properties:
         filename:
           type: string
+          description: Name of the attachment file.
           examples: ["image.png"]
         size:
           type: integer
+          description: File size in bytes.
           examples: [1337]
         contentType:
           type: string
+          description: MIME type of the attachment file.
           examples: ["image/png"]
     EmailDetails:
       type: object
@@ -413,33 +500,39 @@ components:
           $ref: '#/components/schemas/EmailAddress'
         to:
           type: array
+          description: List of primary recipient email addresses.
           items:
             $ref: '#/components/schemas/EmailAddress'
         cc:
           type: array
+          description: List of CC recipient email addresses.
           items:
             $ref: '#/components/schemas/EmailAddress'
         bcc:
           type: array
+          description: List of BCC recipient email addresses.
           items:
             $ref: '#/components/schemas/EmailAddress'
         subject:
           type: string
-          description: Subject of the email
+          description: Subject of the email.
           examples: ["Subject of the email"]
         body:
           type: string
-          description: Body of the email
+          description: Body content of the email.
           examples: ["Body of the email"]
         received:
           type: string
           format: date-time
+          description: The timestamp when the email was received (RFC 3339 format).
         attachments:
           type: array
+          description: List of attachments for the email.
           items:
             $ref: '#/components/schemas/Attachment'
         id:
           type: string
+          description: Unique identifier for the email.
           examples: ["223pfcdcrjar5jukmha0s67k7bdn1l1gidasbuo1"]
     Error:
       type: object
@@ -448,6 +541,7 @@ components:
       properties:
         message:
           type: string
+          description: Error message.
           examples: ["The page you are looking for was not found."]
     ValidationError:
       type: object
@@ -456,6 +550,7 @@ components:
       properties:
         errors:
           type: array
+          description: List of validation errors.
           items:
             type: object
             required:
@@ -467,18 +562,23 @@ components:
             properties:
               type:
                 type: string
+                description: Type of error (e.g., "field").
                 examples: ["field"]
               value:
                 type: string
+                description: Invalid value provided by the client.
                 examples: ["user^name"]
               msg:
                 type: string
+                description: Error message explaining the validation failure.
                 examples: ["Username may only contain letters, numbers, dots (.), hyphens (-), underscores (_), and plus signs (+)."]
               path:
                 type: string
+                description: The name of the field that failed validation.
                 examples: ["username"]
               location:
                 type: string
+                description: Location of the parameter (e.g., "params", "query").
                 examples: ["params"]
 
   securitySchemes:
@@ -486,11 +586,14 @@ components:
       type: apiKey
       name: x-api-key
       in: header
+      description: API key to authorize requests, sent in HTTP header.
     api_token_query:
       type: apiKey
       name: x-api-key
       in: query
+      description: API key to authorize requests, sent as a query parameter.
     api_token_cookie:
       type: apiKey
       name: x-api-key
       in: cookie
+      description: API key to authorize requests, sent in a cookie.
