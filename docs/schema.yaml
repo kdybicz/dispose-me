@@ -1,0 +1,489 @@
+openapi: 3.1.0
+info:
+  version: 5.1.0
+  title: Dispose Me
+  description: |-
+    Dispose Me is a simple AWS-hosted disposable email service with API capabilities.
+servers:
+  - url: https://{hostname}
+    variables:
+      hostname:
+        default: example.com
+        description: Your domain
+
+tags:
+  - name: Inbox
+    description: Inbox operations
+
+paths:
+  /inbox/{username}:
+    get:
+      summary: List emails in the inbox
+      description: List all emails sent to the inbox for a given username.
+      tags:
+        - Inbox
+      parameters:
+        - name: username
+          in: path
+          description: The username
+          required: true
+          schema:
+            type: string
+            pattern: ^[a-zA-Z0-9.\-_+]*$
+            minLength: 3
+            maxLength: 25
+        - name: type
+          in: query
+          description: Output format
+          schema:
+            type: string
+            enum: ["json", "html"]
+            default: "html"
+        - name: sentAfter
+          in: query
+          description: Show only emails send after a date, represented as a Unix epoch time, with seconds precision.
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Change maximal number of shown messages
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 100
+            default: 10
+      responses:
+        '200':
+          description: Return list of emails in the inbox
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailList'
+        '403':
+          description: Forbidden
+        '422':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      security:
+        - api_token_header: []
+        - api_token_query: []
+        - api_token_cookie: []
+
+  /inbox/{username}/{id}:
+    get:
+      summary: Show details of an email
+      description: Show the content of the email, including author, all recipients, subject, body, and information about attachments.
+      tags:
+        - Inbox
+      parameters:
+        - name: username
+          in: path
+          description: The username
+          required: true
+          schema:
+            type: string
+            pattern: ^[a-zA-Z0-9.\-_+]*$
+        - name: id
+          in: path
+          description: Email ID
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          description: Output format
+          schema:
+            type: string
+            enum: ["json", "html"]
+            default: "html"
+      responses:
+        '200':
+          description: Show email details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailDetails'
+        '403':
+          description: Forbidden
+        '404':
+          description: Email with given ID not found
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      security:
+        - api_token_header: []
+        - api_token_query: []
+        - api_token_cookie: []
+
+  /inbox/{username}/{id}/attachment:
+    get:
+      summary: Download given attachment
+      description: Allows to download an attachment.
+      tags:
+        - Inbox
+      parameters:
+        - name: username
+          in: path
+          description: The username
+          required: true
+          schema:
+            type: string
+            pattern: ^[a-zA-Z0-9.\-_+]*$
+        - name: id
+          in: path
+          description: Email ID
+          required: true
+          schema:
+            type: string
+        - name: filename
+          in: query
+          description: Filename of the attachment
+          required: true
+          schema:
+            type: string
+            examples: ["image.png"]
+      responses:
+        '200':
+          description: Returns the attachment data
+        '403':
+          description: Forbidden
+        '404':
+          description: Email with given ID not found
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '500':
+          description: Invalid email content or missing attachment
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/Error'
+      security:
+        - api_token_header: []
+        - api_token_query: []
+        - api_token_cookie: []
+
+  /inbox/{username}/{id}/delete:
+    get:
+      summary: Delete given email
+      description: Allows to delete the email with given ID.
+      tags:
+        - Inbox
+      parameters:
+        - name: username
+          in: path
+          description: The username
+          required: true
+          schema:
+            type: string
+            pattern: ^[a-zA-Z0-9.\-_+]*$
+        - name: id
+          in: path
+          description: Email ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Email successfully deleted
+        '403':
+          description: Forbidden
+        '404':
+          description: Email with given ID not found
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      security:
+        - api_token_header: []
+        - api_token_query: []
+        - api_token_cookie: []
+
+  /inbox/{username}/{id}/download:
+    get:
+      summary: Download given email
+      description: Allows to download the email as an `.eml` file.
+      tags:
+        - Inbox
+      parameters:
+        - name: username
+          in: path
+          description: The username
+          required: true
+          schema:
+            type: string
+            pattern: ^[a-zA-Z0-9.\-_+]*$
+        - name: id
+          in: path
+          description: Email ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns the content of the email
+        '403':
+          description: Forbidden
+        '404':
+          description: Email with given ID not found
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '500':
+          description: Invalid email content
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/Error'
+      security:
+        - api_token_header: []
+        - api_token_query: []
+        - api_token_cookie: []
+
+  /inbox/{username}/latest:
+    get:
+      summary: Show details of the latest email
+      description: Show the content of the latest email, including author, all recipients, subject, body, and information about attachments.
+      tags:
+        - Inbox
+      parameters:
+        - name: username
+          in: path
+          description: The username
+          required: true
+          schema:
+            type: string
+            pattern: ^[a-zA-Z0-9.\-_+]*$
+        - name: sentAfter
+          in: query
+          description: Show only email if it was send after a date, represented as a Unix epoch time, with seconds precision.
+          schema:
+            type: integer
+        - name: type
+          in: query
+          description: Output format
+          schema:
+            type: string
+            enum: ["json", "html"]
+            default: "html"
+      responses:
+        '200':
+          description: Show email details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailDetails'
+        '403':
+          description: Forbidden
+        '422':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      security:
+        - api_token_header: []
+        - api_token_query: []
+        - api_token_cookie: []
+
+components:
+  schemas:
+    EmailItem:
+      type: object
+      retuired:
+        - id
+        - from
+        - subject
+        - received
+        - hasAttachments
+      properties:
+        id:
+          type: string
+          examples: ["223pfcdcrjar5jukmha0s67k7bdn1l1gidasbuo1"]
+        from:
+          type: string
+          format: email
+          examples: ["jane.doe@example.com"]
+        subject:
+          type: string
+          examples: ["Subject of the email"]
+        received:
+          type: string
+          format: date-time
+        hasAttachments:
+          type: boolean
+          examples: [false]
+    EmailList:
+      type: object
+      retuired:
+        - emails
+      properties:
+        emails:
+          type: array
+          items: 
+            $ref: '#/components/schemas/EmailItem'
+    EmailAddress:
+      type: object
+      retuired:
+        - address
+        - user
+        - host
+      properties:
+        address:
+          type: string
+          format: email
+          examples: ["john.doe@example.com"]
+        user:
+          type: string
+          examples: ["john.doe"]
+        host:
+          type: string
+          format: hostname
+          examples: ["example.com"]
+        displayName:
+          type: string
+          examples: ["John Doe"]
+    Attachment:
+      type: object
+      required:
+        - filename
+        - size
+        - contentType
+      properties:
+        filename:
+          type: string
+          examples: ["image.png"]
+        size:
+          type: integer
+          examples: [1337]
+        contentType:
+          type: string
+          examples: ["image/png"]
+    EmailDetails:
+      type: object
+      required:
+        - from
+        - to
+        - cc
+        - bcc
+        - subject
+        - body
+        - received
+        - attachments
+        - id
+      properties:
+        from:
+          $ref: '#/components/schemas/EmailAddress'
+        to:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmailAddress'
+        cc:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmailAddress'
+        bcc:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmailAddress'
+        subject:
+          type: string
+          description: Subject of the email
+          examples: ["Subject of the email"]
+        body:
+          type: string
+          description: Body of the email
+          examples: ["Body of the email"]
+        received:
+          type: string
+          format: date-time
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Attachment'
+        id:
+          type: string
+          examples: ["223pfcdcrjar5jukmha0s67k7bdn1l1gidasbuo1"]
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          examples: ["The page you are looking for was not found."]
+    ValidationError:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - type
+              - value
+              - msg
+              - path
+              - location
+            properties:
+              type:
+                type: string
+                examples: ["field"]
+              value:
+                type: string
+                examples: ["user^name"]
+              msg:
+                type: string
+                examples: ["Username may only contain letters, numbers, dots (.), hyphens (-), underscores (_), and plus signs (+)."]
+              path:
+                type: string
+                examples: ["username"]
+              location:
+                type: string
+                examples: ["params"]
+
+  securitySchemes:
+    api_token_header:
+      type: apiKey
+      name: x-api-key
+      in: header
+    api_token_query:
+      type: apiKey
+      name: x-api-key
+      in: query
+    api_token_cookie:
+      type: apiKey
+      name: x-api-key
+      in: cookie
