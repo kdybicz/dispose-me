@@ -159,9 +159,10 @@ export class InboxController {
       email = {
         ...parsedEmail,
         id,
-        attachments: parsedEmail.attachments.map(
-          (attachment) => ({ ...attachment, content: undefined }) as unknown as AttachmentDetails,
-        ),
+        attachments: parsedEmail.attachments.map((attachment) => ({
+          ...attachment,
+          content: undefined,
+        })),
       };
 
       if (type === 'html') {
@@ -314,9 +315,10 @@ export class InboxController {
         email = {
           ...parsedEmail,
           id: messageId,
-          attachments: parsedEmail.attachments.map(
-            (attachment) => ({ ...attachment, content: undefined }) as unknown as AttachmentDetails,
-          ),
+          attachments: parsedEmail.attachments.map((attachment) => ({
+            ...attachment,
+            content: undefined,
+          })),
         };
       }
     }
