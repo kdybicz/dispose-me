@@ -15,7 +15,7 @@ import {
   BODY_TOKEN,
   COOKIE_TOKEN,
   HEADER_TOKEN,
-  INVALID_TOKEN,
+  INVALID_CHARACTERS_TOKEN,
   INVALID_USERNAME,
   MockedEmailDatabase,
   MockedEmailParser,
@@ -114,7 +114,7 @@ describe('InboxController', () => {
     test('should return 422 and rerender index if the token is invalid', async () => {
       // given
       const req = mockRequest<Record<string, never>, InboxAuthBody>({
-        body: { [AUTH_BODY_KEY]: INVALID_TOKEN, remember: 'on' },
+        body: { [AUTH_BODY_KEY]: INVALID_CHARACTERS_TOKEN, remember: 'on' },
       });
       await validateRequest(req, buildAuthValidationChain());
 
@@ -220,7 +220,7 @@ describe('InboxController', () => {
       // given
       const req = mockRequest<InboxEmailParams>({
         params: { username: USERNAME, id: MESSAGE_ID },
-        query: { [AUTH_QUERY_KEY]: INVALID_TOKEN },
+        query: { [AUTH_QUERY_KEY]: INVALID_CHARACTERS_TOKEN },
       });
       const errors = await validateRequest(req, buildShowEmailValidationChain());
 
@@ -386,7 +386,7 @@ describe('InboxController', () => {
       // given
       const req = mockRequest<InboxEmailParams>({
         params: { username: USERNAME, id: MESSAGE_ID },
-        query: { [AUTH_QUERY_KEY]: INVALID_TOKEN },
+        query: { [AUTH_QUERY_KEY]: INVALID_CHARACTERS_TOKEN },
       });
       const errors = await validateRequest(req, buildDownloadEmailValidationChain());
 
@@ -478,7 +478,7 @@ describe('InboxController', () => {
       // given
       const req = mockRequest<InboxEmailParams>({
         params: { username: USERNAME, id: MESSAGE_ID },
-        query: { [AUTH_QUERY_KEY]: INVALID_TOKEN, filename },
+        query: { [AUTH_QUERY_KEY]: INVALID_CHARACTERS_TOKEN, filename },
       });
       const errors = await validateRequest(req, buildDownloadEmailAttachmentValidationChain());
 
@@ -637,7 +637,7 @@ describe('InboxController', () => {
       // given
       const req = mockRequest<InboxEmailParams>({
         params: { username: USERNAME, id: MESSAGE_ID },
-        query: { [AUTH_QUERY_KEY]: INVALID_TOKEN },
+        query: { [AUTH_QUERY_KEY]: INVALID_CHARACTERS_TOKEN },
       });
       const errors = await validateRequest(req, buildDeleteEmailValidationChain());
 
@@ -734,7 +734,7 @@ describe('InboxController', () => {
       // given
       const req = mockRequest<InboxEmailParams>({
         params: { username: USERNAME, id: MESSAGE_ID },
-        query: { [AUTH_QUERY_KEY]: INVALID_TOKEN },
+        query: { [AUTH_QUERY_KEY]: INVALID_CHARACTERS_TOKEN },
       });
       const errors = await validateRequest(req, buildLatestEmailValidationChain());
 
@@ -978,9 +978,9 @@ describe('InboxController', () => {
 
     test.each([
       [undefined, undefined, 3],
-      [undefined, INVALID_TOKEN, 3],
+      [undefined, INVALID_CHARACTERS_TOKEN, 3],
       [INVALID_USERNAME, undefined, 4],
-      [INVALID_USERNAME, INVALID_TOKEN, 4],
+      [INVALID_USERNAME, INVALID_CHARACTERS_TOKEN, 4],
     ])(
       'should return 422 if username and/or token are missing or invalid',
       async (invalidUsername, invalidToken, expectedErrors) => {

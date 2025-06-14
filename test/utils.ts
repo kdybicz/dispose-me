@@ -17,7 +17,8 @@ export const COOKIE_TOKEN = 'cookie0n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
 export const HEADER_TOKEN = 'header0n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
 export const QUERY_TOKEN = 'query0n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
 export const BODY_TOKEN = 'body0n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
-export const INVALID_TOKEN = 'a!';
+export const INVALID_CHARACTERS_TOKEN = 'a!b@o#d$y0n78CXFciT68XyyfEb1depypckhUSg6capq';
+export const INVALID_LENGTH_TOKEN = 'tooshort';
 
 export const MESSAGE_ID = 'messageid';
 export const INVALID_MESSAGE_ID = 'message-id!';
