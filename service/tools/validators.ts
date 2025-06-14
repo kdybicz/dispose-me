@@ -63,12 +63,35 @@ export const buildTokenQueryValidator = (args: { required: boolean }): Validatio
     .withMessage(`The ${AUTH_QUERY_KEY} must be between 20 and 50 characters long.`);
 };
 
+const isTokenValid = async (token: string): Promise<true> => {
+  const url = `https://${process.env.DOMAIN_NAME}/inbox/?type=json`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'x-api-key': token,
+      Accept: 'application/json',
+    },
+  });
+  if (response.status === 200) {
+    return true;
+  }
+  if (response.status === 403) {
+    throw new Error('Provided token is invalid!');
+  }
+
+  log.error(
+    `Unexpected issue while validating API token - ${response.status} ${response.statusText}: ${await response.text()}`,
+  );
+  throw new Error('Unexpected problem with validating the token!');
+};
+
 export const buildTokenBodyValidator = (): ValidationChain => {
   return body(AUTH_BODY_KEY)
     .isAlphanumeric()
     .withMessage('The token must contain only letters and numbers (no special characters).')
     .isLength({ min: 20, max: 50 })
-    .withMessage('The token must be between 20 and 50 characters long.');
+    .withMessage('The token must be between 20 and 50 characters long.')
+    .custom(isTokenValid);
 };
 
 export const buildRememberBodyValidator = (): ValidationChain => {

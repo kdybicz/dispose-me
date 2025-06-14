@@ -1,4 +1,6 @@
 import type { Response } from 'express';
+import fetchMock from 'fetch-mock';
+
 import {
   type InboxAuthBody,
   InboxController,
@@ -110,7 +112,22 @@ describe('InboxController', () => {
     });
   });
 
-  describe('auth()', () => {
+  describe('auth()', () => {    
+    beforeAll(() => {
+      fetchMock.mockGlobal();
+    });
+
+    beforeEach(() => {
+      fetchMock.clearHistory();
+      fetchMock.removeRoutes();
+
+      fetchMock.route('path:/inbox/?type=json', 200);
+    });
+
+    afterAll(() => {
+      fetchMock.unmockGlobal();
+    });
+
     test('should return 422 and rerender index if the token is invalid', async () => {
       // given
       const req = mockRequest<Record<string, never>, InboxAuthBody>({
