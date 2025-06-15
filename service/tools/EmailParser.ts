@@ -24,7 +24,7 @@ export type AttachmentDetails = {
   filename?: string;
   size: number;
   contentType: string;
-  content: Buffer<ArrayBufferLike>;
+  content?: Buffer<ArrayBufferLike>;
 };
 
 export type ParsedEmail = {

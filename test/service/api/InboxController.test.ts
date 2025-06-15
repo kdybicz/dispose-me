@@ -1,4 +1,6 @@
 import type { Response } from 'express';
+import fetchMock from 'fetch-mock';
+
 import {
   type InboxAuthBody,
   InboxController,
@@ -110,7 +112,22 @@ describe('InboxController', () => {
     });
   });
 
-  describe('auth()', () => {
+  describe('auth()', () => {    
+    beforeAll(() => {
+      fetchMock.mockGlobal();
+    });
+
+    beforeEach(() => {
+      fetchMock.clearHistory();
+      fetchMock.removeRoutes();
+
+      fetchMock.route('path:/inbox/?type=json', 200);
+    });
+
+    afterAll(() => {
+      fetchMock.unmockGlobal();
+    });
+
     test('should return 422 and rerender index if the token is invalid', async () => {
       // given
       const req = mockRequest<Record<string, never>, InboxAuthBody>({
@@ -283,7 +300,7 @@ describe('InboxController', () => {
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
         Body: { transformToString: jest.fn().mockResolvedValueOnce('raw-email') },
       });
-      MockedEmailParser.mockParseEmail.mockResolvedValueOnce({ from: 'a', subject: 'b' });
+      MockedEmailParser.mockParseEmail.mockResolvedValueOnce(mockParsedEmail('a', 'b'));
 
       // when
       await controller.show(req, res);
@@ -306,7 +323,7 @@ describe('InboxController', () => {
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
         Body: { transformToString: jest.fn().mockResolvedValueOnce('raw-email') },
       });
-      MockedEmailParser.mockParseEmail.mockResolvedValueOnce({ from: 'a', subject: 'b' });
+      MockedEmailParser.mockParseEmail.mockResolvedValueOnce(mockParsedEmail('a', 'b'));
 
       // when
       await controller.show(req, res);
@@ -556,9 +573,16 @@ describe('InboxController', () => {
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
         Body: { transformToString: jest.fn().mockResolvedValueOnce('raw-email-data') },
       });
-      MockedEmailParser.mockParseEmail.mockResolvedValueOnce({
-        attachments: [{ filename: 'not-matching-name.txt' }],
-      });
+      MockedEmailParser.mockParseEmail.mockResolvedValueOnce(
+        mockParsedEmail('a', 'b', [
+          {
+            filename: 'not-matching-name.txt',
+            size: 1337,
+            contentType: 'plain/txt',
+            content: Buffer.from(''),
+          },
+        ]),
+      );
 
       // when
       await controller.downloadAttachment(req, res);
@@ -584,9 +608,16 @@ describe('InboxController', () => {
       // and
       const contentType = 'text/html; charset=utf-8';
       const content = Buffer.from('attachment data');
-      MockedEmailParser.mockParseEmail.mockResolvedValueOnce({
-        attachments: [{ filename, contentType, content }],
-      });
+      MockedEmailParser.mockParseEmail.mockResolvedValueOnce(
+        mockParsedEmail('a', 'b', [
+          {
+            filename,
+            size: content.byteLength,
+            contentType,
+            content,
+          },
+        ]),
+      );
 
       // when
       await controller.downloadAttachment(req, res);
@@ -635,7 +666,7 @@ describe('InboxController', () => {
       expect(res.render).toHaveBeenCalledWith('pages/422', { errors });
     });
 
-    test('should redirect to inbox if deletion is successful', async () => {
+    test('should redirect to inbox if deletion is successful via GET request', async () => {
       // given
       const req = mockRequest<InboxEmailParams>({
         params: { username: USERNAME, id: MESSAGE_ID },
@@ -652,6 +683,25 @@ describe('InboxController', () => {
       expect(res.redirect).toHaveBeenCalledWith(
         `/inbox/${USERNAME}?${new URLSearchParams(req.query as Record<string, string>)}`,
       );
+    });
+
+    test('should redirect to inbox if deletion is successful via DELETE request', async () => {
+      // given
+      const req = mockRequest<InboxEmailParams>({
+        params: { username: USERNAME, id: MESSAGE_ID },
+        method: 'DELETE',
+      });
+      await validateRequest(req, buildDeleteEmailValidationChain());
+      // and
+      MockedEmailDatabase.mockDeleteEmail.mockResolvedValueOnce(true);
+
+      // when
+      await controller.delete(req, res);
+      // then
+      expect(MockedEmailDatabase.mockDeleteEmail).toHaveBeenCalledWith(USERNAME, MESSAGE_ID);
+      // and
+      expect(res.status).toHaveBeenCalledWith(204);
+      expect(res.end).toHaveBeenCalled();
     });
 
     test('should return 404 if deletion is unsuccessful', async () => {
@@ -746,7 +796,7 @@ describe('InboxController', () => {
         MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
           Body: { transformToString: jest.fn().mockResolvedValue('raw-email') },
         });
-        MockedEmailParser.mockParseEmail.mockResolvedValueOnce({ from: 'a', subject: 'b' });
+        MockedEmailParser.mockParseEmail.mockResolvedValueOnce(mockParsedEmail('a', 'b'));
 
         // when
         await controller.latest(req, res);
@@ -770,7 +820,7 @@ describe('InboxController', () => {
       MockedS3FileSystem.mockGetObject.mockResolvedValueOnce({
         Body: { transformToString: jest.fn().mockResolvedValue('raw-email') },
       });
-      MockedEmailParser.mockParseEmail.mockResolvedValueOnce({ from: 'a', subject: 'b' });
+      MockedEmailParser.mockParseEmail.mockResolvedValueOnce(mockParsedEmail('a', 'b'));
 
       // when
       await controller.latest(req, res);

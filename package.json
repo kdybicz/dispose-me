@@ -1,6 +1,6 @@
 {
   "name": "dispose-me",
-  "version": "5.1.0",
+  "version": "5.3.0",
   "description": "Dispose Me is a simple AWS-hosted disposable email service.",
   "author": "Kamil Dybicz",
   "license": "MIT",
@@ -9,7 +9,7 @@
     "url": "https://github.com/kdybicz/dispose-me.git"
   },
   "engines": {
-    "node": ">=v20.0.0"
+    "node": ">=v22.0.0"
   },
   "bin": {
     "disposeme": "bin/dispose-me.js"
@@ -25,41 +25,42 @@
     "lint:ci": "biome lint ./bin ./lib ./service",
     "prestart": "cdk synth",
     "start": "yarn prestart && sam local start-api -t ./cdk.out/DisposeMeStack.template.json",
-    "test": "jest",
-    "test:coverage": "jest --coverage",
+    "test": "jest --detectOpenHandles",
+    "test:coverage": "jest --coverage --detectOpenHandles",
     "test:ci": "jest -ci"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@types/aws-lambda": "^8.10.149",
     "@types/ejs": "^3.1.5",
-    "@types/express": "^4.17.22",
+    "@types/express": "^4.17.23",
     "@types/jest": "^29.5.14",
     "@types/mailparser": "^3.4.6",
-    "@types/node": "20.17.50",
+    "@types/node": "^22.15.31",
     "@types/webpack-sources": "^3.2.3",
-    "aws-cdk": "2.1016.1",
-    "aws-cdk-lib": "2.198.0",
+    "aws-cdk": "2.1018.1",
+    "aws-cdk-lib": "2.201.0",
     "aws-sdk-client-mock": "^4.1.0",
     "constructs": "^10.4.2",
     "copy-webpack-plugin": "^13.0.0",
     "dotenv": "^16.5.0",
-    "jest": "^29.7.0",
+    "fetch-mock": "^12.5.2",
+    "jest": "^30.0.0",
     "jest-junit": "^16.0.0",
-    "ts-jest": "^29.3.4",
+    "ts-jest": "^29.4.0",
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "typescript": "~5.8.3",
     "webpack": "^5.99.9",
     "webpack-cli": "^6.0.1",
     "webpack-node-externals": "^3.0.0",
-    "webpack-sources": "^3.2.3",
+    "webpack-sources": "^3.3.2",
     "zip-webpack-plugin": "^4.0.3"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.816.0",
-    "@aws-sdk/client-s3": "^3.816.0",
-    "@aws-sdk/lib-dynamodb": "^3.816.0",
+    "@aws-sdk/client-dynamodb": "^3.828.0",
+    "@aws-sdk/client-s3": "^3.828.0",
+    "@aws-sdk/lib-dynamodb": "^3.828.0",
     "address-rfc2822": "^2.2.3",
     "dayjs": "^1.11.13",
     "ejs": "^3.1.10",
@@ -68,6 +69,7 @@
     "express-validator": "^7.2.1",
     "feed": "^4.2.2",
     "mailparser": "^3.7.3",
+    "node-fetch": "^3.3.2",
     "serverless-http": "^3.2.0",
     "source-map-support": "^0.5.21"
   },

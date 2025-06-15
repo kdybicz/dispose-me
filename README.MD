@@ -39,17 +39,29 @@ Dispose Me is a simple AWS-hosted disposable email service.
 - Simple Storage Service
 
 
+## API Documentation
+
+You can find the full OpenAPI (Swagger) schema for the Dispose Me API in the repository:
+
+- **Schema file:** [`docs/schema.yaml`](docs/schema.yaml)
+
+You can also view and explore the API interactively using the online Swagger UI:
+
+- **Online schema viewer:**  
+  [https://petstore.swagger.io/?url=https://raw.githubusercontent.com/kdybicz/dispose-me/refs/heads/master/docs/schema.yaml](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/kdybicz/dispose-me/refs/heads/master/docs/schema.yaml)
+
+
 ## Setup process
 
 ### Environment
 
-First, please make sure you have [Node.js installed](https://nodejs.org/en/download/package-manager/) in version v20.x or above.
+First, please make sure you have [Node.js installed](https://nodejs.org/en/download/package-manager/) in version v22.x or above.
 
 You can easily verify the installed Node.js version by running:
 
 ```
 $ node -v
-v20.17.0
+v22.16.0
 ```
 
 Additionally, you will need the latest version of [AWS CDK](https://aws.amazon.com/cdk/)
