@@ -55,13 +55,13 @@ You can also view and explore the API interactively using the online Swagger UI:
 
 ### Environment
 
-First, please make sure you have [Node.js installed](https://nodejs.org/en/download/package-manager/) in version v20.x or above.
+First, please make sure you have [Node.js installed](https://nodejs.org/en/download/package-manager/) in version v22.x or above.
 
 You can easily verify the installed Node.js version by running:
 
 ```
 $ node -v
-v20.17.0
+v22.16.0
 ```
 
 Additionally, you will need the latest version of [AWS CDK](https://aws.amazon.com/cdk/)
