@@ -88,7 +88,7 @@ export class DisposeMeStack extends cdk.Stack {
     // Define Lambda function
     const apiLambdaHandler = new nodejs.NodejsFunction(this, 'ApiLambda', {
       functionName: 'dispose-me-api',
-      runtime: lambda.Runtime.NODEJS_20_X,
+      runtime: lambda.Runtime.NODEJS_22_X,
       code: lambda.AssetCode.fromAsset('dist/api.zip'),
       handler: 'index.handler',
       environment: {
@@ -227,7 +227,7 @@ export class DisposeMeStack extends cdk.Stack {
   private setupApiAuthorizer = (): apigateway.IAuthorizer => {
     const authorizerLambdaHandler = new nodejs.NodejsFunction(this, 'AuthorizerLambda', {
       functionName: 'dispose-me-authorizer',
-      runtime: lambda.Runtime.NODEJS_20_X,
+      runtime: lambda.Runtime.NODEJS_22_X,
       code: lambda.AssetCode.fromAsset('dist/authorizer.zip'),
       handler: 'index.handler',
       environment: {
@@ -254,7 +254,7 @@ export class DisposeMeStack extends cdk.Stack {
   ): void => {
     const processorLambdaHandler = new nodejs.NodejsFunction(this, 'ProcessorLambda', {
       functionName: 'dispose-me-processor',
-      runtime: lambda.Runtime.NODEJS_20_X,
+      runtime: lambda.Runtime.NODEJS_22_X,
       code: lambda.AssetCode.fromAsset('dist/email-processor.zip'),
       handler: 'index.handler',
       environment: {
