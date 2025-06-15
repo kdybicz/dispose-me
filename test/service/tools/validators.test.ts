@@ -1,4 +1,5 @@
 import { matchedData, validationResult } from 'express-validator';
+import fetchMock from 'fetch-mock';
 
 import {
   buildLimitQueryValidator,
@@ -13,10 +14,11 @@ import {
 import {
   BODY_TOKEN,
   INVALID_MESSAGE_ID,
-  INVALID_TOKEN,
+  INVALID_CHARACTERS_TOKEN,
   mockRequest,
   QUERY_TOKEN,
   MESSAGE_ID,
+  INVALID_LENGTH_TOKEN,
 } from '../../utils';
 import { AUTH_BODY_KEY, AUTH_QUERY_KEY } from '../../../service/tools/const';
 
@@ -286,7 +288,7 @@ describe('validators', () => {
 
     test('rejects non-alphanumeric token, when it is required', async () => {
       // given
-      const req = mockRequest({ query: { [AUTH_QUERY_KEY]: INVALID_TOKEN } });
+      const req = mockRequest({ query: { [AUTH_QUERY_KEY]: INVALID_CHARACTERS_TOKEN } });
 
       // when
       await buildTokenQueryValidator({ required: true }).run(req);
@@ -297,7 +299,7 @@ describe('validators', () => {
 
     test('rejects non-alphanumeric token, when it is not required', async () => {
       // given
-      const req = mockRequest({ query: { [AUTH_QUERY_KEY]: INVALID_TOKEN } });
+      const req = mockRequest({ query: { [AUTH_QUERY_KEY]: INVALID_CHARACTERS_TOKEN } });
 
       // when
       await buildTokenQueryValidator({ required: false }).run(req);
@@ -308,9 +310,23 @@ describe('validators', () => {
   });
 
   describe('buildTokenBodyValidator()', () => {
+    beforeAll(() => {
+      fetchMock.mockGlobal();
+    });
+
+    beforeEach(() => {
+      fetchMock.clearHistory();
+      fetchMock.removeRoutes();
+    });
+
+    afterAll(() => {
+      fetchMock.unmockGlobal();
+    });
+
     test('accepts alphanumeric token', async () => {
       // given
       const req = mockRequest({ body: { [AUTH_BODY_KEY]: BODY_TOKEN } });
+      fetchMock.route('path:/inbox/?type=json', 200);
 
       // when
       await buildTokenBodyValidator().run(req);
@@ -322,13 +338,82 @@ describe('validators', () => {
 
     test('rejects non-alphanumeric token', async () => {
       // given
-      const req = mockRequest({ body: { [AUTH_BODY_KEY]: INVALID_TOKEN } });
+      const req = mockRequest({ body: { [AUTH_BODY_KEY]: INVALID_CHARACTERS_TOKEN } });
+      fetchMock.route('path:/inbox/?type=json', 200);
 
       // when
       await buildTokenBodyValidator().run(req);
 
       // then
-      expect(validationResult(req).isEmpty()).toBe(false);
+      expect(validationResult(req).array()).toEqual([
+        expect.objectContaining({
+          location: 'body',
+          msg: 'The token must contain only letters and numbers (no special characters).',
+          path: 'token',
+          type: 'field',
+          value: INVALID_CHARACTERS_TOKEN,
+        }),
+      ]);
+    });
+
+    test('rejects token of incorrect length', async () => {
+      // given
+      const req = mockRequest({ body: { [AUTH_BODY_KEY]: INVALID_LENGTH_TOKEN } });
+      fetchMock.route('path:/inbox/?type=json', 200);
+
+      // when
+      await buildTokenBodyValidator().run(req);
+
+      // then
+      expect(validationResult(req).array()).toEqual([
+        expect.objectContaining({
+          location: 'body',
+          msg: 'The token must be between 20 and 50 characters long.',
+          path: 'token',
+          type: 'field',
+          value: INVALID_LENGTH_TOKEN,
+        }),
+      ]);
+    });
+
+    test('rejects invalid token', async () => {
+      // given
+      const req = mockRequest({ body: { [AUTH_BODY_KEY]: BODY_TOKEN } });
+      fetchMock.route('path:/inbox/?type=json', 403);
+
+      // when
+      await buildTokenBodyValidator().run(req);
+
+      // then
+      expect(validationResult(req).array()).toEqual([
+        expect.objectContaining({
+          location: 'body',
+          msg: 'Provided token is invalid!',
+          path: 'token',
+          type: 'field',
+          value: BODY_TOKEN,
+        }),
+      ]);
+    });
+
+    test('rejects when token validation fails', async () => {
+      // given
+      const req = mockRequest({ body: { [AUTH_BODY_KEY]: BODY_TOKEN } });
+      fetchMock.route('path:/inbox/?type=json', 503);
+
+      // when
+      await buildTokenBodyValidator().run(req);
+
+      // then
+      expect(validationResult(req).array()).toEqual([
+        expect.objectContaining({
+          location: 'body',
+          msg: 'Unexpected problem with validating the token!',
+          path: 'token',
+          type: 'field',
+          value: BODY_TOKEN,
+        }),
+      ]);
     });
   });
 
