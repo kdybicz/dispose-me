@@ -5,8 +5,8 @@ const ZipPlugin = require("zip-webpack-plugin");
 
 // Automatically find all Lambda entry points
 const entry = glob.sync('./service/*.ts').reduce((acc, file) => {
-  const name = path.relative('./service', file).replace(/\.ts$/, '');
-  acc[name] = file;
+  const name = path.basename(file, '.ts');
+  acc[name] = file.startsWith('./') ? file : `./${file}`;
   return acc;
 }, {});
 
