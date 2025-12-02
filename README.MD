@@ -13,7 +13,7 @@ Dispose Me is a simple AWS-hosted disposable email service.
 2. Create a project-dedicated AWS user for project deployment (optional).
 3. Download the code, create and fill out `.env` file - based on
    `.env.example`.
-4. Run `yarn deploy` to install dependencies, run tests, and deploy the stack.
+4. Run `pnpm deploy` to install dependencies, run tests, and deploy the stack.
 5. Have fun!
 
 
@@ -88,17 +88,17 @@ $ git clone https://github.com/kdybicz/dispose-me.git
 Or download as a `zip` file from https://github.com/kdybicz/dispose-me/archive/
 master.zip and unpack it into a folder of your choosing.
 
-Next, run `yarn` to install all required dependencies:
+Next, run `pnpm install` to install all required dependencies:
 
 ```
 $ cd dispose-me
-$ yarn
+$ pnpm install
 ```
 
 Optionally, run the tests to ensure the code is running properly:
 
 ```
-$ yarn test
+$ pnpm test
 ```
 
 ### AWS user
@@ -168,7 +168,7 @@ Refer to the `.env.example` file and create your own `.env` file. Use the
 comments inside for guidance. Once done, deploy the code to AWS by running:
 
 ```
-$ yarn deploy
+$ pnpm deploy
 ```
 
 API access key can be found in the `Terminal` output under the
