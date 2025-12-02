@@ -9,22 +9,22 @@
     "url": "https://github.com/kdybicz/dispose-me.git"
   },
   "engines": {
-    "node": ">=v22.0.0"
+    "node": ">=v22.0.0",
+    "pnpm": ">=10.24.0"
   },
   "bin": {
     "disposeme": "bin/dispose-me.js"
   },
   "scripts": {
-    "audit": "yarn npm audit --recursive --severity critical",
-    "prebuild": "yarn --immutable",
-    "build": "yarn prebuild && rm -Rf dist && webpack",
-    "predeploy": "yarn build && yarn lint && yarn test",
-    "deploy": "yarn predeploy && cdk deploy",
+    "prebuild": "pnpm install --frozen-lockfile",
+    "build": "pnpm prebuild && rm -Rf dist && webpack",
+    "predeploy": "pnpm build && pnpm lint && pnpm test",
+    "deploy": "pnpm predeploy && cdk deploy",
     "deploy:ci": "webpack && cdk deploy --require-approval never",
     "lint": "biome check ./bin ./lib ./service",
     "lint:ci": "biome lint ./bin ./lib ./service",
     "prestart": "cdk synth",
-    "start": "yarn prestart && sam local start-api -t ./cdk.out/DisposeMeStack.template.json",
+    "start": "pnpm prestart && sam local start-api -t ./cdk.out/DisposeMeStack.template.json",
     "test": "jest --detectOpenHandles",
     "test:coverage": "jest --coverage --detectOpenHandles",
     "test:ci": "jest -ci"
@@ -73,5 +73,5 @@
     "serverless-http": "^3.2.0",
     "source-map-support": "^0.5.21"
   },
-  "packageManager": "yarn@4.9.1"
+  "packageManager": "pnpm@10.24.0+sha512.01ff8ae71b4419903b65c60fb2dc9d34cf8bb6e06d03bde112ef38f7a34d6904c424ba66bea5cdcf12890230bf39f9580473140ed9c946fef328b6e5238a345a"
 }

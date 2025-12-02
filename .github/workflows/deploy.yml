@@ -18,16 +18,16 @@ jobs:
         echo "::add-mask::${{secrets.AWS_ACCOUNT_ID}}"
         echo "::add-mask::${{secrets.AWS_DEFAULT_REGION}}"
         echo "::add-mask::${{secrets.DOMAIN_NAME}}"
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Enable Corepack
       run: corepack enable
     - name: Use Node.js 22.x
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: 22.x
-        cache: 'yarn'
+        cache: 'pnpm'
     - name: Install dependencies
-      run: yarn --immutable
+      run: pnpm install --frozen-lockfile
     - name: Get Current Release
       id: get_current_release
       uses: joutvhu/get-release@v1
@@ -44,4 +44,4 @@ jobs:
         DOMAIN_NAME: ${{ secrets.DOMAIN_NAME }}
         INBOX_BLACKLIST: ${{ secrets.INBOX_BLACKLIST }}
         PRIVATE_ACCESS: ${{ secrets.PRIVATE_ACCESS }}
-      run: yarn deploy:ci
+      run: pnpm deploy:ci
