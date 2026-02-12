@@ -1,7 +1,7 @@
 import 'source-map-support/register';
 
-import * as express from 'express';
 import type { NextFunction, Request, Response } from 'express';
+import * as express from 'express';
 import * as serverless from 'serverless-http';
 
 import { InboxController } from './api/InboxController';
@@ -25,7 +25,7 @@ const app = express();
 // Since Express doesn't support error handling of promises out of the box,
 // this handler enables that
 const asyncHandler =
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  // biome-ignore lint/suspicious/noExplicitAny: Express request handler signature requires any
   (fn: any) => (req: Request, res: Response, next: NextFunction) =>
     Promise.resolve(fn(req, res, next)).catch((error) => {
       next(error);
@@ -97,11 +97,11 @@ app.get(
 );
 app.get('/inbox', ...buildInboxValidationChain(), asyncHandler(inboxController.inbox));
 
-app.all('*', (req, res) => {
+app.all('/*splat', (req, res) => {
   inboxController.render404Response(req, res);
 });
 
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+// biome-ignore lint/suspicious/noExplicitAny: Express error handler signature requires any types
 app.use((err: any, req: any, res: any, _: any) => {
   log.error('Error while processing request', err);
   inboxController.render500Response(err, req, res);

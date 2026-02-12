@@ -1,7 +1,7 @@
 import type { EmailDatabase } from '../tools/EmailDatabase';
 import type { EmailParser } from '../tools/EmailParser';
-import type { S3FileSystem } from '../tools/S3FileSystem';
 import log from '../tools/log';
+import type { S3FileSystem } from '../tools/S3FileSystem';
 import { normalizeUsername } from '../tools/utils';
 
 export class IncomingEmailProcessor {

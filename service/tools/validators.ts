@@ -1,4 +1,4 @@
-import { type ValidationChain, body, param, query } from 'express-validator';
+import { body, param, query, type ValidationChain } from 'express-validator';
 
 import {
   AUTH_BODY_KEY,

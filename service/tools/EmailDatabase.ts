@@ -6,6 +6,7 @@ import {
   QueryCommand,
   type QueryCommandOutput,
 } from '@aws-sdk/lib-dynamodb';
+
 import dayjs = require('dayjs');
 
 import { DEFAULT_EMAIL_LIMIT, EMAIL_TTL_DAYS, TABLE_NAME } from './const';

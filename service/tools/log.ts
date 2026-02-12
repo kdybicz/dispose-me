@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noConsole: This is a logger utility and only it can use console directly */
 export default class Logger {
   static trace(message: string, ...optionalParams: unknown[]): void {
     if (Logger.logForLevel(5)) {

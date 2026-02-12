@@ -1,8 +1,8 @@
 import { type Author, Feed, type Item } from 'feed';
 
 import type { EmailDetails } from '../api/InboxController';
-import type { EmailAddress } from './EmailParser';
 import { AUTH_QUERY_KEY } from './const';
+import type { EmailAddress } from './EmailParser';
 
 export const mapEmailAddressToAuthor = (address: null | EmailAddress): Author => ({
   name: address?.displayName ?? '',
@@ -43,7 +43,9 @@ export const mapEmailDetailsListToFeed = (
     generator: 'Dispose Me',
   });
 
-  emails.forEach((email) => feed.addItem(mapEmailDetailsToFeedItem(email, username, token)));
+  emails.forEach((email) => {
+    feed.addItem(mapEmailDetailsToFeedItem(email, username, token));
+  });
 
   return feed;
 };
