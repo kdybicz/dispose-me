@@ -4,6 +4,7 @@ import {
   AUTH_BODY_KEY,
   AUTH_QUERY_KEY,
   MAX_EMAIL_LIMIT,
+  REQUEST_TIMEOUT_MS,
   SENT_AFTER_MAX,
   SENT_AFTER_MIN,
   TOKEN_MAX_LENGTH,
@@ -79,24 +80,39 @@ export const buildTokenQueryValidator = (args: { required: boolean }): Validatio
 
 const isTokenValid = async (token: string): Promise<true> => {
   const url = `https://${process.env.DOMAIN_NAME}/inbox/?type=json`;
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'x-api-key': token,
-      Accept: 'application/json',
-    },
-  });
-  if (response.status === 200) {
-    return true;
-  }
-  if (response.status === 403) {
-    throw new Error('Provided token is invalid!');
-  }
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
-  log.error(
-    `Unexpected issue while validating API token - ${response.status} ${response.statusText}: ${await response.text()}`,
-  );
-  throw new Error('Unexpected problem with validating the token!');
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'x-api-key': token,
+        Accept: 'application/json',
+      },
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (response.status === 200) {
+      return true;
+    }
+    if (response.status === 403) {
+      throw new Error('Provided token is invalid!');
+    }
+
+    log.error(
+      `Unexpected issue while validating API token - ${response.status} ${response.statusText}`,
+    );
+    throw new Error('Unexpected problem with validating the token!');
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      log.error('Token validation request timed out');
+      throw new Error('Token validation request timed out. Please try again.');
+    }
+    throw error;
+  }
 };
 
 export const buildTokenBodyValidator = (): ValidationChain => {

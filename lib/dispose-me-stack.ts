@@ -140,8 +140,9 @@ export class DisposeMeStack extends cdk.Stack {
     // Define the '/' resource with a GET method
     const rootResource = api.root;
     rootResource.addCorsPreflight({
-      allowOrigins: apigateway.Cors.ALL_ORIGINS,
-      allowMethods: apigateway.Cors.ALL_METHODS, // this is also the default
+      allowOrigins: [`https://${domainName}`],
+      allowMethods: ['GET', 'POST', 'OPTIONS'],
+      allowHeaders: ['Content-Type', 'X-Api-Key', 'Authorization'],
     });
     rootResource.addMethod('GET');
     rootResource.addMethod('POST');
@@ -149,16 +150,18 @@ export class DisposeMeStack extends cdk.Stack {
     // Define the '/logout' resource with a GET method
     const logoutResource = api.root.addResource('logout');
     logoutResource.addCorsPreflight({
-      allowOrigins: apigateway.Cors.ALL_ORIGINS,
-      allowMethods: apigateway.Cors.ALL_METHODS, // this is also the default
+      allowOrigins: [`https://${domainName}`],
+      allowMethods: ['GET', 'OPTIONS'],
+      allowHeaders: ['Content-Type', 'X-Api-Key', 'Authorization'],
     });
     logoutResource.addMethod('GET');
 
     // Define the '/*' resource with a GET method
     const proxyResource = api.root.addResource('{proxy+}');
     proxyResource.addCorsPreflight({
-      allowOrigins: apigateway.Cors.ALL_ORIGINS,
-      allowMethods: apigateway.Cors.ALL_METHODS, // this is also the default
+      allowOrigins: [`https://${domainName}`],
+      allowMethods: ['GET', 'DELETE', 'OPTIONS'],
+      allowHeaders: ['Content-Type', 'X-Api-Key', 'Authorization'],
     });
     proxyResource.addMethod('GET', undefined, {
       apiKeyRequired: privateAccess,

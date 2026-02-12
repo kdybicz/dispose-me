@@ -21,3 +21,6 @@ export const TOKEN_MIN_LENGTH = 20;
 export const TOKEN_MAX_LENGTH = 50;
 export const SENT_AFTER_MIN = 0;
 export const SENT_AFTER_MAX = 9999999999;
+
+// Request timeout in milliseconds
+export const REQUEST_TIMEOUT_MS = 5000; // 5 seconds

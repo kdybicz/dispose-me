@@ -487,17 +487,20 @@ export class InboxController {
   };
 
   render500Response = (err: Error, req: Request, res: Response): void => {
-    log.debug(
-      `Action: '500' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
+    log.error(
+      `Action: '500' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)} Error: ${err.message}`,
+      err,
     );
 
     const { type = TYPE_DEFAULT } = req.query;
 
+    const genericErrorMessage = 'An internal server error occurred. Please try again later.';
+
     if (type === 'html') {
-      res.status(500).render('pages/error', { error: err });
+      res.status(500).render('pages/error', { error: { message: genericErrorMessage } });
       return;
     }
 
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: genericErrorMessage });
   };
 }
