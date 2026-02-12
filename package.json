@@ -41,7 +41,7 @@
     "aws-cdk": "2.1018.1",
     "aws-cdk-lib": "2.201.0",
     "aws-sdk-client-mock": "^4.1.0",
-    "constructs": "^10.4.2",
+    "constructs": "^10.4.5",
     "copy-webpack-plugin": "^13.0.0",
     "dotenv": "^16.5.0",
     "fetch-mock": "^12.5.2",
@@ -58,9 +58,9 @@
     "zip-webpack-plugin": "^4.0.3"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.828.0",
-    "@aws-sdk/client-s3": "^3.828.0",
-    "@aws-sdk/lib-dynamodb": "^3.828.0",
+    "@aws-sdk/client-dynamodb": "^3.985.0",
+    "@aws-sdk/client-s3": "^3.985.0",
+    "@aws-sdk/lib-dynamodb": "^3.985.0",
     "address-rfc2822": "^2.2.3",
     "dayjs": "^1.11.13",
     "ejs": "^3.1.10",
@@ -68,7 +68,7 @@
     "express": "^4.21.2",
     "express-validator": "^7.2.1",
     "feed": "^4.2.2",
-    "mailparser": "^3.7.3",
+    "mailparser": "^3.9.3",
     "node-fetch": "^3.3.2",
     "serverless-http": "^3.2.0",
     "source-map-support": "^0.5.21"
