@@ -8,6 +8,7 @@ import {
 } from '@aws-sdk/lib-dynamodb';
 import dayjs = require('dayjs');
 
+import { DEFAULT_EMAIL_LIMIT, EMAIL_TTL_DAYS, TABLE_NAME } from './const';
 import log from './log';
 
 export class EmailDatabase {
@@ -29,14 +30,14 @@ export class EmailDatabase {
     hasAttachments: boolean,
   ): Promise<void> {
     const command = new PutCommand({
-      TableName: 'dispose-me',
+      TableName: TABLE_NAME,
       Item: {
         Id: messageId,
         Username: username,
         Sender: sender,
         Subject: subject,
         ReceivedAt: dayjs(received).unix(),
-        ExpireAt: dayjs(received).add(1, 'day').unix(),
+        ExpireAt: dayjs(received).add(EMAIL_TTL_DAYS, 'day').unix(),
         HasAttachments: hasAttachments,
       },
     });
@@ -46,7 +47,11 @@ export class EmailDatabase {
     await this.docClient.send(command);
   }
 
-  async list(username: string, sentAfter?: number, limit = 10): Promise<QueryCommandOutput> {
+  async list(
+    username: string,
+    sentAfter?: number,
+    limit = DEFAULT_EMAIL_LIMIT,
+  ): Promise<QueryCommandOutput> {
     let filterExpression = 'Username = :username';
     const expressionAttributeValues = {
       ':username': username,
@@ -57,7 +62,7 @@ export class EmailDatabase {
     }
 
     const command = new QueryCommand({
-      TableName: 'dispose-me',
+      TableName: TABLE_NAME,
       IndexName: 'Username-ReceivedAt-index',
       KeyConditionExpression: filterExpression,
       ExpressionAttributeValues: expressionAttributeValues,
@@ -72,7 +77,7 @@ export class EmailDatabase {
 
   async exists(username: string, messageId: string): Promise<boolean> {
     const command = new QueryCommand({
-      TableName: 'dispose-me',
+      TableName: TABLE_NAME,
       KeyConditionExpression: 'Username = :username AND Id = :messageId',
       ExpressionAttributeValues: {
         ':messageId': messageId,
@@ -90,7 +95,7 @@ export class EmailDatabase {
 
   async delete(username: string, messageId: string): Promise<boolean> {
     const command = new DeleteCommand({
-      TableName: 'dispose-me',
+      TableName: TABLE_NAME,
       Key: {
         Username: username,
         Id: messageId,
