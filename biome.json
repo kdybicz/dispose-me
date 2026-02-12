@@ -35,7 +35,7 @@
   },
   "overrides": [
     {
-      "includes": ["src/**/__mocks__/**"],
+      "includes": ["service/**/__mocks__/**"],
       "formatter": {
         "enabled": false
       },
@@ -48,7 +48,7 @@
       }
     },
     {
-      "includes": ["src/__tests__/**"],
+      "includes": ["test/**"],
       "linter": {
         "rules": {
           "suspicious": {

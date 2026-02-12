@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import type { ValidationChain, ValidationError } from 'express-validator';
 
 import type { InboxRequest } from '../service/api/InboxController';
+import { IncomingEmailProcessor } from '../service/processor/IncomingEmailProcessor';
 import { AUTH_HEADER_KEY } from '../service/tools/const';
 import { EmailDatabase } from '../service/tools/EmailDatabase';
 import {
@@ -11,7 +12,6 @@ import {
   type ParsedEmail,
 } from '../service/tools/EmailParser';
 import { S3FileSystem } from '../service/tools/S3FileSystem';
-import { IncomingEmailProcessor } from '../service/processor/IncomingEmailProcessor';
 
 export const COOKIE_TOKEN = 'cookie0n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
 export const HEADER_TOKEN = 'header0n78CXFciT68XyyfEb1depypckhUSg6capqvMNJGW';
@@ -44,7 +44,7 @@ export const validateRequest = async (
   return results.flatMap((result) => [...result.context.errors].reverse()).reverse();
 };
 
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+// biome-ignore lint/suspicious/noExplicitAny: Test utility requires any for flexible mocking
 export const mockRequest = <P = Record<string, string>, B = any>(
   args?: RequestArgs<B>,
 ): InboxRequest<P, B> => {
@@ -63,7 +63,7 @@ export const mockRequest = <P = Record<string, string>, B = any>(
     },
     body,
     method,
-  } as unknown as InboxRequest<P>;
+  } as unknown as InboxRequest<P, B>;
 };
 
 export const mockResponse = (): Response => {

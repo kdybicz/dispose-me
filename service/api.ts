@@ -24,12 +24,11 @@ const app = express();
 
 // Since Express doesn't support error handling of promises out of the box,
 // this handler enables that
-const asyncHandler =
-  // biome-ignore lint/suspicious/noExplicitAny: Express request handler signature requires any
-  (fn: any) => (req: Request, res: Response, next: NextFunction) =>
-    Promise.resolve(fn(req, res, next)).catch((error) => {
-      next(error);
-    });
+// biome-ignore lint/suspicious/noExplicitAny: Handler signature needs to work with various request types
+const asyncHandler = (fn: any) => (req: Request, res: Response, next: NextFunction) =>
+  Promise.resolve(fn(req, res, next)).catch((error) => {
+    next(error);
+  });
 
 app.use(express.json());
 
@@ -101,8 +100,7 @@ app.all('/*splat', (req, res) => {
   inboxController.render404Response(req, res);
 });
 
-// biome-ignore lint/suspicious/noExplicitAny: Express error handler signature requires any types
-app.use((err: any, req: any, res: any, _: any) => {
+app.use((err: Error, req: Request, res: Response, _: NextFunction) => {
   log.error('Error while processing request', err);
   inboxController.render500Response(err, req, res);
 });

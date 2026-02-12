@@ -36,14 +36,11 @@ export interface InboxAuthBody {
   remember: string;
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: Express request body type requires any
-export interface InboxRequest<P = Record<string, string>, B = any>
-  // biome-ignore lint/suspicious/noExplicitAny: Express request params and query types
-  extends Request<P, any, B, InboxQuery> {}
+export interface InboxRequest<P = Record<string, string>, B = unknown>
+  extends Request<P, unknown, B, InboxQuery> {}
 
-// biome-ignore lint/suspicious/noExplicitAny: Express response type requires any
 // biome-ignore lint/suspicious/noConfusingVoidType: Express route handler may return void
-export type InboxResponse = Promise<Response<any> | void>;
+export type InboxResponse = Promise<Response<unknown> | void>;
 
 export type EmailListItem = {
   id: string;

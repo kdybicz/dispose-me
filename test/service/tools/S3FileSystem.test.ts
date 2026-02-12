@@ -1,18 +1,18 @@
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { mockClient } from "aws-sdk-client-mock";
-import { S3FileSystem } from "../../../service/tools/S3FileSystem";
+import { GetObjectCommand, type GetObjectCommandInput, S3Client } from '@aws-sdk/client-s3';
+import { mockClient } from 'aws-sdk-client-mock';
+import { S3FileSystem } from '../../../service/tools/S3FileSystem';
 
-describe("S3FileSystem tests", () => {
+describe('S3FileSystem tests', () => {
   const s3Client = mockClient(S3Client);
 
   beforeEach(() => {
     s3Client.reset();
   });
 
-  test("getting the object from S3 bucket", async () => {
+  test('getting the object from S3 bucket', async () => {
     // given
-    const bucket = "bucket";
-    const messageId = "id";
+    const bucket = 'bucket';
+    const messageId = 'id';
     // and
     let commandParams;
     s3Client.on(GetObjectCommand).callsFakeOnce((input) => {
@@ -30,13 +30,13 @@ describe("S3FileSystem tests", () => {
     });
   });
 
-  test("getting list of objects from S3 bucket", async () => {
+  test('getting list of objects from S3 bucket', async () => {
     // given
-    const bucket = "bucket";
-    const messageId1 = "id1";
-    const messageId2 = "id1";
+    const bucket = 'bucket';
+    const messageId1 = 'id1';
+    const messageId2 = 'id1';
     // and
-    const commandParams: any[] = [];
+    const commandParams: GetObjectCommandInput[] = [];
     s3Client.on(GetObjectCommand).callsFake((input) => {
       commandParams.push(input);
       return;
