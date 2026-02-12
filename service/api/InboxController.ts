@@ -5,7 +5,12 @@ import { type ValidationError, matchedData, validationResult } from 'express-val
 import { EmailDatabase } from '../tools/EmailDatabase';
 import { type AttachmentDetails, EmailParser, type ParsedEmail } from '../tools/EmailParser';
 import { S3FileSystem } from '../tools/S3FileSystem';
-import { AUTH_COOKIE_KEY, AUTH_QUERY_KEY, REMEMBER_COOKIE_KEY } from '../tools/const';
+import {
+  AUTH_COOKIE_KEY,
+  AUTH_QUERY_KEY,
+  COOKIE_MAX_AGE_MS,
+  REMEMBER_COOKIE_KEY,
+} from '../tools/const';
 import { mapEmailDetailsListToFeed } from '../tools/feed';
 import log from '../tools/log';
 import { getCookie, getToken, normalizeUsername } from '../tools/utils';
@@ -101,7 +106,7 @@ export class InboxController {
 
     let maxAge: number | undefined = undefined;
     if (remember) {
-      maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days in ms
+      maxAge = COOKIE_MAX_AGE_MS;
 
       res.cookie(REMEMBER_COOKIE_KEY, true, {
         secure: true,

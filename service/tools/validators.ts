@@ -1,6 +1,16 @@
 import { type ValidationChain, body, param, query } from 'express-validator';
 
-import { AUTH_BODY_KEY, AUTH_QUERY_KEY } from './const';
+import {
+  AUTH_BODY_KEY,
+  AUTH_QUERY_KEY,
+  MAX_EMAIL_LIMIT,
+  SENT_AFTER_MAX,
+  SENT_AFTER_MIN,
+  TOKEN_MAX_LENGTH,
+  TOKEN_MIN_LENGTH,
+  USERNAME_MAX_LENGTH,
+  USERNAME_MIN_LENGTH,
+} from './const';
 import log from './log';
 
 let INBOX_BLACKLIST: string[] = [];
@@ -25,8 +35,10 @@ export const buildUsernameParamValidator = (): ValidationChain => {
     .customSanitizer((value: string) => {
       return value?.replace(/\+.*/, '')?.replace(/\./g, '') ?? '';
     })
-    .isLength({ min: 3, max: 25 })
-    .withMessage('Username must be between 3 and 25 characters long.')
+    .isLength({ min: USERNAME_MIN_LENGTH, max: USERNAME_MAX_LENGTH })
+    .withMessage(
+      `Username must be between ${USERNAME_MIN_LENGTH} and ${USERNAME_MAX_LENGTH} characters long.`,
+    )
     .not()
     .isIn(INBOX_BLACKLIST)
     .withMessage('This username is not allowed. Please choose a different one.');
@@ -37,11 +49,11 @@ export const buildMessageIdParamValidation = (): ValidationChain => {
 };
 
 export const buildSentAfterQueryValidator = (): ValidationChain => {
-  return query('sentAfter').optional().toInt().isInt({ min: 0, max: 9999999999 });
+  return query('sentAfter').optional().toInt().isInt({ min: SENT_AFTER_MIN, max: SENT_AFTER_MAX });
 };
 
 export const buildLimitQueryValidator = (): ValidationChain => {
-  return query('limit').optional().isInt({ min: 0, max: 100 }).toInt();
+  return query('limit').optional().isInt({ min: 0, max: MAX_EMAIL_LIMIT }).toInt();
 };
 
 export const buildTypeQueryValidator = (): ValidationChain => {
@@ -59,8 +71,10 @@ export const buildTokenQueryValidator = (args: { required: boolean }): Validatio
     .withMessage(
       `The ${AUTH_QUERY_KEY} must contain only letters and numbers (no special characters).`,
     )
-    .isLength({ min: 20, max: 50 })
-    .withMessage(`The ${AUTH_QUERY_KEY} must be between 20 and 50 characters long.`);
+    .isLength({ min: TOKEN_MIN_LENGTH, max: TOKEN_MAX_LENGTH })
+    .withMessage(
+      `The ${AUTH_QUERY_KEY} must be between ${TOKEN_MIN_LENGTH} and ${TOKEN_MAX_LENGTH} characters long.`,
+    );
 };
 
 const isTokenValid = async (token: string): Promise<true> => {
@@ -89,8 +103,10 @@ export const buildTokenBodyValidator = (): ValidationChain => {
   return body(AUTH_BODY_KEY)
     .isAlphanumeric()
     .withMessage('The token must contain only letters and numbers (no special characters).')
-    .isLength({ min: 20, max: 50 })
-    .withMessage('The token must be between 20 and 50 characters long.')
+    .isLength({ min: TOKEN_MIN_LENGTH, max: TOKEN_MAX_LENGTH })
+    .withMessage(
+      `The token must be between ${TOKEN_MIN_LENGTH} and ${TOKEN_MAX_LENGTH} characters long.`,
+    )
     .custom(isTokenValid);
 };
 
