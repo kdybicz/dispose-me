@@ -44,7 +44,7 @@ export const getToken = (event: APIGatewayRequestAuthorizerEvent): string | null
     return cookie;
   }
 
-  log.warn('Did not found token in Header, Cookie nor a Query parameter');
+  log.warn('Did not find token in Header, Cookie nor a Query parameter');
   return null;
 };
 
