@@ -21,6 +21,7 @@
     "predeploy": "pnpm build && pnpm lint && pnpm test",
     "deploy": "pnpm predeploy && cdk deploy",
     "deploy:ci": "webpack && cdk deploy --require-approval never",
+    "postdeploy:ci": "cdk gc --unstable=gc --type s3 --created-buffer-days 30 --rollback-buffer-days 0 --confirm false || echo \"Warning: cdk gc failed during postdeploy:ci; please investigate potential S3 GC issues.\" >&2",
     "lint": "biome check ./bin ./lib ./service",
     "lint:ci": "biome lint ./bin ./lib ./service",
     "prestart": "LOCAL_DEV_STACK=true cdk synth",
