@@ -140,7 +140,7 @@ export class DisposeMeStack extends cdk.Stack {
     const privateAccess = process.env.PRIVATE_ACCESS !== 'false';
 
     // Determine CORS origins based on environment
-    const allowOrigins = [`https://${domainName}`];
+    const allowOrigins = process.env.LOCAL_DEV_STACK ? ['*'] : [`https://${domainName}`];
     const allowHeaders = ['Content-Type', 'X-Api-Key', 'Authorization'];
 
     // Define the '/' resource with a GET method
