@@ -2,8 +2,8 @@ import 'source-map-support/register';
 
 import type { NextFunction, Request, Response } from 'express';
 import * as express from 'express';
+import helmet from 'helmet';
 import * as serverless from 'serverless-http';
-
 import { InboxController } from './api/InboxController';
 import log from './tools/log';
 import {
@@ -30,8 +30,32 @@ const asyncHandler = (fn: any) => (req: Request, res: Response, next: NextFuncti
     next(error);
   });
 
-app.use(express.json());
+// Security best practices for Express apps
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrcAttr: ["'unsafe-inline'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          'cdn.jsdelivr.net',
+          'cdnjs.cloudflare.com',
+          'chancejs.com',
+        ],
+        connectSrc: ["'self'", 'cdn.jsdelivr.net', 'chancejs.com'],
+        styleSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net'],
+        fontSrc: ["'self'", 'cdn.jsdelivr.net'],
+        imgSrc: ["'self'", 'data:'],
+      },
+    },
+  }),
+);
+app.disable('x-powered-by');
+app.set('trust proxy', true);
 
+app.use(express.json());
 app.use(
   express.urlencoded({
     extended: true,
@@ -39,7 +63,7 @@ app.use(
 );
 
 // provide req properties to be used in EJS templates
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   res.locals.query = req.query;
   res.locals.url = req.originalUrl;
   res.locals.req = req;
@@ -96,7 +120,7 @@ app.get(
 );
 app.get('/inbox', ...buildInboxValidationChain(), asyncHandler(inboxController.inbox));
 
-app.all('/*splat', (req, res) => {
+app.use((req: Request, res: Response, _: NextFunction) => {
   inboxController.render404Response(req, res);
 });
 
