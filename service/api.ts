@@ -22,14 +22,6 @@ import {
 const inboxController = new InboxController(process.env.EMAIL_BUCKET_NAME ?? '');
 const app = express();
 
-// Since Express doesn't support error handling of promises out of the box,
-// this handler enables that
-// biome-ignore lint/suspicious/noExplicitAny: Handler signature needs to work with various request types
-const asyncHandler = (fn: any) => (req: Request, res: Response, next: NextFunction) =>
-  Promise.resolve(fn(req, res, next)).catch((error) => {
-    next(error);
-  });
-
 // Security best practices for Express apps
 app.use(
   helmet({
@@ -74,51 +66,35 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.set('view engine', 'ejs');
 app.engine('ejs', require('ejs').__express); // workaround for webpack tree-shaking ejs out
 
-app.get('/', ...buildIndexValidationChain(), asyncHandler(inboxController.index));
-app.post('/', ...buildAuthValidationChain(), asyncHandler(inboxController.auth));
-app.get('/logout', asyncHandler(inboxController.logout));
+app.get('/', ...buildIndexValidationChain(), inboxController.index);
+app.post('/', ...buildAuthValidationChain(), inboxController.auth);
+app.get('/logout', inboxController.logout);
 
-app.get(
-  '/inbox/:username/latest',
-  ...buildLatestEmailValidationChain(),
-  asyncHandler(inboxController.latest),
-);
-app.get(
-  '/inbox/:username/feed/',
-  ...buildListRssValidationChain(),
-  asyncHandler(inboxController.listRss),
-);
+app.get('/inbox/:username/latest', ...buildLatestEmailValidationChain(), inboxController.latest);
+app.get('/inbox/:username/feed/', ...buildListRssValidationChain(), inboxController.listRss);
 app.get(
   '/inbox/:username/:id/delete',
   ...buildDeleteEmailValidationChain(),
-  asyncHandler(inboxController.delete),
+  inboxController.delete,
 );
 app.delete(
   '/inbox/:username/:id/delete',
   ...buildDeleteEmailValidationChain(),
-  asyncHandler(inboxController.delete),
+  inboxController.delete,
 );
 app.get(
   '/inbox/:username/:id/download',
   ...buildDownloadEmailValidationChain(),
-  asyncHandler(inboxController.download),
+  inboxController.download,
 );
 app.get(
   '/inbox/:username/:id/attachment',
   ...buildDownloadEmailAttachmentValidationChain(),
-  asyncHandler(inboxController.downloadAttachment),
+  inboxController.downloadAttachment,
 );
-app.get(
-  '/inbox/:username/:id',
-  ...buildShowEmailValidationChain(),
-  asyncHandler(inboxController.show),
-);
-app.get(
-  '/inbox/:username',
-  ...buildListEmailsValidationChain(),
-  asyncHandler(inboxController.list),
-);
-app.get('/inbox', ...buildInboxValidationChain(), asyncHandler(inboxController.inbox));
+app.get('/inbox/:username/:id', ...buildShowEmailValidationChain(), inboxController.show);
+app.get('/inbox/:username', ...buildListEmailsValidationChain(), inboxController.list);
+app.get('/inbox', ...buildInboxValidationChain(), inboxController.inbox);
 
 app.use((req: Request, res: Response, _: NextFunction) => {
   inboxController.render404Response(req, res);
