@@ -172,6 +172,11 @@ ParsedEmail, typed mock accessors).
 - `expect.objectContaining({...})` and `expect.any(Type)` for flexible matching
 - `await expect(fn()).rejects.toThrow('msg')` for async error assertions
 
+## Pull Requests
+
+- Always create pull requests in **Draft** mode (`gh pr create --draft`) unless
+  explicitly instructed otherwise.
+
 ## Project Structure
 
 ```
