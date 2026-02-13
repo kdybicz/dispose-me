@@ -105,4 +105,4 @@ app.use((err: Error, req: Request, res: Response, _: NextFunction) => {
   inboxController.render500Response(err, req, res);
 });
 
-export const handler = serverless(app, { binary:  process.env.AWS_SAM_LOCAL ? [] : ['*/*'] });
+export const handler = serverless(app, { binary: process.env.AWS_SAM_LOCAL ? [] : ['*/*'] });

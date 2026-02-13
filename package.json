@@ -23,7 +23,7 @@
     "deploy:ci": "webpack && cdk deploy --require-approval never",
     "lint": "biome check ./bin ./lib ./service",
     "lint:ci": "biome lint ./bin ./lib ./service",
-    "prestart": "cdk synth",
+    "prestart": "LOCAL_DEV_STACK=true cdk synth",
     "start": "pnpm prestart && sam local start-api -t ./cdk.out/DisposeMeStack.template.json",
     "test": "jest --detectOpenHandles",
     "test:coverage": "jest --coverage --detectOpenHandles",
