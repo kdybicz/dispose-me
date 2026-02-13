@@ -21,7 +21,7 @@
     "predeploy": "pnpm build && pnpm lint && pnpm test",
     "deploy": "pnpm predeploy && cdk deploy && pnpm postdeploy",
     "deploy:ci": "webpack && cdk deploy --require-approval never && pnpm postdeploy",
-    "postdeploy": "cdk gc --type s3 --created-buffer-days 30 --rollback-buffer-days 0 --confirm false || true",
+    "postdeploy": "cdk gc --type s3 --created-buffer-days 30 --rollback-buffer-days 0 --confirm false",
     "lint": "biome check ./bin ./lib ./service",
     "lint:ci": "biome lint ./bin ./lib ./service",
     "prestart": "LOCAL_DEV_STACK=true cdk synth",
