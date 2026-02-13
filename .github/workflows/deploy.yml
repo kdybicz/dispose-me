@@ -45,9 +45,3 @@ jobs:
         INBOX_BLACKLIST: ${{ secrets.INBOX_BLACKLIST }}
         PRIVATE_ACCESS: ${{ secrets.PRIVATE_ACCESS }}
       run: pnpm deploy:ci
-    - name: Run post-deployment cleanup
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-      run: pnpm postdeploy:ci
