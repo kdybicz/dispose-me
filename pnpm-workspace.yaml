@@ -7,5 +7,4 @@ overrides:
   mailparser>nodemailer: ^7.0.11
 trustPolicy: no-downgrade
 trustPolicyExclude:
-  - undici-types@6.21.0
   - semver@6.3.1
