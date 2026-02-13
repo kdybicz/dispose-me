@@ -1,13 +1,18 @@
 import dayjs = require('dayjs');
-import type { Request, Response } from 'express';
-import { type ValidationError, matchedData, validationResult } from 'express-validator';
 
+import type { Request, Response } from 'express';
+import { matchedData, type ValidationError, validationResult } from 'express-validator';
+import {
+  AUTH_COOKIE_KEY,
+  AUTH_QUERY_KEY,
+  COOKIE_MAX_AGE_MS,
+  REMEMBER_COOKIE_KEY,
+} from '../tools/const';
 import { EmailDatabase } from '../tools/EmailDatabase';
-import { type AttachmentDetails, EmailParser, type ParsedEmail } from '../tools/EmailParser';
-import { S3FileSystem } from '../tools/S3FileSystem';
-import { AUTH_COOKIE_KEY, AUTH_QUERY_KEY, REMEMBER_COOKIE_KEY } from '../tools/const';
+import { EmailParser, type ParsedEmail } from '../tools/EmailParser';
 import { mapEmailDetailsListToFeed } from '../tools/feed';
 import log from '../tools/log';
+import { S3FileSystem } from '../tools/S3FileSystem';
 import { getCookie, getToken, normalizeUsername } from '../tools/utils';
 import { TYPE_DEFAULT } from '../tools/validators';
 
@@ -31,14 +36,11 @@ export interface InboxAuthBody {
   remember: string;
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-export interface InboxRequest<P = Record<string, string>, B = any>
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  extends Request<P, any, B, InboxQuery> {}
+export interface InboxRequest<P = Record<string, string>, B = unknown>
+  extends Request<P, unknown, B, InboxQuery> {}
 
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-// biome-ignore lint/suspicious/noConfusingVoidType: <explanation>
-export type InboxResponse = Promise<Response<any> | void>;
+// biome-ignore lint/suspicious/noConfusingVoidType: Express route handler may return void
+export type InboxResponse = Promise<Response<unknown> | void>;
 
 export type EmailListItem = {
   id: string;
@@ -99,9 +101,9 @@ export class InboxController {
 
     const { token, remember } = matchedData<{ token: string; remember: boolean }>(req);
 
-    let maxAge: number | undefined = undefined;
+    let maxAge: number | undefined;
     if (remember) {
-      maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days in ms
+      maxAge = COOKIE_MAX_AGE_MS;
 
       res.cookie(REMEMBER_COOKIE_KEY, true, {
         secure: true,
@@ -482,17 +484,20 @@ export class InboxController {
   };
 
   render500Response = (err: Error, req: Request, res: Response): void => {
-    log.debug(
-      `Action: '500' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)}`,
+    log.error(
+      `Action: '500' Params: ${JSON.stringify(req.params)} Query: ${JSON.stringify(req.query)} Error: ${err.message}`,
+      err,
     );
 
     const { type = TYPE_DEFAULT } = req.query;
 
+    const genericErrorMessage = 'An internal server error occurred. Please try again later.';
+
     if (type === 'html') {
-      res.status(500).render('pages/error', { error: err });
+      res.status(500).render('pages/error', { error: { message: genericErrorMessage } });
       return;
     }
 
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: genericErrorMessage });
   };
 }

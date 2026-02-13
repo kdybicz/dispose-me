@@ -1,6 +1,6 @@
 import type { IApiKey } from 'aws-cdk-lib/aws-apigateway';
 import * as iam from 'aws-cdk-lib/aws-iam';
-import { RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import {
   AwsCustomResource,
   AwsCustomResourcePolicy,
@@ -37,7 +37,9 @@ export class GetApiKey extends Construct {
           actions: ['apigateway:GET'],
         }),
       ]),
-      logRetention: RetentionDays.ONE_DAY,
+      logGroup: new LogGroup(this, 'GetApiKeyLogGroup', {
+        retention: RetentionDays.ONE_DAY,
+      }),
       onCreate: apiKey,
       onUpdate: apiKey,
     });

@@ -5,8 +5,8 @@ import type { SESHandler } from 'aws-lambda';
 import { IncomingEmailProcessor } from './processor/IncomingEmailProcessor';
 import { EmailDatabase } from './tools/EmailDatabase';
 import { EmailParser } from './tools/EmailParser';
-import { S3FileSystem } from './tools/S3FileSystem';
 import log from './tools/log';
+import { S3FileSystem } from './tools/S3FileSystem';
 
 const emailDatabase = new EmailDatabase();
 const emailParser = new EmailParser();

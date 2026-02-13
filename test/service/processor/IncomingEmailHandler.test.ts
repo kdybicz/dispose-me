@@ -1,9 +1,9 @@
 import * as fs from 'node:fs';
 
 import { IncomingEmailProcessor } from '../../../service/processor/IncomingEmailProcessor';
+import type { EmailDatabase } from '../../../service/tools/EmailDatabase';
 import { EmailParser } from '../../../service/tools/EmailParser';
 import type { S3FileSystem } from '../../../service/tools/S3FileSystem';
-import type { EmailDatabase } from '../../../service/tools/EmailDatabase';
 import { MESSAGE_ID } from '../../utils';
 
 describe('IncomingEmailProcessor tests', () => {
@@ -27,13 +27,13 @@ describe('IncomingEmailProcessor tests', () => {
   test('Handle simple email', async () => {
     // given
     const data = await fs.readFileSync(`${__dirname}/../data/simple.eml`).toString();
-    // and:
+    // and
     fileSystem.getObject = jest.fn().mockResolvedValueOnce({
       Body: {
         transformToString: jest.fn().mockResolvedValueOnce(data),
       },
     });
-    // and:
+    // and
     const processor = new IncomingEmailProcessor(
       fileSystem,
       EMAIL_BUCKET_NAME,
@@ -59,13 +59,13 @@ describe('IncomingEmailProcessor tests', () => {
   test('Handle complex email', async () => {
     // given
     const data = await fs.readFileSync(`${__dirname}/../data/complex.eml`).toString();
-    // and:
+    // and
     fileSystem.getObject = jest.fn().mockResolvedValueOnce({
       Body: {
         transformToString: jest.fn().mockResolvedValueOnce(data),
       },
     });
-    // and:
+    // and
     const processor = new IncomingEmailProcessor(
       fileSystem,
       EMAIL_BUCKET_NAME,
@@ -99,13 +99,13 @@ describe('IncomingEmailProcessor tests', () => {
   test('Handle cc email', async () => {
     // given
     const data = await fs.readFileSync(`${__dirname}/../data/cc.eml`).toString();
-    // and:
+    // and
     fileSystem.getObject = jest.fn().mockResolvedValueOnce({
       Body: {
         transformToString: jest.fn().mockResolvedValueOnce(data),
       },
     });
-    // and:
+    // and
     const processor = new IncomingEmailProcessor(
       fileSystem,
       EMAIL_BUCKET_NAME,
@@ -139,13 +139,13 @@ describe('IncomingEmailProcessor tests', () => {
   test('Handle bcc email', async () => {
     // given
     const data = await fs.readFileSync(`${__dirname}/../data/bcc.eml`).toString();
-    // and:
+    // and
     fileSystem.getObject = jest.fn().mockResolvedValueOnce({
       Body: {
         transformToString: jest.fn().mockResolvedValueOnce(data),
       },
     });
-    // and:
+    // and
     const processor = new IncomingEmailProcessor(
       fileSystem,
       EMAIL_BUCKET_NAME,
@@ -165,6 +165,61 @@ describe('IncomingEmailProcessor tests', () => {
       'hidden',
       new Date('2022-02-09T16:55:11.000Z'),
       false,
+    );
+  });
+
+  test('should handle errors and re-throw for proper handling', async () => {
+    // given
+    const error = new Error('S3 access denied');
+    fileSystem.getObject = jest.fn().mockRejectedValueOnce(error);
+    // and
+    const processor = new IncomingEmailProcessor(
+      fileSystem,
+      EMAIL_BUCKET_NAME,
+      emailParser,
+      emailDatabase,
+      DOMAIN_NAME,
+    );
+
+    // expect
+    await expect(processor.processEmail(MESSAGE_ID)).rejects.toThrow('S3 access denied');
+    expect(emailDatabase.store).not.toHaveBeenCalled();
+  });
+
+  test('should use "unknown" username when no matching recipients', async () => {
+    // given
+    const data = `From: sender@other-domain.com
+To: recipient@different-domain.com
+Subject: Test Subject
+Date: Mon, 01 Jan 2024 12:00:00 GMT
+
+Test body`;
+    // and
+    fileSystem.getObject = jest.fn().mockResolvedValueOnce({
+      Body: {
+        transformToString: jest.fn().mockResolvedValueOnce(data),
+      },
+    });
+    // and
+    const processor = new IncomingEmailProcessor(
+      fileSystem,
+      EMAIL_BUCKET_NAME,
+      emailParser,
+      emailDatabase,
+      DOMAIN_NAME,
+    );
+
+    // when
+    await processor.processEmail(MESSAGE_ID);
+    // then - should store under 'unknown' username for security
+    expect(emailDatabase.store).toHaveBeenCalledTimes(1);
+    expect(emailDatabase.store).toHaveBeenCalledWith(
+      MESSAGE_ID,
+      'unknown',
+      expect.any(String),
+      expect.any(String),
+      expect.any(Date),
+      expect.any(Boolean),
     );
   });
 });

@@ -14,23 +14,6 @@ import {
   REMEMBER_COOKIE_KEY,
 } from '../../../service/tools/const';
 import {
-  BODY_TOKEN,
-  COOKIE_TOKEN,
-  HEADER_TOKEN,
-  INVALID_TOKEN,
-  INVALID_USERNAME,
-  MockedEmailDatabase,
-  MockedEmailParser,
-  MockedS3FileSystem,
-  mockParsedEmail,
-  mockRequest,
-  mockResponse,
-  QUERY_TOKEN,
-  MESSAGE_ID,
-  USERNAME,
-  validateRequest,
-} from '../../utils';
-import {
   buildAuthValidationChain,
   buildDeleteEmailValidationChain,
   buildDownloadEmailAttachmentValidationChain,
@@ -42,6 +25,23 @@ import {
   buildListRssValidationChain,
   buildShowEmailValidationChain,
 } from '../../../service/tools/validators';
+import {
+  BODY_TOKEN,
+  COOKIE_TOKEN,
+  HEADER_TOKEN,
+  INVALID_TOKEN,
+  INVALID_USERNAME,
+  MESSAGE_ID,
+  MockedEmailDatabase,
+  MockedEmailParser,
+  MockedS3FileSystem,
+  QUERY_TOKEN,
+  USERNAME,
+  mockParsedEmail,
+  mockRequest,
+  mockResponse,
+  validateRequest,
+} from '../../utils';
 
 jest.mock('../../../service/tools/EmailDatabase');
 jest.mock('../../../service/tools/EmailParser');
@@ -112,7 +112,7 @@ describe('InboxController', () => {
     });
   });
 
-  describe('auth()', () => {    
+  describe('auth()', () => {
     beforeAll(() => {
       fetchMock.mockGlobal();
     });
@@ -351,7 +351,7 @@ describe('InboxController', () => {
         // then
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.render).toHaveBeenCalledWith('pages/error', {
-          error: new Error('Email content not found!'),
+          error: { message: 'An internal server error occurred. Please try again later.' },
         });
       },
     );
@@ -373,7 +373,9 @@ describe('InboxController', () => {
       await controller.show(req, res);
       // then
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ message: 'Email content not found!' });
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'An internal server error occurred. Please try again later.',
+      });
     });
   });
 
@@ -461,7 +463,7 @@ describe('InboxController', () => {
       // then
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.render).toHaveBeenCalledWith('pages/error', {
-        error: new Error('Email content not found!'),
+        error: { message: 'An internal server error occurred. Please try again later.' },
       });
     });
   });
@@ -557,7 +559,7 @@ describe('InboxController', () => {
       // then
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.render).toHaveBeenCalledWith('pages/error', {
-        error: new Error('Email content not found!'),
+        error: { message: 'An internal server error occurred. Please try again later.' },
       });
     });
 
@@ -589,7 +591,7 @@ describe('InboxController', () => {
       // then
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.render).toHaveBeenCalledWith('pages/error', {
-        error: new Error('Email attachment not found!'),
+        error: { message: 'An internal server error occurred. Please try again later.' },
       });
     });
 
@@ -1233,7 +1235,9 @@ describe('InboxController', () => {
       controller.render500Response(error, req, res);
       // then
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.render).toHaveBeenCalledWith('pages/error', { error });
+      expect(res.render).toHaveBeenCalledWith('pages/error', {
+        error: { message: 'An internal server error occurred. Please try again later.' },
+      });
     });
 
     test('render the 500 page as HTML', () => {
@@ -1245,7 +1249,9 @@ describe('InboxController', () => {
       controller.render500Response(error, req, res);
       // then
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.render).toHaveBeenCalledWith('pages/error', { error });
+      expect(res.render).toHaveBeenCalledWith('pages/error', {
+        error: { message: 'An internal server error occurred. Please try again later.' },
+      });
     });
 
     test('render the 500 page as JSON', () => {
@@ -1257,7 +1263,9 @@ describe('InboxController', () => {
       controller.render500Response(error, req, res);
       // then
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ message: 'some error' });
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'An internal server error occurred. Please try again later.',
+      });
     });
   });
 });

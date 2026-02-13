@@ -1,6 +1,6 @@
 import { matchedData, validationResult } from 'express-validator';
 import fetchMock from 'fetch-mock';
-
+import { AUTH_BODY_KEY, AUTH_QUERY_KEY } from '../../../service/tools/const';
 import {
   buildLimitQueryValidator,
   buildMessageIdParamValidation,
@@ -13,14 +13,13 @@ import {
 } from '../../../service/tools/validators';
 import {
   BODY_TOKEN,
-  INVALID_MESSAGE_ID,
   INVALID_CHARACTERS_TOKEN,
+  INVALID_LENGTH_TOKEN,
+  INVALID_MESSAGE_ID,
+  MESSAGE_ID,
   mockRequest,
   QUERY_TOKEN,
-  MESSAGE_ID,
-  INVALID_LENGTH_TOKEN,
 } from '../../utils';
-import { AUTH_BODY_KEY, AUTH_QUERY_KEY } from '../../../service/tools/const';
 
 describe('validators', () => {
   describe('buildUsernameParamValidator()', () => {
@@ -415,6 +414,29 @@ describe('validators', () => {
         }),
       ]);
     });
+
+    test('rejects when token validation times out', async () => {
+      // given
+      const req = mockRequest({ body: { [AUTH_BODY_KEY]: BODY_TOKEN } });
+      // and
+      const abortError = new Error('The operation was aborted');
+      abortError.name = 'AbortError';
+      fetchMock.route('path:/inbox/?type=json', { throws: abortError });
+
+      // when
+      await buildTokenBodyValidator().run(req);
+
+      // then
+      expect(validationResult(req).array()).toEqual([
+        expect.objectContaining({
+          location: 'body',
+          msg: 'Token validation request timed out. Please try again.',
+          path: 'token',
+          type: 'field',
+          value: BODY_TOKEN,
+        }),
+      ]);
+    }, 10000);
   });
 
   describe('buildRememberBodyValidator()', () => {
