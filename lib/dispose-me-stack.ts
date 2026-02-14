@@ -99,6 +99,7 @@ export class DisposeMeStack extends cdk.Stack {
         INBOX_BLACKLIST: process.env.INBOX_BLACKLIST ?? '',
         LOG_LEVEL: '5',
         PRIVATE_ACCESS: process.env.PRIVATE_ACCESS ?? 'true',
+        COOKIE_TTL_DAYS: process.env.COOKIE_TTL_DAYS ?? '30',
       },
       memorySize: 512,
       timeout: cdk.Duration.seconds(3),
