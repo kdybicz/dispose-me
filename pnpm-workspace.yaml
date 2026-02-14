@@ -1,6 +1,7 @@
+nodeLinker: hoisted
 engineStrict: true
 ignoredBuiltDependencies:
-  - '@biomejs/biome'
+  - "@biomejs/biome"
   - unrs-resolver
 minimumReleaseAge: 4320 # 3 days
 overrides:
@@ -9,3 +10,7 @@ trustPolicy: no-downgrade
 trustPolicyExclude:
   - semver@6.3.1
   - undici-types@6.21.0
+supportedArchitectures:
+  os:
+    - darwin
+    - linux
