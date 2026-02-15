@@ -3,8 +3,8 @@ import dayjs = require('dayjs');
 import type { Request, Response } from 'express';
 import { matchedData, type ValidationError, validationResult } from 'express-validator';
 
+import { getCookieMaxAgeMs } from '../tools/config';
 import { AUTH_COOKIE_KEY, AUTH_QUERY_KEY, REMEMBER_COOKIE_KEY } from '../tools/const';
-import { getCookieMaxAgeMs } from '../tools/cookies';
 import { EmailDatabase } from '../tools/EmailDatabase';
 import { EmailParser, type ParsedEmail } from '../tools/EmailParser';
 import { mapEmailDetailsListToFeed } from '../tools/feed';

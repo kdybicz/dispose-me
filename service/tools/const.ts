@@ -7,7 +7,9 @@ export const AUTH_BODY_KEY = 'token';
 
 // Database constants
 export const TABLE_NAME = 'dispose-me';
-export const EMAIL_TTL_DAYS = 1;
+
+// Email constants
+export const DEFAULT_EMAIL_TTL_DAYS = 1;
 export const DEFAULT_EMAIL_LIMIT = 10;
 export const MAX_EMAIL_LIMIT = 100;
 

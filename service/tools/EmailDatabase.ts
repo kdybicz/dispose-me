@@ -9,7 +9,8 @@ import {
 
 import dayjs = require('dayjs');
 
-import { DEFAULT_EMAIL_LIMIT, EMAIL_TTL_DAYS, TABLE_NAME } from './const';
+import { getEmailTtlDays } from './config';
+import { DEFAULT_EMAIL_LIMIT, TABLE_NAME } from './const';
 import log from './log';
 
 export class EmailDatabase {
@@ -38,7 +39,7 @@ export class EmailDatabase {
         Sender: sender,
         Subject: subject,
         ReceivedAt: dayjs(received).unix(),
-        ExpireAt: dayjs(received).add(EMAIL_TTL_DAYS, 'day').unix(),
+        ExpireAt: dayjs(received).add(getEmailTtlDays(), 'day').unix(),
         HasAttachments: hasAttachments,
       },
     });
