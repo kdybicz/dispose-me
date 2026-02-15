@@ -7,13 +7,13 @@ import {
   type InboxEmailParams,
   type InboxListParams,
 } from '../../../service/api/InboxController';
+import { getCookieMaxAgeMs } from '../../../service/tools/config';
 import {
   AUTH_BODY_KEY,
   AUTH_COOKIE_KEY,
   AUTH_QUERY_KEY,
   REMEMBER_COOKIE_KEY,
 } from '../../../service/tools/const';
-import { getCookieMaxAgeMs } from '../../../service/tools/cookies';
 import {
   buildAuthValidationChain,
   buildDeleteEmailValidationChain,
