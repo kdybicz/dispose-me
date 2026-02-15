@@ -1,41 +1,41 @@
-<table class="table table-hover table-sm table-striped">
-  <tbody>
-    <tr>
-      <th>Subject:</th>
-      <td><%= email.subject %></td>
+<table class="table">
+  <tbody class="table-body">
+    <tr class="table-row">
+      <th class="table-cell font-semibold bg-gray-50 w-32">Subject:</th>
+      <td class="table-cell"><%= email.subject %></td>
     </tr>
-    <tr>
-      <th>From:</th>
-      <td><%= email.from.format() %></td>
+    <tr class="table-row">
+      <th class="table-cell font-semibold bg-gray-50">From:</th>
+      <td class="table-cell"><%= email.from.format() %></td>
     </tr>
     <% if (email.to.length > 0) { %>
-    <tr>
-      <th>To:</th>
-      <td><%= email.to.map((to) => to.address).join(', ') %></td>
+    <tr class="table-row">
+      <th class="table-cell font-semibold bg-gray-50">To:</th>
+      <td class="table-cell"><%= email.to.map((to) => to.address).join(', ') %></td>
     </tr>
     <% } %>
     <% if (email.cc.length > 0) { %>
-    <tr>
-      <th>Cc:</th>
-      <td><%= email.cc.map((cc) => cc.address).join(', ') %></td>
+    <tr class="table-row">
+      <th class="table-cell font-semibold bg-gray-50">Cc:</th>
+      <td class="table-cell"><%= email.cc.map((cc) => cc.address).join(', ') %></td>
     </tr>
     <% } %>
     <% if (email.bcc.length > 0) { %>
-    <tr>
-      <th>Bcc:</th>
-      <td><%= email.bcc.map((bcc) => bcc.address).join(', ') %></td>
+    <tr class="table-row">
+      <th class="table-cell font-semibold bg-gray-50">Bcc:</th>
+      <td class="table-cell"><%= email.bcc.map((bcc) => bcc.address).join(', ') %></td>
     </tr>
     <% } %>
-    <tr>
-      <th>Received:</th>
-      <td><%= email.received.toGMTString() %></td>
+    <tr class="table-row">
+      <th class="table-cell font-semibold bg-gray-50">Received:</th>
+      <td class="table-cell"><%= email.received.toGMTString() %></td>
     </tr>
     <% if (email.attachments.length > 0) { %>
-    <tr>
-      <th>Attachments:</th>
-      <td>
+    <tr class="table-row">
+      <th class="table-cell font-semibold bg-gray-50">Attachments:</th>
+      <td class="table-cell">
         <% for(var i = 0; i < email.attachments.length; i++) { %>
-          <a class="badge badge-info" href="/inbox/<%= req.params.username %>/<%= email.id %>/attachment?filename=<%- encodeURI(email.attachments[i].filename) %>&x-api-key=<%= token %>" title="Download the attachment">
+          <a class="badge-info mr-2" href="/inbox/<%= req.params.username %>/<%= email.id %>/attachment?filename=<%- encodeURI(email.attachments[i].filename) %>&x-api-key=<%= token %>" title="Download the attachment">
             <%= email.attachments[i].filename %> <i class="bi bi-download ml-1"></i>
           </a>
         <% } %>
@@ -45,7 +45,7 @@
 </tbody>
 </table>
 
-<div class="well">
-  <iframe id="msg_body" style="border: 1pem; overflow: hidden; background-color: white;" title="Email Message Body" width="100%" height="550" name="msg_body" marginheight="0" srcdoc="<%= email.body %>">
+<div class="mt-6 border rounded-lg overflow-hidden bg-white shadow-sm">
+  <iframe id="msg_body" class="w-full" style="border: none; overflow: hidden;" title="Email Message Body" height="550" name="msg_body" marginheight="0" srcdoc="<%= email.body %>">
   </iframe>
 </div>

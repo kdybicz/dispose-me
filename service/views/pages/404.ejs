@@ -3,19 +3,17 @@
 <head>
   <%- include('../partials/head'); %>
 </head>
-<body class="bg-light">
+<body>
 
 <header>
   <%- include('../partials/header', { errorPage: true }); %>
 </header>
 
-<main role="main" class="container">
-  <div class="row justify-content-center">
-    <div class="col-md-12 text-center">
-        <span class="display-1 d-block">404</span>
-        <div class="mb-4 lead">The page you are looking for was not found.</div>
-        <a href="/?<%= new URLSearchParams(query) %>" class="btn btn-link">Back to Home</a>
-    </div>
+<main class="container-custom py-12">
+  <div class="text-center">
+    <span class="block text-9xl font-bold text-gray-900 mb-4">404</span>
+    <div class="text-xl text-gray-600 mb-6">The page you are looking for was not found.</div>
+    <a href="/?<%= new URLSearchParams(query) %>" class="text-blue-600 hover:underline">Back to Home</a>
   </div>
 </main>
 

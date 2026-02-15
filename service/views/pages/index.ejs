@@ -3,39 +3,39 @@
 <head>
   <%- include('../partials/head'); %>
 </head>
-<body class="bg-light">
+<body>
 
 <header>
   <%- include('../partials/header'); %>
 </header>
 
-<main role="main" class="container">
+<main class="container-custom py-8">
   <div class="jumbotron">
-    <h1 class="display-4">📨 Dispose Me</h1>
-    <p class="lead">I'm a simple, disposable email service with an easy API access.</p>
-    <hr class="my-4">
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">📨 Dispose Me</h1>
+    <p class="text-xl text-gray-600 mb-6">I'm a simple, disposable email service with an easy API access.</p>
+    <hr class="border-gray-200 my-6">
 
     <form method="POST" action="/">
-      <div class="form-group row">
-        <label for="token" class="col-sm-2 col-form-label">Provide Your token:</label>
-        <div class="col-sm-4">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start mb-4">
+        <label for="token" class="form-label md:col-span-2 pt-2">Provide Your token:</label>
+        <div class="md:col-span-4">
           <% const tokenError = (locals.errors ?? []).find((error) => error.type === "field" && error.path === "token"); %>
-          <input class="form-control <%= tokenError ? 'is-invalid' : '' %>" type="text" id="token" name="token" value="<%= tokenError?.value ?? query['x-api-key'] %>" placeholder="Token" aria-label="Token" required>
+          <input class="<%= tokenError ? 'form-input-error' : 'form-input' %>" type="text" id="token" name="token" value="<%= tokenError?.value ?? query['x-api-key'] %>" placeholder="Token" aria-label="Token" required>
           <% if (tokenError) { %>
-            <div class="invalid-feedback">
+            <div class="form-error">
               <%= tokenError.msg %>
             </div>
           <% } %>
         </div>
-        <div class="col-sm-2">
-          <button type="submit" class="btn btn-primary" aria-label="Login">
+        <div class="md:col-span-2">
+          <button type="submit" class="btn-primary w-full" aria-label="Login">
             <i class="bi bi-box-arrow-in-right"></i>
           </button>
         </div>
       </div>
-      <div class="form-group row">
-        <div class="col-sm-2"></div>
-        <div class="col-sm-6">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+        <div class="md:col-span-2"></div>
+        <div class="md:col-span-6">
           <div class="form-check">
             <input class="form-check-input" type="checkbox" id="remember" name="remember" aria-label="Remember token">
             <label class="form-check-label" for="remember">

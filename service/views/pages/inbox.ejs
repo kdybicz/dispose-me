@@ -3,39 +3,39 @@
 <head>
   <%- include('../partials/head'); %>
 </head>
-<body class="bg-light">
+<body>
 
 <header>
   <%- include('../partials/header'); %>
 </header>
 
-<main role="main" class="container">
+<main class="container-custom py-8">
   <div class="jumbotron">
-    <h1 class="display-4">📨 Dispose Me</h1>
-    <p class="lead">I'm a simple, disposable email service with an easy API access.</p>
-    <hr class="my-4">
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">📨 Dispose Me</h1>
+    <p class="text-xl text-gray-600 mb-6">I'm a simple, disposable email service with an easy API access.</p>
+    <hr class="border-gray-200 my-6">
 
     <form method="GET" action="/inbox">
-      <div class="input-group mb-3">
-        <label for="username" class="col-sm-2 col-form-label">Your new inbox:</label>
+      <div class="flex flex-wrap items-end gap-2">
+        <label for="username" class="form-label whitespace-nowrap">Your new inbox:</label>
         <% const usernameError = (locals.errors ?? []).find((error) => error.type === "field" && error.path === "username"); %>
-        <input class="form-control col-sm-4 <%= usernameError ? 'is-invalid' : '' %>" type="text" id="username" value="<%= usernameError?.value %>" placeholder="Inbox name" aria-label="Inbox name" required>
-        <input type="hidden" value="<%= query['x-api-key'] %>" name="x-api-key" <%= query['x-api-key'] ? "" : "disabled" %>>
-        <div class="input-group-append">
-          <span class="input-group-text">@<%= process.env.DOMAIN_NAME %></span>
-          <button type="button" class="btn btn-outline-secondary" aria-label="Generate new username" onclick="generateUsername();">
-            <i class="bi bi-repeat"></i>
-          </button>
-          <button type="submit" class="btn btn-primary" aria-label="Go to inbox">
-            <i class="bi bi-box-arrow-in-right"></i>
-          </button>
+        <div class="flex-1 min-w-0">
+          <input class="<%= usernameError ? 'form-input-error' : 'form-input' %>" type="text" id="username" value="<%= usernameError?.value %>" placeholder="Inbox name" aria-label="Inbox name" required>
         </div>
-        <% if (usernameError) { %>
-          <div class="invalid-feedback">
-            <%= usernameError.msg %>
-          </div>
-        <% } %>
+        <input type="hidden" value="<%= query['x-api-key'] %>" name="x-api-key" <%= query['x-api-key'] ? "" : "disabled" %>>
+        <span class="px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-700">@<%= process.env.DOMAIN_NAME %></span>
+        <button type="button" class="btn-outline" aria-label="Generate new username" onclick="generateUsername();">
+          <i class="bi bi-repeat"></i>
+        </button>
+        <button type="submit" class="btn-primary" aria-label="Go to inbox">
+          <i class="bi bi-box-arrow-in-right"></i>
+        </button>
       </div>
+      <% if (usernameError) { %>
+        <div class="form-error mt-2">
+          <%= usernameError.msg %>
+        </div>
+      <% } %>
     </form>
   </div>
 </main>
@@ -51,14 +51,14 @@
     var my_chance = new Chance();
     var username = my_chance.name().replace(' ', '') + my_chance.integer({ min: 1, max: 99 });
 
-    $('#username').val(username.toLowerCase());
+    document.getElementById('username').value = username.toLowerCase();
   };
 
-  $(function () {
-    $("form").on( "submit", function(event) {
-      var username = $('#username').val();
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelector("form").addEventListener("submit", function(event) {
+      var username = document.getElementById('username').value;
       var sanitizedUsername = encodeURIComponent(username);
-      $('form').attr('action', `/inbox/${sanitizedUsername}`);
+      this.setAttribute('action', `/inbox/${sanitizedUsername}`);
     });
   });
 </script>

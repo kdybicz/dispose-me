@@ -1,7 +1,7 @@
 const CopyPlugin = require('copy-webpack-plugin');
 const glob = require('glob');
 const path = require('node:path');
-const ZipPlugin = require("zip-webpack-plugin");
+const ZipPlugin = require('zip-webpack-plugin');
 
 // Automatically find all Lambda entry points
 const entry = glob.sync('./service/*.ts').reduce((acc, file) => {
@@ -45,10 +45,11 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         { from: 'service/views', to: 'api/views' },
+        { from: 'service/assets/css/output.css', to: 'api/assets/css/output.css' },
       ],
     }),
     // compress each service into it's own .zip file
-    ...Object.keys(entry).map(entryName => {
+    ...Object.keys(entry).map((entryName) => {
       return new ZipPlugin({
         filename: `../${entryName}.zip`,
         include: new RegExp(`${entryName}/.*`),

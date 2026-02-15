@@ -2,6 +2,8 @@ import * as path from 'node:path';
 import * as cdk from 'aws-cdk-lib';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as cm from 'aws-cdk-lib/aws-certificatemanager';
+import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
+import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
@@ -10,6 +12,7 @@ import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as targets from 'aws-cdk-lib/aws-route53-targets';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 import * as ses from 'aws-cdk-lib/aws-ses';
 import * as ses_actions from 'aws-cdk-lib/aws-ses-actions';
 import * as cr from 'aws-cdk-lib/custom-resources';
@@ -31,7 +34,8 @@ export class DisposeMeStack extends cdk.Stack {
 
     const emailBucket = this.setupEmailBucket(domainName);
     const emailTable = this.setupDatabase();
-    this.setupApiGateway(domainName, hostedZone, emailBucket, emailTable);
+    const assetsDomain = this.setupStaticAssets();
+    this.setupApiGateway(domainName, hostedZone, emailBucket, emailTable, assetsDomain);
     this.setupEmailProcessing(domainName, hostedZone, emailBucket, emailTable);
   }
 
@@ -79,11 +83,43 @@ export class DisposeMeStack extends cdk.Stack {
     return emailTable;
   };
 
+  private setupStaticAssets = (): string => {
+    const assetsBucket = new s3.Bucket(this, 'AssetsBucket', {
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    });
+
+    const distribution = new cloudfront.Distribution(this, 'AssetsDistribution', {
+      defaultBehavior: {
+        origin: origins.S3BucketOrigin.withOriginAccessControl(assetsBucket),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+      },
+    });
+
+    new s3deploy.BucketDeployment(this, 'DeployAssets', {
+      sources: [
+        s3deploy.Source.asset(path.join(__dirname, '../service/assets/css'), {
+          exclude: ['styles.css'],
+        }),
+      ],
+      destinationBucket: assetsBucket,
+      destinationKeyPrefix: 'css',
+      distribution,
+      distributionPaths: ['/css/*'],
+      cacheControl: [s3deploy.CacheControl.fromString('public, max-age=86400')],
+    });
+
+    return distribution.distributionDomainName;
+  };
+
   private setupApiGateway = (
     domainName: string,
     hostedZone: route53.IHostedZone,
     emailBucket: s3.IBucket,
     emailTable: dynamodb.ITableV2,
+    assetsDomain: string,
   ): void => {
     // Define Lambda function
     const apiLambdaHandler = new nodejs.NodejsFunction(this, 'ApiLambda', {
@@ -100,6 +136,7 @@ export class DisposeMeStack extends cdk.Stack {
         LOG_LEVEL: '5',
         PRIVATE_ACCESS: process.env.PRIVATE_ACCESS ?? 'true',
         COOKIE_TTL_DAYS: process.env.COOKIE_TTL_DAYS ?? '30',
+        ASSET_DOMAIN: assetsDomain,
       },
       memorySize: 512,
       timeout: cdk.Duration.seconds(3),

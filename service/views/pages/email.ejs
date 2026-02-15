@@ -3,33 +3,33 @@
 <head>
   <%- include('../partials/head'); %>
 </head>
-<body class="bg-light">
+<body>
 
 <header>
   <%- include('../partials/header'); %>
 </header>
 
-<main role="main" class="container">
-  <div class="row">
-    <div class="col-md">
-      <a class="nav-link" href="/inbox/<%= req.params.username %>?<%= new URLSearchParams(query) %>">
-        <i class="bi bi-arrow-left"></i>&nbsp;Back to Inbox
+<main class="container-custom py-6">
+  <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+    <div>
+      <a class="inline-flex items-center text-blue-600 hover:underline" href="/inbox/<%= req.params.username %>?<%= new URLSearchParams(query) %>">
+        <i class="bi bi-arrow-left mr-2"></i>Back to Inbox
       </a>
     </div>
-    <div class="col-md text-right">
+    <div class="flex items-center gap-2">
       <% if (email) { %>
         <a class="action" href="/inbox/<%= req.params.username %>/<%= req.params.id ?? email.id %>/delete?<%= new URLSearchParams(query) %>" title="Delete the email" onclick="return confirm('Delete this email?');">
-          <i class="bi bi-trash"></i>
+          <i class="bi bi-trash action-icon"></i>
         </a>
         <a class="action" href="javascript:void(0);" onclick="window.print();" title="Print the email page">
-          <i class="bi bi-printer"></i>
+          <i class="bi bi-printer action-icon"></i>
         </a>
         <a class="action" href="/inbox/<%= req.params.username %>/<%= req.params.id ?? email.id %>/download?<%= new URLSearchParams(query) %>" title="Download the email">
-          <i class="bi bi-download"></i>
+          <i class="bi bi-download action-icon"></i>
         </a>
       <% } %>
       <a class="action" href="<%= req.path %>?x-api-key=<%= token %>&type=json" title="JSON output of the email">
-        <i class="bi bi-filetype-json"></i>
+        <i class="bi bi-filetype-json action-icon"></i>
       </a>
     </div>
   </div>
@@ -37,7 +37,7 @@
   <% if (email) { %>
     <%- include('../partials/email/details', { email }); %>
   <% } else { %>
-    Nothing to see...
+    <p class="text-gray-600">Nothing to see...</p>
   <% } %>
 </main>
 

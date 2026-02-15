@@ -3,26 +3,24 @@
 <head>
   <%- include('../partials/head'); %>
 </head>
-<body class="bg-light">
+<body>
 
 <header>
   <%- include('../partials/header', { errorPage: true }); %>
 </header>
 
-<main role="main" class="container">
-  <div class="row justify-content-center">
-    <div class="col-md-12 text-center">
-        <span class="display-1 d-block">422</span>
-        <div class="mb-4 lead">Some of the request data are invalid</div>
+<main class="container-custom py-12">
+  <div class="text-center">
+    <span class="block text-9xl font-bold text-gray-900 mb-4">422</span>
+    <div class="text-xl text-gray-600 mb-6">Some of the request data are invalid</div>
 
-        <% if (locals.errors) { %>
-          <ul class="list-group list-group-flush">
-            <% for(var i = 0; i < locals.errors.length; i++) { %>
-              <li class="list-group-item list-group-item-danger"><%= locals.errors[i].msg %></li>
-            <% } %>
-          </ul>
+    <% if (locals.errors) { %>
+      <ul class="max-w-md mx-auto space-y-2">
+        <% for(var i = 0; i < locals.errors.length; i++) { %>
+          <li class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md"><%= locals.errors[i].msg %></li>
         <% } %>
-    </div>
+      </ul>
+    <% } %>
   </div>
 </main>
 

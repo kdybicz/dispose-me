@@ -1,22 +1,24 @@
-<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-  <% if (req.path === '/') { %>
-    <a class="navbar-brand" href="/">📨 Dispose Me</a>
-  <% } else { %>
-    <a class="navbar-brand" href="/inbox?<%= new URLSearchParams(query) %>">📨 Dispose Me</a>
-  <% } %>
-  <div class="collapse navbar-collapse" id="navbarCollapse">
-    <ul class="navbar-nav mr-auto">
-      <% if (!locals.errorPage && req.params.username) { %>
-        <li class="nav-item <%= req.path === `/inbox/${req.params.username}` ? 'active' : '' %>">
-          <a class="nav-link" href="/inbox/<%= req.params.username %>?<%= new URLSearchParams(query) %>">Inbox</a>
-        </li>
-        <li class="nav-item <%= req.path === `/inbox/${req.params.username}/latest` ? 'active' : '' %>">
-          <a class="nav-link" href="/inbox/<%= req.params.username %>/latest?<%= new URLSearchParams(query) %>">Latest</a>
-        </li>
+<nav class="navbar">
+  <div class="container-custom flex items-center justify-between">
+    <% if (req.path === '/') { %>
+      <a class="navbar-brand" href="/">📨 Dispose Me</a>
+    <% } else { %>
+      <a class="navbar-brand" href="/inbox?<%= new URLSearchParams(query) %>">📨 Dispose Me</a>
+    <% } %>
+    <div class="flex items-center space-x-4">
+      <ul class="flex items-center space-x-2">
+        <% if (!locals.errorPage && req.params.username) { %>
+          <li>
+            <a class="<%= req.path === `/inbox/${req.params.username}` ? 'nav-link-active' : 'nav-link-inactive' %>" href="/inbox/<%= req.params.username %>?<%= new URLSearchParams(query) %>">Inbox</a>
+          </li>
+          <li>
+            <a class="<%= req.path === `/inbox/${req.params.username}/latest` ? 'nav-link-active' : 'nav-link-inactive' %>" href="/inbox/<%= req.params.username %>/latest?<%= new URLSearchParams(query) %>">Latest</a>
+          </li>
+        <% } %>
+      </ul>
+      <% if (req.path !== '/') { %>
+        <a class="nav-link-inactive" href="/logout">Logout</a>
       <% } %>
-    </ul>
+    </div>
   </div>
-  <% if (req.path !== '/') { %>
-    <a class="navbar-text nav-link" href="/logout">Logout</a>
-  <% } %>
 </nav>

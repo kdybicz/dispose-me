@@ -188,3 +188,7 @@ cdk.context.json
 
 # macOS system files
 .DS_Store
+
+# Generated CSS files
+service/assets/css/output.css
+

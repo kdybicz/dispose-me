@@ -1,31 +1,31 @@
-<table class="table table-hover table-sm table-striped">
-  <thead class="thead-dark">
+<table class="table">
+  <thead class="table-header">
     <tr>
-      <th scope="col">#</th>
-      <th>From</th>
-      <th>Subject</th>
-      <th>Received</th>
-      <th><i class="bi bi-paperclip"></i></th>
-      <th></th>
+      <th scope="col" class="table-header-cell">#</th>
+      <th class="table-header-cell">From</th>
+      <th class="table-header-cell">Subject</th>
+      <th class="table-header-cell">Received</th>
+      <th class="table-header-cell"><i class="bi bi-paperclip"></i></th>
+      <th class="table-header-cell"></th>
     </tr>
   </thead>
-  <tbody>
+  <tbody class="table-body">
     <% for(var i = 0; i < emails.length; i++) { %>
-      <tr data-id="<%= emails[i].id %>" class="position-relative">
-        <th scope="row"><%= i + 1 %></th>
-        <td><%= emails[i].from %></td>
-        <td>
-          <span class="text-truncate" style="display: inline-block; max-width: 35rem;">
+      <tr data-id="<%= emails[i].id %>" class="table-row relative">
+        <th scope="row" class="table-cell"><%= i + 1 %></th>
+        <td class="table-cell"><%= emails[i].from %></td>
+        <td class="table-cell">
+          <span class="text-truncate inline-block max-w-md">
             <%= emails[i].subject %>
           </span>
         </td>
-        <td><%= emails[i].received.toGMTString() %></td>
-        <td>
+        <td class="table-cell"><%= emails[i].received.toGMTString() %></td>
+        <td class="table-cell">
           <% if (emails[i].hasAttachments) { %>
             <i class="bi bi-paperclip"></i>
           <% } %>
         </td>
-        <td><a href="/inbox/<%= req.params.username %>/<%= emails[i].id %>?<%= new URLSearchParams(query) %>" class="stretched-link"></a></td>
+        <td class="table-cell"><a href="/inbox/<%= req.params.username %>/<%= emails[i].id %>?<%= new URLSearchParams(query) %>" class="stretched-link"></a></td>
       </tr>
     <% } %>
   </tbody>
