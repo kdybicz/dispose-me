@@ -185,3 +185,6 @@ cdk.context.json
 
 # SAM default build folder
 .aws-sam/
+
+# macOS system files
+.DS_Store

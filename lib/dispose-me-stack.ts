@@ -272,6 +272,7 @@ export class DisposeMeStack extends cdk.Stack {
       environment: {
         DOMAIN_NAME: process.env.DOMAIN_NAME ?? '',
         EMAIL_BUCKET_NAME: emailBucket.bucketName,
+        EMAIL_TTL_DAYS: process.env.EMAIL_TTL_DAYS ?? '1',
         LOG_LEVEL: '5',
       },
       memorySize: 512,
