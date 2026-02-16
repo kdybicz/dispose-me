@@ -12,12 +12,12 @@
 <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
   <div class="text-center">
     <div class="text-[8rem] font-black tracking-tighter leading-none bg-gradient-to-br from-indigo-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent mb-4">403</div>
-    <div class="text-xl text-slate-500 mb-8">You are not allowed to visit that page.</div>
-    <a class="text-indigo-500 font-semibold hover:text-indigo-600 hover:underline transition-colors" href="/?<%= new URLSearchParams(query) %>">Back to Home</a>
+    <div class="text-xl text-slate-500 dark:text-slate-400 mb-8">You are not allowed to visit that page.</div>
+    <a class="text-indigo-500 font-semibold hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300 hover:underline transition-colors" href="/?<%= new URLSearchParams(query) %>">Back to Home</a>
   </div>
 </main>
 
-<footer class="fixed inset-x-0 bottom-0 h-14 bg-white border-t border-slate-200 flex items-center z-40">
+<footer class="fixed inset-x-0 bottom-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 flex items-center z-40">
   <%- include('../partials/footer'); %>
 </footer>
 
