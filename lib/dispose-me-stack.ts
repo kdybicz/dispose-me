@@ -154,7 +154,7 @@ export class DisposeMeStack extends cdk.Stack {
         LOG_LEVEL: '5',
         PRIVATE_ACCESS: process.env.PRIVATE_ACCESS ?? 'true',
         COOKIE_TTL_DAYS: process.env.COOKIE_TTL_DAYS ?? '30',
-        ASSET_DOMAIN: assetsDomain,
+        ASSET_DOMAIN: process.env.LOCAL_DEV_STACK ? '' : assetsDomain,
       },
       memorySize: 512,
       timeout: cdk.Duration.seconds(3),
