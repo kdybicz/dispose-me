@@ -7,11 +7,16 @@ Lambda, DynamoDB, S3, SES. Node.js >= 22, pnpm >= 10.24.
 
 ```bash
 pnpm install --frozen-lockfile   # Install dependencies (use frozen lockfile)
-pnpm build                       # Install + clean dist/ + webpack bundle
+pnpm build                       # Install + clean dist/ + build CSS + webpack bundle
+pnpm build:css                   # Build Tailwind CSS (generates output.css)
 pnpm lint                        # Biome check (lint + format) on bin/ lib/ service/
 pnpm test                        # Jest (all tests)
 pnpm test:coverage               # Jest with coverage report
 ```
+
+**Important:** The `build` command automatically runs `build:css` before webpack bundling.
+If running webpack directly, ensure `build:css` has been executed first to generate
+`service/assets/css/output.css`.
 
 ### Running a single test
 
@@ -27,6 +32,22 @@ pnpm test -- -t 'should store email'                    # by test name pattern
 pnpm deploy          # build + lint + test + cdk deploy
 pnpm deploy:ci       # webpack + cdk deploy (no approval prompt)
 ```
+
+## Styling
+
+**Tailwind CSS v4** is used for all styling (configured in `service/assets/css/styles.css`).
+
+- Source file: `service/assets/css/styles.css` (Tailwind directives and configuration)
+- Generated output: `service/assets/css/output.css` (built by `pnpm build:css`)
+- The generated `output.css` is excluded from version control (`.gitignore`)
+- Static assets are deployed to CloudFront with 1-year cache (invalidated on deploy)
+
+Tailwind v4 uses CSS-based configuration instead of JavaScript config files:
+- Theme customization via `@theme` directive in `styles.css`
+- Content scanning via `@source` directive (currently scans `service/views/**/*.ejs`)
+- No `tailwind.config.js` file needed
+
+**Do not** add inline styles or custom CSS files. Use Tailwind utility classes in EJS templates.
 
 ## Code Style
 

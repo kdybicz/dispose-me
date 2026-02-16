@@ -120,7 +120,7 @@ export class DisposeMeStack extends cdk.Stack {
       destinationKeyPrefix: 'css',
       distribution,
       distributionPaths: ['/css/*'],
-      cacheControl: [s3deploy.CacheControl.fromString('public, max-age=86400')],
+      cacheControl: [s3deploy.CacheControl.fromString('public, max-age=31536000')],
     });
 
     new route53.ARecord(this, 'StaticAssetsAliasRecord', {
