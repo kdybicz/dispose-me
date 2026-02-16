@@ -34,7 +34,7 @@ export class DisposeMeStack extends cdk.Stack {
 
     const emailBucket = this.setupEmailBucket(domainName);
     const emailTable = this.setupDatabase();
-    const assetsDomain = this.setupStaticAssets();
+    const assetsDomain = this.setupStaticAssets(`static.${domainName}`, hostedZone);
     this.setupApiGateway(domainName, hostedZone, emailBucket, emailTable, assetsDomain);
     this.setupEmailProcessing(domainName, hostedZone, emailBucket, emailTable);
   }
@@ -83,14 +83,26 @@ export class DisposeMeStack extends cdk.Stack {
     return emailTable;
   };
 
-  private setupStaticAssets = (): string => {
+  private setupStaticAssets = (domainName: string, hostedZone: route53.IHostedZone): string => {
     const assetsBucket = new s3.Bucket(this, 'AssetsBucket', {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
     });
 
+    const distributionCertificate = new cm.DnsValidatedCertificate(
+      this,
+      'StaticAssetsCertificate',
+      {
+        domainName,
+        hostedZone,
+        region: 'us-east-1',
+      },
+    );
+
     const distribution = new cloudfront.Distribution(this, 'AssetsDistribution', {
+      domainNames: [domainName],
+      certificate: distributionCertificate,
       defaultBehavior: {
         origin: origins.S3BucketOrigin.withOriginAccessControl(assetsBucket),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
@@ -111,7 +123,13 @@ export class DisposeMeStack extends cdk.Stack {
       cacheControl: [s3deploy.CacheControl.fromString('public, max-age=86400')],
     });
 
-    return distribution.distributionDomainName;
+    new route53.ARecord(this, 'StaticAssetsAliasRecord', {
+      zone: hostedZone,
+      recordName: domainName,
+      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
+    });
+
+    return domainName;
   };
 
   private setupApiGateway = (
