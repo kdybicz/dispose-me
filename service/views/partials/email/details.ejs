@@ -1,51 +1,55 @@
-<table class="table">
-  <tbody class="table-body">
-    <tr class="table-row">
-      <th class="table-cell font-semibold bg-gray-50 w-32">Subject:</th>
-      <td class="table-cell"><%= email.subject %></td>
-    </tr>
-    <tr class="table-row">
-      <th class="table-cell font-semibold bg-gray-50">From:</th>
-      <td class="table-cell"><%= email.from.format() %></td>
-    </tr>
-    <% if (email.to.length > 0) { %>
-    <tr class="table-row">
-      <th class="table-cell font-semibold bg-gray-50">To:</th>
-      <td class="table-cell"><%= email.to.map((to) => to.address).join(', ') %></td>
-    </tr>
-    <% } %>
-    <% if (email.cc.length > 0) { %>
-    <tr class="table-row">
-      <th class="table-cell font-semibold bg-gray-50">Cc:</th>
-      <td class="table-cell"><%= email.cc.map((cc) => cc.address).join(', ') %></td>
-    </tr>
-    <% } %>
-    <% if (email.bcc.length > 0) { %>
-    <tr class="table-row">
-      <th class="table-cell font-semibold bg-gray-50">Bcc:</th>
-      <td class="table-cell"><%= email.bcc.map((bcc) => bcc.address).join(', ') %></td>
-    </tr>
-    <% } %>
-    <tr class="table-row">
-      <th class="table-cell font-semibold bg-gray-50">Received:</th>
-      <td class="table-cell"><%= email.received.toGMTString() %></td>
-    </tr>
-    <% if (email.attachments.length > 0) { %>
-    <tr class="table-row">
-      <th class="table-cell font-semibold bg-gray-50">Attachments:</th>
-      <td class="table-cell">
-        <% for(var i = 0; i < email.attachments.length; i++) { %>
-          <a class="badge-info mr-2" href="/inbox/<%= req.params.username %>/<%= email.id %>/attachment?filename=<%- encodeURI(email.attachments[i].filename) %>&x-api-key=<%= token %>" title="Download the attachment">
-            <%= email.attachments[i].filename %> <i class="bi bi-download ml-1"></i>
-          </a>
-        <% } %>
-      </td>
-    </tr>
-    <% } %>
-</tbody>
-</table>
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+  <table class="w-full border-collapse">
+    <tbody class="bg-white">
+      <tr class="border-b border-slate-100">
+        <th class="px-5 py-3 text-[13px] font-semibold text-slate-500 bg-slate-50/80 whitespace-nowrap uppercase tracking-wide text-left w-[1%]">Subject</th>
+        <td class="px-5 py-3 text-[15px] text-slate-800"><%= email.subject %></td>
+      </tr>
+      <tr class="border-b border-slate-100">
+        <th class="px-5 py-3 text-[13px] font-semibold text-slate-500 bg-slate-50/80 whitespace-nowrap uppercase tracking-wide text-left w-[1%]">From</th>
+        <td class="px-5 py-3 text-[15px] text-slate-800"><%= email.from.format() %></td>
+      </tr>
+      <% if (email.to.length > 0) { %>
+      <tr class="border-b border-slate-100">
+        <th class="px-5 py-3 text-[13px] font-semibold text-slate-500 bg-slate-50/80 whitespace-nowrap uppercase tracking-wide text-left w-[1%]">To</th>
+        <td class="px-5 py-3 text-[15px] text-slate-800"><%= email.to.map((to) => to.address).join(', ') %></td>
+      </tr>
+      <% } %>
+      <% if (email.cc.length > 0) { %>
+      <tr class="border-b border-slate-100">
+        <th class="px-5 py-3 text-[13px] font-semibold text-slate-500 bg-slate-50/80 whitespace-nowrap uppercase tracking-wide text-left w-[1%]">Cc</th>
+        <td class="px-5 py-3 text-[15px] text-slate-800"><%= email.cc.map((cc) => cc.address).join(', ') %></td>
+      </tr>
+      <% } %>
+      <% if (email.bcc.length > 0) { %>
+      <tr class="border-b border-slate-100">
+        <th class="px-5 py-3 text-[13px] font-semibold text-slate-500 bg-slate-50/80 whitespace-nowrap uppercase tracking-wide text-left w-[1%]">Bcc</th>
+        <td class="px-5 py-3 text-[15px] text-slate-800"><%= email.bcc.map((bcc) => bcc.address).join(', ') %></td>
+      </tr>
+      <% } %>
+      <tr class="border-b border-slate-100">
+        <th class="px-5 py-3 text-[13px] font-semibold text-slate-500 bg-slate-50/80 whitespace-nowrap uppercase tracking-wide text-left w-[1%]">Received</th>
+        <td class="px-5 py-3 text-[15px] text-slate-800"><%= email.received.toGMTString() %></td>
+      </tr>
+      <% if (email.attachments.length > 0) { %>
+      <tr class="border-b border-slate-100 last:border-none">
+        <th class="px-5 py-3 text-[13px] font-semibold text-slate-500 bg-slate-50/80 whitespace-nowrap uppercase tracking-wide text-left w-[1%]">Attachments</th>
+        <td class="px-5 py-3 text-[15px] text-slate-800">
+          <div class="flex flex-wrap gap-2">
+            <% for(var i = 0; i < email.attachments.length; i++) { %>
+              <a class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors" href="/inbox/<%= req.params.username %>/<%= email.id %>/attachment?filename=<%- encodeURI(email.attachments[i].filename) %>&x-api-key=<%= token %>" title="Download the attachment">
+                <%= email.attachments[i].filename %> <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+              </a>
+            <% } %>
+          </div>
+        </td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
 
-<div class="mt-6 border rounded-lg overflow-hidden bg-white shadow-sm">
+<div class="mt-6 rounded-xl border border-slate-200 overflow-hidden bg-white">
   <iframe id="msg_body" class="w-full" style="border: none; overflow: hidden;" title="Email Message Body" height="550" name="msg_body" marginheight="0" srcdoc="<%= email.body %>">
   </iframe>
 </div>

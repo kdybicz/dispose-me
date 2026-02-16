@@ -1,32 +1,32 @@
-<table class="table">
-  <thead class="table-header">
-    <tr>
-      <th scope="col" class="table-header-cell">#</th>
-      <th class="table-header-cell">From</th>
-      <th class="table-header-cell">Subject</th>
-      <th class="table-header-cell">Received</th>
-      <th class="table-header-cell"><i class="bi bi-paperclip"></i></th>
-      <th class="table-header-cell"></th>
-    </tr>
-  </thead>
-  <tbody class="table-body">
-    <% for(var i = 0; i < emails.length; i++) { %>
-      <tr data-id="<%= emails[i].id %>" class="table-row relative">
-        <th scope="row" class="table-cell"><%= i + 1 %></th>
-        <td class="table-cell"><%= emails[i].from %></td>
-        <td class="table-cell">
-          <span class="text-truncate inline-block max-w-md">
-            <%= emails[i].subject %>
-          </span>
-        </td>
-        <td class="table-cell"><%= emails[i].received.toGMTString() %></td>
-        <td class="table-cell">
-          <% if (emails[i].hasAttachments) { %>
-            <i class="bi bi-paperclip"></i>
-          <% } %>
-        </td>
-        <td class="table-cell"><a href="/inbox/<%= req.params.username %>/<%= emails[i].id %>?<%= new URLSearchParams(query) %>" class="stretched-link"></a></td>
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+  <table class="w-full border-collapse">
+    <thead class="bg-gradient-to-br from-slate-900 to-slate-800">
+      <tr>
+        <th scope="col" class="px-5 py-3 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">#</th>
+        <th class="px-5 py-3 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">From</th>
+        <th class="px-5 py-3 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Subject</th>
+        <th class="px-5 py-3 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Received</th>
+        <th class="px-5 py-3 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider"><svg class="size-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13"/></svg></th>
+        <th class="px-5 py-3 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider"></th>
       </tr>
-    <% } %>
-  </tbody>
-</table>
+    </thead>
+    <tbody class="bg-white">
+      <% for(var i = 0; i < emails.length; i++) { %>
+        <tr data-id="<%= emails[i].id %>" class="border-b border-slate-100 last:border-none transition-colors hover:bg-slate-50/80 relative">
+          <th scope="row" class="px-5 py-3.5 text-sm text-slate-600 whitespace-nowrap"><%= i + 1 %></th>
+          <td class="px-5 py-3.5 text-sm text-slate-600 whitespace-nowrap"><%= emails[i].from %></td>
+          <td class="px-5 py-3.5 text-sm text-slate-600 whitespace-nowrap">
+            <span class="inline-block max-w-md truncate"><%= emails[i].subject %></span>
+          </td>
+          <td class="px-5 py-3.5 text-sm text-slate-600 whitespace-nowrap"><%= emails[i].received.toGMTString() %></td>
+          <td class="px-5 py-3.5 text-sm text-slate-600 whitespace-nowrap">
+            <% if (emails[i].hasAttachments) { %>
+              <svg class="size-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13"/></svg>
+            <% } %>
+          </td>
+          <td class="px-5 py-3.5 text-sm text-slate-600 whitespace-nowrap"><a href="/inbox/<%= req.params.username %>/<%= emails[i].id %>?<%= new URLSearchParams(query) %>" class="after:absolute after:inset-0 after:content-['']"></a></td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>

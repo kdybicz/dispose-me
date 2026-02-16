@@ -9,19 +9,17 @@
   <%- include('../partials/header', { errorPage: true }); %>
 </header>
 
-<main class="container-custom py-12">
+<main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
   <div class="text-center">
-    <span class="block text-9xl font-bold text-gray-900 mb-4">404</span>
-    <div class="text-xl text-gray-600 mb-6">The page you are looking for was not found.</div>
-    <a href="/?<%= new URLSearchParams(query) %>" class="text-blue-600 hover:underline">Back to Home</a>
+    <div class="text-[8rem] font-black tracking-tighter leading-none bg-gradient-to-br from-indigo-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent mb-4">404</div>
+    <div class="text-xl text-slate-500 mb-8">The page you are looking for was not found.</div>
+    <a class="text-indigo-500 font-semibold hover:text-indigo-600 hover:underline transition-colors" href="/?<%= new URLSearchParams(query) %>">Back to Home</a>
   </div>
 </main>
 
-<footer class="footer">
+<footer class="fixed inset-x-0 bottom-0 h-14 bg-white border-t border-slate-200 flex items-center z-40">
   <%- include('../partials/footer'); %>
 </footer>
-
-<%- include('../partials/bootstrap'); %>
 
 </body>
 </html>

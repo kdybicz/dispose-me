@@ -1,23 +1,18 @@
-<nav class="navbar">
-  <div class="container-custom flex items-center justify-between">
+<nav class="fixed inset-x-0 top-0 z-50 bg-gradient-to-r from-slate-900 to-slate-800 shadow-lg">
+  <div class="absolute bottom-0 inset-x-0 h-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 opacity-70"></div>
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
     <% if (req.path === '/') { %>
-      <a class="navbar-brand" href="/">📨 Dispose Me</a>
+      <a class="flex items-center gap-2 text-lg font-bold text-white tracking-tight hover:opacity-85 transition-opacity" href="/">📨 Dispose Me</a>
     <% } else { %>
-      <a class="navbar-brand" href="/inbox?<%= new URLSearchParams(query) %>">📨 Dispose Me</a>
+      <a class="flex items-center gap-2 text-lg font-bold text-white tracking-tight hover:opacity-85 transition-opacity" href="/inbox?<%= new URLSearchParams(query) %>">📨 Dispose Me</a>
     <% } %>
-    <div class="flex items-center space-x-4">
-      <ul class="flex items-center space-x-2">
-        <% if (!locals.errorPage && req.params.username) { %>
-          <li>
-            <a class="<%= req.path === `/inbox/${req.params.username}` ? 'nav-link-active' : 'nav-link-inactive' %>" href="/inbox/<%= req.params.username %>?<%= new URLSearchParams(query) %>">Inbox</a>
-          </li>
-          <li>
-            <a class="<%= req.path === `/inbox/${req.params.username}/latest` ? 'nav-link-active' : 'nav-link-inactive' %>" href="/inbox/<%= req.params.username %>/latest?<%= new URLSearchParams(query) %>">Latest</a>
-          </li>
-        <% } %>
-      </ul>
+    <div class="flex items-center gap-1">
+      <% if (!locals.errorPage && req.params.username) { %>
+        <a class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors <%= req.path === `/inbox/${req.params.username}` ? 'text-white bg-indigo-500/20' : 'text-slate-400 hover:text-white hover:bg-white/10' %>" href="/inbox/<%= req.params.username %>?<%= new URLSearchParams(query) %>">Inbox</a>
+        <a class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors <%= req.path === `/inbox/${req.params.username}/latest` ? 'text-white bg-indigo-500/20' : 'text-slate-400 hover:text-white hover:bg-white/10' %>" href="/inbox/<%= req.params.username %>/latest?<%= new URLSearchParams(query) %>">Latest</a>
+      <% } %>
       <% if (req.path !== '/') { %>
-        <a class="nav-link-inactive" href="/logout">Logout</a>
+        <a class="px-3 py-1.5 text-sm font-medium text-slate-400 rounded-md transition-colors hover:text-white hover:bg-white/10" href="/logout">Logout</a>
       <% } %>
     </div>
   </div>

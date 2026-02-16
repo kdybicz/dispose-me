@@ -9,42 +9,39 @@
   <%- include('../partials/header'); %>
 </header>
 
-<main class="container-custom py-8">
-  <div class="jumbotron">
-    <h1 class="text-4xl font-bold text-gray-900 mb-4">📨 Dispose Me</h1>
-    <p class="text-xl text-gray-600 mb-6">I'm a simple, disposable email service with an easy API access.</p>
-    <hr class="border-gray-200 my-6">
+<main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="relative bg-white rounded-2xl p-8 border border-slate-200 shadow-sm overflow-hidden">
+    <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">📨 Dispose Me</h1>
+    <p class="text-slate-500 text-lg">A simple, disposable email service with easy API access.</p>
+    <hr class="border-none h-px bg-slate-200 my-7">
 
     <form method="GET" action="/inbox">
+      <label for="username" class="block text-sm font-semibold text-slate-700 mb-1.5">Your new inbox</label>
+      <% const usernameError = (locals.errors ?? []).find((error) => error.type === "field" && error.path === "username"); %>
       <div class="flex flex-wrap items-end gap-2">
-        <label for="username" class="form-label whitespace-nowrap">Your new inbox:</label>
-        <% const usernameError = (locals.errors ?? []).find((error) => error.type === "field" && error.path === "username"); %>
         <div class="flex-1 min-w-0">
-          <input class="<%= usernameError ? 'form-input-error' : 'form-input' %>" type="text" id="username" value="<%= usernameError?.value %>" placeholder="Inbox name" aria-label="Inbox name" required>
+          <input class="block w-full px-3.5 py-2 text-[15px] leading-6 text-slate-800 bg-white border-[1.5px] rounded-lg transition placeholder:text-slate-400 focus:outline-none focus:ring-[3px] <%= usernameError ? 'border-red-300 bg-red-50 focus:border-red-500 focus:ring-red-500/10' : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/10' %>" type="text" id="username" value="<%= usernameError?.value %>" placeholder="Inbox name" aria-label="Inbox name" required>
         </div>
         <input type="hidden" value="<%= query['x-api-key'] %>" name="x-api-key" <%= query['x-api-key'] ? "" : "disabled" %>>
-        <span class="px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-700">@<%= process.env.DOMAIN_NAME %></span>
-        <button type="button" class="btn-outline" aria-label="Generate new username" onclick="generateUsername();">
-          <i class="bi bi-repeat"></i>
+        <span class="px-3.5 py-2 bg-slate-100 border-[1.5px] border-slate-300 rounded-lg text-slate-600 text-[15px] font-medium whitespace-nowrap">@<%= process.env.DOMAIN_NAME %></span>
+        <button type="button" class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold rounded-lg bg-white text-slate-600 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 hover:text-slate-800 transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500" aria-label="Generate new username" onclick="generateUsername();">
+          <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.992 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182M2.985 19.644l-.002-.001"/></svg>
         </button>
-        <button type="submit" class="btn-primary" aria-label="Go to inbox">
-          <i class="bi bi-box-arrow-in-right"></i>
+        <button type="submit" class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-sm shadow-indigo-500/30 hover:from-indigo-600 hover:to-indigo-700 hover:shadow-md hover:-translate-y-px transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500" aria-label="Go to inbox">
+          <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25"/></svg>
         </button>
       </div>
       <% if (usernameError) { %>
-        <div class="form-error mt-2">
-          <%= usernameError.msg %>
-        </div>
+        <p class="mt-1.5 text-[13px] font-medium text-red-500"><%= usernameError.msg %></p>
       <% } %>
     </form>
   </div>
 </main>
 
-<footer class="footer">
+<footer class="fixed inset-x-0 bottom-0 h-14 bg-white border-t border-slate-200 flex items-center z-40">
   <%- include('../partials/footer'); %>
 </footer>
-
-<%- include('../partials/bootstrap'); %>
 
 <script type="text/javascript">
   function generateUsername() {
@@ -58,7 +55,7 @@
     document.querySelector("form").addEventListener("submit", function(event) {
       var username = document.getElementById('username').value;
       var sanitizedUsername = encodeURIComponent(username);
-      this.setAttribute('action', `/inbox/${sanitizedUsername}`);
+      this.setAttribute('action', '/inbox/' + sanitizedUsername);
     });
   });
 </script>
