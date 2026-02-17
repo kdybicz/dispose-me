@@ -17,7 +17,7 @@
   },
   "scripts": {
     "prebuild": "pnpm install --frozen-lockfile",
-    "build:css": "npx @tailwindcss/cli -i ./service/assets/css/styles.css -o ./service/assets/css/output.css --minify",
+    "build:css": "pnpm exec @tailwindcss/cli -i ./service/assets/css/styles.css -o ./service/assets/css/output.css --minify",
     "build": "pnpm prebuild && pnpm build:css && rm -Rf dist && webpack",
     "predeploy": "pnpm build && pnpm lint && pnpm test",
     "deploy": "pnpm predeploy && cdk deploy",
