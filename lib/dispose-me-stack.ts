@@ -100,6 +100,21 @@ export class DisposeMeStack extends cdk.Stack {
       },
     );
 
+    const responseHeadersPolicy = new cloudfront.ResponseHeadersPolicy(
+      this,
+      'AssetSecurityHeaders',
+      {
+        securityHeadersBehavior: {
+          contentTypeOptions: { override: true },
+          strictTransportSecurity: {
+            accessControlMaxAge: cdk.Duration.seconds(31536000),
+            includeSubdomains: true,
+            override: true,
+          },
+        },
+      },
+    );
+
     const distribution = new cloudfront.Distribution(this, 'AssetsDistribution', {
       domainNames: [domainName],
       certificate: distributionCertificate,
@@ -107,6 +122,7 @@ export class DisposeMeStack extends cdk.Stack {
         origin: origins.S3BucketOrigin.withOriginAccessControl(assetsBucket),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        responseHeadersPolicy,
       },
     });
 
