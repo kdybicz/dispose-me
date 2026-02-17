@@ -46,7 +46,7 @@ export class DisposeMeStack extends cdk.Stack {
         {
           id: 'CleanUpRule',
           enabled: true,
-          expiration: cdk.Duration.days(1),
+          expiration: cdk.Duration.days(Number.parseInt(process.env.EMAIL_TTL_DAYS ?? '1', 10)),
         },
       ],
       removalPolicy: cdk.RemovalPolicy.DESTROY,
