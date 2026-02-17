@@ -2,12 +2,9 @@ import dayjs = require('dayjs');
 
 import type { Request, Response } from 'express';
 import { matchedData, type ValidationError, validationResult } from 'express-validator';
-import {
-  AUTH_COOKIE_KEY,
-  AUTH_QUERY_KEY,
-  COOKIE_MAX_AGE_MS,
-  REMEMBER_COOKIE_KEY,
-} from '../tools/const';
+
+import { AUTH_COOKIE_KEY, AUTH_QUERY_KEY, REMEMBER_COOKIE_KEY } from '../tools/const';
+import { getCookieMaxAgeMs } from '../tools/cookies';
 import { EmailDatabase } from '../tools/EmailDatabase';
 import { EmailParser, type ParsedEmail } from '../tools/EmailParser';
 import { mapEmailDetailsListToFeed } from '../tools/feed';
@@ -103,7 +100,7 @@ export class InboxController {
 
     let maxAge: number | undefined;
     if (remember) {
-      maxAge = COOKIE_MAX_AGE_MS;
+      maxAge = getCookieMaxAgeMs();
 
       res.cookie(REMEMBER_COOKIE_KEY, true, {
         secure: true,

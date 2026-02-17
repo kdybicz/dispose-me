@@ -11,8 +11,9 @@ export const EMAIL_TTL_DAYS = 1;
 export const DEFAULT_EMAIL_LIMIT = 10;
 export const MAX_EMAIL_LIMIT = 100;
 
-// Cookie constants (in milliseconds)
-export const COOKIE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+// Cookie constants
+export const DEFAULT_COOKIE_TTL_DAYS = 30;
+export const DAYS_TO_MS_MULTIPLIER = 24 * 60 * 60 * 1000;
 
 // Validation constants
 export const USERNAME_MIN_LENGTH = 3;
