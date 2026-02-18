@@ -197,6 +197,8 @@ ParsedEmail, typed mock accessors).
 
 - Always create pull requests in **Draft** mode (`gh pr create --draft`) unless
   explicitly instructed otherwise.
+- When creating release notes or "What's Changed" summaries, base the format on
+  `.github/PULL_REQUEST_TEMPLATE.md`
 
 ## Project Structure
 
