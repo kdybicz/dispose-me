@@ -1,32 +1,30 @@
-<table class="table table-hover table-sm table-striped">
-  <thead class="thead-dark">
-    <tr>
-      <th scope="col">#</th>
-      <th>From</th>
-      <th>Subject</th>
-      <th>Received</th>
-      <th><i class="bi bi-paperclip"></i></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <% for(var i = 0; i < emails.length; i++) { %>
-      <tr data-id="<%= emails[i].id %>" class="position-relative">
-        <th scope="row"><%= i + 1 %></th>
-        <td><%= emails[i].from %></td>
-        <td>
-          <span class="text-truncate" style="display: inline-block; max-width: 35rem;">
-            <%= emails[i].subject %>
-          </span>
-        </td>
-        <td><%= emails[i].received.toGMTString() %></td>
-        <td>
-          <% if (emails[i].hasAttachments) { %>
-            <i class="bi bi-paperclip"></i>
-          <% } %>
-        </td>
-        <td><a href="/inbox/<%= req.params.username %>/<%= emails[i].id %>?<%= new URLSearchParams(query) %>" class="stretched-link"></a></td>
+<div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+  <table class="w-full border-collapse">
+    <thead class="bg-gradient-to-br from-slate-900 to-slate-800">
+      <tr>
+        <th scope="col" class="px-5 py-3 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">#</th>
+        <th class="px-5 py-3 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">From</th>
+        <th class="px-5 py-3 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider" style="width: 100%">Subject</th>
+        <th class="px-5 py-3 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">Received</th>
+        <th class="px-2 py-3 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap"><svg class="size-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13"/></svg></th>
+        <th class="py-3"></th>
       </tr>
-    <% } %>
-  </tbody>
-</table>
+    </thead>
+    <tbody class="bg-white dark:bg-slate-800">
+      <% for(var i = 0; i < emails.length; i++) { %>
+        <tr data-id="<%= emails[i].id %>" class="border-b border-slate-100 dark:border-slate-700 last:border-none transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-700/50 relative">
+          <th scope="row" class="px-5 py-3.5 text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap"><%= i + 1 %></th>
+          <td class="px-5 py-3.5 text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap"><%= emails[i].from %></td>
+          <td class="px-5 py-3.5 text-sm text-slate-600 dark:text-slate-300 truncate max-w-0"><%= emails[i].subject %></td>
+          <td class="px-5 py-3.5 text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap"><%= emails[i].received.toGMTString() %></td>
+          <td class="px-2 py-3.5 text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">
+            <% if (emails[i].hasAttachments) { %>
+              <svg class="size-4 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13"/></svg>
+            <% } %>
+          </td>
+          <td class="py-3.5"><a href="/inbox/<%= req.params.username %>/<%= emails[i].id %>?<%= new URLSearchParams(query) %>" class="after:absolute after:inset-0 after:content-['']"></a></td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>

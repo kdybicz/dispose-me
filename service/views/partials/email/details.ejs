@@ -1,51 +1,80 @@
-<table class="table table-hover table-sm table-striped">
-  <tbody>
-    <tr>
-      <th>Subject:</th>
-      <td><%= email.subject %></td>
-    </tr>
-    <tr>
-      <th>From:</th>
-      <td><%= email.from.format() %></td>
-    </tr>
-    <% if (email.to.length > 0) { %>
-    <tr>
-      <th>To:</th>
-      <td><%= email.to.map((to) => to.address).join(', ') %></td>
-    </tr>
-    <% } %>
-    <% if (email.cc.length > 0) { %>
-    <tr>
-      <th>Cc:</th>
-      <td><%= email.cc.map((cc) => cc.address).join(', ') %></td>
-    </tr>
-    <% } %>
-    <% if (email.bcc.length > 0) { %>
-    <tr>
-      <th>Bcc:</th>
-      <td><%= email.bcc.map((bcc) => bcc.address).join(', ') %></td>
-    </tr>
-    <% } %>
-    <tr>
-      <th>Received:</th>
-      <td><%= email.received.toGMTString() %></td>
-    </tr>
-    <% if (email.attachments.length > 0) { %>
-    <tr>
-      <th>Attachments:</th>
-      <td>
-        <% for(var i = 0; i < email.attachments.length; i++) { %>
-          <a class="badge badge-info" href="/inbox/<%= req.params.username %>/<%= email.id %>/attachment?filename=<%- encodeURI(email.attachments[i].filename) %>&x-api-key=<%= token %>" title="Download the attachment">
-            <%= email.attachments[i].filename %> <i class="bi bi-download ml-1"></i>
-          </a>
-        <% } %>
-      </td>
-    </tr>
-    <% } %>
-</tbody>
-</table>
+<div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+  <table class="w-full border-collapse">
+    <tbody class="bg-white dark:bg-slate-800">
+      <tr class="border-b border-slate-100 dark:border-slate-700">
+        <th class="px-5 py-3 text-[13px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-50/80 dark:bg-slate-900/50 whitespace-nowrap uppercase tracking-wide text-left w-[1%]">Subject</th>
+        <td class="px-5 py-3 text-[15px] text-slate-800 dark:text-slate-200"><%= email.subject %></td>
+      </tr>
+      <tr class="border-b border-slate-100 dark:border-slate-700">
+        <th class="px-5 py-3 text-[13px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-50/80 dark:bg-slate-900/50 whitespace-nowrap uppercase tracking-wide text-left w-[1%]">From</th>
+        <td class="px-5 py-3 text-[15px] text-slate-800 dark:text-slate-200"><%= email.from.format() %></td>
+      </tr>
+      <% if (email.to.length > 0) { %>
+      <tr class="border-b border-slate-100 dark:border-slate-700">
+        <th class="px-5 py-3 text-[13px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-50/80 dark:bg-slate-900/50 whitespace-nowrap uppercase tracking-wide text-left w-[1%]">To</th>
+        <td class="px-5 py-3 text-[15px] text-slate-800 dark:text-slate-200"><%= email.to.map((to) => to.address).join(', ') %></td>
+      </tr>
+      <% } %>
+      <% if (email.cc.length > 0) { %>
+      <tr class="border-b border-slate-100 dark:border-slate-700">
+        <th class="px-5 py-3 text-[13px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-50/80 dark:bg-slate-900/50 whitespace-nowrap uppercase tracking-wide text-left w-[1%]">Cc</th>
+        <td class="px-5 py-3 text-[15px] text-slate-800 dark:text-slate-200"><%= email.cc.map((cc) => cc.address).join(', ') %></td>
+      </tr>
+      <% } %>
+      <% if (email.bcc.length > 0) { %>
+      <tr class="border-b border-slate-100 dark:border-slate-700">
+        <th class="px-5 py-3 text-[13px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-50/80 dark:bg-slate-900/50 whitespace-nowrap uppercase tracking-wide text-left w-[1%]">Bcc</th>
+        <td class="px-5 py-3 text-[15px] text-slate-800 dark:text-slate-200"><%= email.bcc.map((bcc) => bcc.address).join(', ') %></td>
+      </tr>
+      <% } %>
+      <tr class="border-b border-slate-100 dark:border-slate-700">
+        <th class="px-5 py-3 text-[13px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-50/80 dark:bg-slate-900/50 whitespace-nowrap uppercase tracking-wide text-left w-[1%]">Received</th>
+        <td class="px-5 py-3 text-[15px] text-slate-800 dark:text-slate-200"><%= email.received.toGMTString() %></td>
+      </tr>
+      <% if (email.attachments.length > 0) { %>
+      <tr class="border-b border-slate-100 dark:border-slate-700 last:border-none">
+        <th class="px-5 py-3 text-[13px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-50/80 dark:bg-slate-900/50 whitespace-nowrap uppercase tracking-wide text-left w-[1%]">Attachments</th>
+        <td class="px-5 py-3 text-[15px] text-slate-800 dark:text-slate-200">
+          <div class="flex flex-wrap gap-2">
+            <% for(var i = 0; i < email.attachments.length; i++) { %>
+              <a class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-500/20 dark:text-indigo-300 dark:hover:bg-indigo-500/30 transition-colors" href="/inbox/<%= req.params.username %>/<%= email.id %>/attachment?filename=<%- encodeURI(email.attachments[i].filename) %>&x-api-key=<%= token %>" title="Download the attachment">
+                <%= email.attachments[i].filename %> <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+              </a>
+            <% } %>
+          </div>
+        </td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
 
-<div class="well">
-  <iframe id="msg_body" style="border: 1pem; overflow: hidden; background-color: white;" title="Email Message Body" width="100%" height="550" name="msg_body" marginheight="0" srcdoc="<%= email.body %>">
-  </iframe>
+<div class="mt-6 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800 shadow-sm">
+  <iframe
+    id="msg_body"
+    class="w-full"
+    style="border: none; overflow: hidden; min-height: 200px;"
+    title="Email Message Body"
+    name="msg_body"
+    srcdoc="<%= email.body %>"
+    onload="
+      var body = this.contentDocument.body;
+      var isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      body.style.margin = '0';
+      body.style.padding = '24px';
+      body.style.fontFamily = 'Inter, ui-sans-serif, system-ui, -apple-system, sans-serif';
+      body.style.fontSize = '15px';
+      body.style.lineHeight = '1.6';
+      body.style.color = isDark ? '#e2e8f0' : '#334155';
+      body.style.backgroundColor = isDark ? '#1e293b' : '#ffffff';
+      body.style.wordBreak = 'break-word';
+      body.style.overflowWrap = 'break-word';
+      var links = body.querySelectorAll('a');
+      if (isDark) { for (var j = 0; j < links.length; j++) { links[j].style.color = '#818cf8'; } }
+      var resize = function() { this.style.height = body.scrollHeight + 'px'; }.bind(this);
+      resize();
+      new MutationObserver(resize).observe(body, { childList: true, subtree: true, attributes: true });
+      this.contentWindow.addEventListener('resize', resize);
+    "
+  ></iframe>
 </div>

@@ -1,5 +1,7 @@
 import 'source-map-support/register';
 
+import * as path from 'node:path';
+
 import type { NextFunction, Request, Response } from 'express';
 import * as express from 'express';
 import helmet from 'helmet';
@@ -20,6 +22,7 @@ import {
 } from './tools/validators';
 
 const inboxController = new InboxController(process.env.EMAIL_BUCKET_NAME ?? '');
+const assetDomain = process.env.ASSET_DOMAIN ?? '';
 const app = express();
 
 // Security best practices for Express apps
@@ -32,20 +35,31 @@ app.use(
         scriptSrc: [
           "'self'",
           "'unsafe-inline'",
-          'cdn.jsdelivr.net',
-          'cdnjs.cloudflare.com',
-          'chancejs.com',
+          'https://cdnjs.cloudflare.com',
+          'https://chancejs.com',
         ],
-        connectSrc: ["'self'", 'cdn.jsdelivr.net', 'chancejs.com'],
-        styleSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net'],
-        fontSrc: ["'self'", 'cdn.jsdelivr.net'],
-        imgSrc: ["'self'", 'data:'],
+        connectSrc: ["'self'", 'https://chancejs.com'],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          'https://fonts.googleapis.com',
+          ...(assetDomain ? [`https://${assetDomain}`] : []),
+        ],
+        fontSrc: [
+          "'self'",
+          'https://fonts.gstatic.com',
+          ...(assetDomain ? [`https://${assetDomain}`] : []),
+        ],
+        imgSrc: ["'self'", 'data:', ...(assetDomain ? [`https://${assetDomain}`] : [])],
       },
     },
   }),
 );
 app.disable('x-powered-by');
 app.set('trust proxy', true);
+
+// Serve static assets locally (fallback when CDN is not configured)
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 app.use(express.json());
 app.use(
@@ -59,6 +73,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   res.locals.query = req.query;
   res.locals.url = req.originalUrl;
   res.locals.req = req;
+  res.locals.assetDomain = assetDomain;
 
   next();
 });

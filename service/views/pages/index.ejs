@@ -3,56 +3,46 @@
 <head>
   <%- include('../partials/head'); %>
 </head>
-<body class="bg-light">
+<body>
 
 <header>
   <%- include('../partials/header'); %>
 </header>
 
-<main role="main" class="container">
-  <div class="jumbotron">
-    <h1 class="display-4">📨 Dispose Me</h1>
-    <p class="lead">I'm a simple, disposable email service with an easy API access.</p>
-    <hr class="my-4">
+<main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="relative bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+    <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+    <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">📨 Dispose Me</h1>
+    <p class="text-slate-500 dark:text-slate-400 text-lg">A simple, disposable email service with easy API access.</p>
+    <hr class="border-none h-px bg-slate-200 dark:bg-slate-700 my-7">
 
     <form method="POST" action="/">
-      <div class="form-group row">
-        <label for="token" class="col-sm-2 col-form-label">Provide Your token:</label>
-        <div class="col-sm-4">
-          <% const tokenError = (locals.errors ?? []).find((error) => error.type === "field" && error.path === "token"); %>
-          <input class="form-control <%= tokenError ? 'is-invalid' : '' %>" type="text" id="token" name="token" value="<%= tokenError?.value ?? query['x-api-key'] %>" placeholder="Token" aria-label="Token" required>
-          <% if (tokenError) { %>
-            <div class="invalid-feedback">
-              <%= tokenError.msg %>
-            </div>
-          <% } %>
-        </div>
-        <div class="col-sm-2">
-          <button type="submit" class="btn btn-primary" aria-label="Login">
-            <i class="bi bi-box-arrow-in-right"></i>
+      <div class="max-w-md">
+        <label for="token" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Provide your token</label>
+        <% const tokenError = (locals.errors ?? []).find((error) => error.type === "field" && error.path === "token"); %>
+        <div class="flex gap-2 mb-3">
+          <div class="flex-1 min-w-0">
+            <input class="block w-full px-3.5 py-2 text-[15px] leading-6 text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 border-[1.5px] rounded-lg transition placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-[3px] <%= tokenError ? 'border-red-300 bg-red-50 focus:border-red-500 focus:ring-red-500/10 dark:border-red-500/50 dark:bg-red-500/10' : 'border-slate-300 dark:border-slate-600 focus:border-indigo-500 focus:ring-indigo-500/10' %>" type="text" id="token" name="token" value="<%= tokenError?.value ?? query['x-api-key'] %>" placeholder="Token" aria-label="Token" required>
+            <% if (tokenError) { %>
+              <p class="mt-1.5 text-[13px] font-medium text-red-500"><%= tokenError.msg %></p>
+            <% } %>
+          </div>
+          <button type="submit" class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-sm shadow-indigo-500/30 hover:from-indigo-600 hover:to-indigo-700 hover:shadow-md hover:-translate-y-px transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500" aria-label="Login">
+            <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25"/></svg>
           </button>
         </div>
-      </div>
-      <div class="form-group row">
-        <div class="col-sm-2"></div>
-        <div class="col-sm-6">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="remember" name="remember" aria-label="Remember token">
-            <label class="form-check-label" for="remember">
-              Remember token
-            </label>
-          </div>
+        <div class="flex items-center gap-2">
+          <input class="size-[18px] rounded accent-indigo-500 cursor-pointer" type="checkbox" id="remember" name="remember" aria-label="Remember token">
+          <label class="text-sm text-slate-600 dark:text-slate-400 cursor-pointer select-none" for="remember">Remember token</label>
         </div>
       </div>
     </form>
   </div>
 </main>
 
-<footer class="footer">
+<footer class="fixed inset-x-0 bottom-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 flex items-center z-40">
   <%- include('../partials/footer'); %>
 </footer>
-
-<%- include('../partials/bootstrap'); %>
 
 </body>
 </html>

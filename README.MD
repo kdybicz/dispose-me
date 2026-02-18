@@ -24,6 +24,7 @@ Dispose Me is a simple AWS-hosted disposable email service.
 - [Node.js](https://github.com/nodejs/node)
 - [express.js](https://github.com/expressjs/express)
 - [EJS](https://github.com/mde/ejs)
+- [Tailwind CSS](https://tailwindcss.com/)
 - [AWS CDK](https://aws.amazon.com/cdk/)
 - [AWS SAM](https://aws.amazon.com/serverless/sam/)
 - [webpack](https://github.com/webpack/webpack)
@@ -32,6 +33,7 @@ Dispose Me is a simple AWS-hosted disposable email service.
 
 - Api Gateway
 - CloudFormation
+- CloudFront (CDN for static assets)
 - DynamoDB
 - Lambda with custom Authorizer
 - Route53

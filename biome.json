@@ -1,6 +1,6 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.3.14/schema.json",
-  "assist": { 
+  "$schema": "https://biomejs.dev/schemas/2.3.15/schema.json",
+  "assist": {
     "actions": {
       "source": {
         "organizeImports": "on"
@@ -32,6 +32,15 @@
     "formatter": {
       "quoteStyle": "single"
     }
+  },
+  "css": {
+    "parser": {
+      "cssModules": true,
+      "tailwindDirectives": true
+    }
+  },
+  "files": {
+    "includes": ["**", "!**/service/assets/css/output.css"]
   },
   "overrides": [
     {

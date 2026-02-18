@@ -3,34 +3,29 @@
 <head>
   <%- include('../partials/head'); %>
 </head>
-<body class="bg-light">
+<body>
 
 <header>
   <%- include('../partials/header', { errorPage: true }); %>
 </header>
 
-<main role="main" class="container">
-  <div class="row justify-content-center">
-    <div class="col-md-12 text-center">
-        <span class="display-1 d-block">422</span>
-        <div class="mb-4 lead">Some of the request data are invalid</div>
-
-        <% if (locals.errors) { %>
-          <ul class="list-group list-group-flush">
-            <% for(var i = 0; i < locals.errors.length; i++) { %>
-              <li class="list-group-item list-group-item-danger"><%= locals.errors[i].msg %></li>
-            <% } %>
-          </ul>
+<main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <div class="text-center">
+    <div class="text-[8rem] font-black tracking-tighter leading-none bg-gradient-to-br from-indigo-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent mb-4">422</div>
+    <div class="text-xl text-slate-500 dark:text-slate-400 mb-8">Some of the request data are invalid</div>
+    <% if (locals.errors) { %>
+      <div class="max-w-md mx-auto flex flex-col gap-2 mt-6">
+        <% for(var i = 0; i < locals.errors.length; i++) { %>
+          <div class="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 text-red-900 dark:text-red-300 px-4 py-3 rounded-lg text-sm"><%= locals.errors[i].msg %></div>
         <% } %>
-    </div>
+      </div>
+    <% } %>
   </div>
 </main>
 
-<footer class="footer">
+<footer class="fixed inset-x-0 bottom-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 flex items-center z-40">
   <%- include('../partials/footer'); %>
 </footer>
-
-<%- include('../partials/bootstrap'); %>
 
 </body>
 </html>
