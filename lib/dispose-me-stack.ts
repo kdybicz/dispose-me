@@ -104,7 +104,9 @@ export class DisposeMeStack extends cdk.Stack {
       memorySize: 512,
       timeout: cdk.Duration.seconds(3),
       logGroup: new LogGroup(this, 'ApiLambdaLogGroup', {
+        logGroupName: '/aws/lambda/dispose-me-api',
         retention: RetentionDays.ONE_MONTH,
+        removalPolicy: cdk.RemovalPolicy.DESTROY,
       }),
     });
     emailBucket.grantReadWrite(apiLambdaHandler);
@@ -247,7 +249,9 @@ export class DisposeMeStack extends cdk.Stack {
       memorySize: 512,
       timeout: cdk.Duration.seconds(3),
       logGroup: new LogGroup(this, 'AuthorizerLambdaLogGroup', {
+        logGroupName: '/aws/lambda/dispose-me-authorizer',
         retention: RetentionDays.ONE_MONTH,
+        removalPolicy: cdk.RemovalPolicy.DESTROY,
       }),
     });
 
@@ -278,7 +282,9 @@ export class DisposeMeStack extends cdk.Stack {
       memorySize: 512,
       timeout: cdk.Duration.seconds(3),
       logGroup: new LogGroup(this, 'ProcessorLambdaLogGroup', {
+        logGroupName: '/aws/lambda/dispose-me-processor',
         retention: RetentionDays.ONE_MONTH,
+        removalPolicy: cdk.RemovalPolicy.DESTROY,
       }),
     });
     emailBucket.grantReadWrite(processorLambdaHandler);
@@ -355,7 +361,9 @@ export class DisposeMeStack extends cdk.Stack {
         },
       },
       logGroup: new LogGroup(this, 'SesCustomResourceLogGroup', {
+        logGroupName: '/aws/custom-resources/ses-default-ruleset',
         retention: RetentionDays.ONE_WEEK,
+        removalPolicy: cdk.RemovalPolicy.DESTROY,
       }),
       policy: cr.AwsCustomResourcePolicy.fromStatements([
         new iam.PolicyStatement({

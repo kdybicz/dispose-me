@@ -1,3 +1,4 @@
+import * as cdk from 'aws-cdk-lib';
 import type { IApiKey } from 'aws-cdk-lib/aws-apigateway';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
@@ -38,7 +39,9 @@ export class GetApiKey extends Construct {
         }),
       ]),
       logGroup: new LogGroup(this, 'GetApiKeyLogGroup', {
+        logGroupName: '/aws/custom-resources/get-api-key',
         retention: RetentionDays.ONE_DAY,
+        removalPolicy: cdk.RemovalPolicy.DESTROY,
       }),
       onCreate: apiKey,
       onUpdate: apiKey,
