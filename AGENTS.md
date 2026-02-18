@@ -200,6 +200,15 @@ ParsedEmail, typed mock accessors).
 - When creating release notes or "What's Changed" summaries, base the format on
   `.github/PULL_REQUEST_TEMPLATE.md`
 
+## Git Operations
+
+- **Never** update git config (`user.name`, `user.email`, etc.) — use the user's
+  existing configuration or ask what values to use.
+- **Never** run destructive/irreversible git commands (force push, hard reset, etc.)
+  unless explicitly requested.
+- **Never** skip hooks (`--no-verify`, `--no-gpg-sign`, etc.) unless explicitly requested.
+- Only commit when explicitly asked by the user — do not commit proactively.
+
 ## Project Structure
 
 ```
