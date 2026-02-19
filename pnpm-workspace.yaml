@@ -1,10 +1,14 @@
 engineStrict: true
 
 ignoredBuiltDependencies:
-  - '@biomejs/biome'
+  - "@biomejs/biome"
+  - "@parcel/watcher"
   - unrs-resolver
 
 minimumReleaseAge: 4320
+
+minimumReleaseAgeExclude:
+  - aws-cdk@2.1106.1
 
 nodeLinker: hoisted
 
