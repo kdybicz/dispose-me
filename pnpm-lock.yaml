@@ -4,9 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  mailparser>nodemailer: ^7.0.11
-
 importers:
 
   .:
