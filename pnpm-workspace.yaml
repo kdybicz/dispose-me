@@ -15,8 +15,7 @@ nodeLinker: hoisted
 overrides:
   ajv: ^8.18.0
   fast-xml-parser: ^5.3.6
-  minmatch: ^10.2.1
-  # mailparser>nodemailer: ^7.0.11
+  glob: ^13.0.0
 
 supportedArchitectures:
   os: [darwin, linux]
