@@ -12,8 +12,11 @@ minimumReleaseAgeExclude:
 
 nodeLinker: hoisted
 
-# overrides:
-#   mailparser>nodemailer: ^7.0.11
+overrides:
+  ajv: ^8.18.0
+  fast-xml-parser: ^5.3.6
+  minmatch: ^10.2.1
+  # mailparser>nodemailer: ^7.0.11
 
 supportedArchitectures:
   os: [darwin, linux]
