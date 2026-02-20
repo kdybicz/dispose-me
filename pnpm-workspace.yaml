@@ -15,8 +15,6 @@ nodeLinker: hoisted
 overrides:
   ajv: ^8.18.0
   fast-xml-parser: ^5.3.6
-  glob: ^13.0.0
-  minimatch: ^10.2.1
 
 supportedArchitectures:
   os: [darwin, linux]
