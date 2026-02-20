@@ -42,7 +42,9 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         CDK_DISABLE_CLI_TELEMETRY: true
+        COOKIE_TTL_DAYS: ${{ vars.COOKIE_TTL_DAYS }}
         DOMAIN_NAME: ${{ secrets.DOMAIN_NAME }}
+        EMAIL_TTL_DAYS: ${{ vars.EMAIL_TTL_DAYS }}
         INBOX_BLACKLIST: ${{ secrets.INBOX_BLACKLIST }}
         PRIVATE_ACCESS: ${{ secrets.PRIVATE_ACCESS }}
       run: pnpm deploy:ci
