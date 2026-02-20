@@ -1,15 +1,20 @@
 engineStrict: true
 
 ignoredBuiltDependencies:
-  - '@biomejs/biome'
+  - "@biomejs/biome"
+  - "@parcel/watcher"
   - unrs-resolver
 
 minimumReleaseAge: 4320
 
+minimumReleaseAgeExclude:
+  - aws-cdk@2.1106.1
+
 nodeLinker: hoisted
 
 overrides:
-  mailparser>nodemailer: ^7.0.11
+  ajv: ^8.18.0
+  fast-xml-parser: ^5.3.6
 
 supportedArchitectures:
   os: [darwin, linux]
