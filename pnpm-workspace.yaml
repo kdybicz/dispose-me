@@ -8,13 +8,13 @@ ignoredBuiltDependencies:
 minimumReleaseAge: 4320
 
 minimumReleaseAgeExclude:
-  - fast-xml-parser@5.5.6
-  - fast-xml-builder@1.1.4
+#   - fast-xml-parser@5.5.6
+#   - fast-xml-builder@1.1.4
 
 nodeLinker: hoisted
 
 overrides:
-  "fast-xml-parser@5.4.1": 5.5.6
+#   "fast-xml-parser@5.4.1": 5.5.6
 
 supportedArchitectures:
   os: [darwin, linux]
