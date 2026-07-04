@@ -2,6 +2,7 @@ Usage:
 make <target>
 
 Targets:
+audit Run security audit (pnpm audit)
 test Run tests (pnpm test)
 lint Run linter (pnpm lint)
 deploy Deploy app (pnpm deploy)

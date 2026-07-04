@@ -2,7 +2,7 @@ SHELL := /bin/bash
 
 NVM_INIT = export NVM_DIR="$$HOME/.nvm"; if [ -s "$$NVM_DIR/nvm.sh" ]; then . "$$NVM_DIR/nvm.sh"; fi
 
-.PHONY: usage upgrade start test lint deploy
+.PHONY: usage upgrade start test lint deploy audit
 
 usage:
 	@cat .usage
@@ -24,3 +24,6 @@ lint:
 
 deploy:
 	@$(NVM_INIT); pnpm deploy
+
+audit:
+	@$(NVM_INIT); pnpm audit
