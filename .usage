@@ -1,0 +1,13 @@
+Dispose Me Make Commands
+
+Usage:
+	make <target>
+
+Targets:
+	audit    Run security audit (pnpm audit)
+	test     Run tests (pnpm test)
+	lint     Run linter (pnpm lint)
+	deploy   Deploy app (pnpm deploy)
+	start    Start the app (pnpm start)
+	upgrade  Upgrade dependencies interactively (pnpm up -Lri)
+	usage    Show this help

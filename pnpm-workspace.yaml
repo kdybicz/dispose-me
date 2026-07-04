@@ -18,6 +18,8 @@ nodeLinker: hoisted
 
 # https://pnpm.io/settings#overrides
 overrides:
+  fast-uri: "^3.1.1"
+  qs: "^6.15.2"
 
 # https://pnpm.io/settings#supportedarchitectures
 supportedArchitectures:
@@ -29,4 +31,3 @@ trustPolicy: no-downgrade
 # https://pnpm.io/settings#trustpolicyexclude
 trustPolicyExclude:
   - semver@6.3.1
-  - undici-types@6.21.0
