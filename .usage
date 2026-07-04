@@ -1,0 +1,10 @@
+Usage:
+  make <target>
+
+Targets:
+  test     Run tests (pnpm test)
+  lint     Run linter (pnpm lint)
+  deploy   Deploy app (pnpm deploy)
+  start    Start the app (pnpm start)
+  upgrade  Upgrade dependencies interactively (pnpm up -Lri)
+  usage    Show this help
