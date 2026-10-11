@@ -4,10 +4,10 @@ Usage:
 	make <target>
 
 Targets:
-	audit    Run security audit (pnpm audit)
-	test     Run tests (pnpm test)
-	lint     Run linter (pnpm lint)
-	deploy   Deploy app (pnpm deploy)
-	start    Start the app (pnpm start)
-	upgrade  Upgrade dependencies interactively (pnpm up -Lri)
+	audit    Run recursive high-severity security audit (yarn audit)
+	test     Run tests (yarn test)
+	lint     Run linter (yarn lint)
+	deploy   Deploy app (yarn deploy)
+	start    Start the app (yarn start)
+	upgrade  Upgrade dependencies interactively (yarn upgrade-interactive)
 	usage    Show this help

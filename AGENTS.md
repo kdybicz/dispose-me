@@ -1,17 +1,19 @@
 # AGENTS.md
 
 Dispose Me — AWS-hosted disposable email service. TypeScript, AWS CDK, Express,
-Lambda, DynamoDB, S3, SES. Node.js >= 22, pnpm >= 10.24.
+Lambda, DynamoDB, S3, SES. Node.js >= 22, Yarn 4.18.1 via Corepack.
 
 ## Build / Lint / Test Commands
 
 ```bash
-pnpm install --frozen-lockfile   # Install dependencies (use frozen lockfile)
-pnpm build                       # Install + clean dist/ + build CSS + webpack bundle
-pnpm build:css                   # Build Tailwind CSS (generates output.css)
-pnpm lint                        # Biome check (lint + format) on bin/ lib/ service/
-pnpm test                        # Jest (all tests)
-pnpm test:coverage               # Jest with coverage report
+corepack enable                 # Use the Yarn version pinned in package.json
+yarn install --immutable        # Install dependencies without changing the lockfile
+yarn build                      # Install + clean dist/ + build CSS + webpack bundle
+yarn build:css                  # Build Tailwind CSS (generates output.css)
+yarn lint                       # Biome check (lint + format) on bin/ lib/ service/
+yarn test                       # Jest (all tests)
+yarn test:coverage              # Jest with coverage report
+yarn audit                      # Recursive audit for high/critical findings
 ```
 
 **Important:** The `build` command automatically runs `build:css` before webpack bundling.
@@ -21,24 +23,33 @@ If running webpack directly, ensure `build:css` has been executed first to gener
 ### Running a single test
 
 ```bash
-pnpm test -- --testPathPattern='EmailDatabase'          # by filename pattern
-pnpm test -- test/service/tools/EmailDatabase.test.ts   # by exact path
-pnpm test -- -t 'should store email'                    # by test name pattern
+yarn test --testPathPatterns='EmailDatabase'          # by filename pattern
+yarn test test/service/tools/EmailDatabase.test.ts    # by exact path
+yarn test -t 'should store email'                    # by test name pattern
 ```
 
 ### Deploy (requires AWS credentials)
 
 ```bash
-pnpm deploy          # build + lint + test + cdk deploy
-pnpm deploy:ci       # webpack + cdk deploy (no approval prompt)
+yarn deploy          # build + lint + test + cdk deploy
+yarn deploy:ci       # build CSS + webpack + cdk deploy (no approval prompt)
 ```
+
+## Dependency security updates
+
+Follow [SECURITY_UPDATES.md](SECURITY_UPDATES.md) for routine dependency updates,
+audit remediation, and resolutions. Keep `npmMinimalAgeGate: 7d` and
+`enableScripts: false` enabled. If bypassing the age gate is the only available way to
+patch a vulnerability, ask the user what to do before proceeding. Add an exact
+package/version exception only with explicit user approval, document it, and remove it
+once the release passes the age gate. Never reduce or disable the age gate.
 
 ## Styling
 
 **Tailwind CSS v4** is used for all styling (configured in `service/assets/css/styles.css`).
 
 - Source file: `service/assets/css/styles.css` (Tailwind directives and configuration)
-- Generated output: `service/assets/css/output.css` (built by `pnpm build:css`)
+- Generated output: `service/assets/css/output.css` (built by `yarn build:css`)
 - The generated `output.css` is excluded from version control (`.gitignore`)
 - Static assets are deployed to CloudFront with 1-year cache (invalidated on deploy)
 
@@ -59,7 +70,7 @@ Formatting and linting are handled by **Biome** (config in `biome.json`).
 - **Semicolons**: required (Biome default)
 - **Trailing commas**: all (Biome default)
 - **Console**: `console.*` is forbidden — use the custom `Logger` from `service/tools/log.ts`
-- Run `pnpm lint` before committing to catch issues
+- Run `yarn lint` before committing to catch issues
 
 ### Imports
 
