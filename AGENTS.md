@@ -1,9 +1,13 @@
 # AGENTS.md
 
 Dispose Me — AWS-hosted disposable email service. TypeScript, AWS CDK, Express,
-Lambda, DynamoDB, S3, SES. Node.js >= 22, Yarn 4.18.1 via Corepack.
+Lambda, DynamoDB, S3, SES. Node.js 22 through 24 inclusive (`>=22.0.0 <25.0.0`),
+Yarn 4.18.1 via Corepack.
 
 ## Build / Lint / Test Commands
+
+Corepack is bundled with the supported Node.js versions. If Corepack is unavailable,
+install it with `npm install --global corepack` before running these commands.
 
 ```bash
 corepack enable                 # Use the Yarn version pinned in package.json

@@ -9,7 +9,7 @@
     "url": "https://github.com/kdybicz/dispose-me.git"
   },
   "engines": {
-    "node": ">=v22.0.0",
+    "node": ">=22.0.0 <25.0.0",
     "yarn": ">=4.18.1"
   },
   "bin": {

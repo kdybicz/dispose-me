@@ -5,7 +5,8 @@ releases that have passed the package age gate. Any bypass requires explicit use
 
 ## Rules
 
-- Use Node.js 22 or newer and the Yarn version pinned in `package.json`, via Corepack.
+- Use Node.js 22 through 24 inclusive (`>=22.0.0 <25.0.0`) and the Yarn version pinned
+  in `package.json`, via Corepack.
 - Keep `npmMinimalAgeGate: 7d` and `enableScripts: false` in `.yarnrc.yml`.
 - Do not reduce the age gate or enable install scripts. Do not add
   `npmPreapprovedPackages` without explicit user approval.
@@ -20,6 +21,9 @@ releases that have passed the package age gate. Any bypass requires explicit use
 - Keep `@types/node` aligned with the minimum supported Node.js major version.
 
 ## 1. Establish the baseline
+
+Corepack is bundled with the supported Node.js versions. If Corepack is unavailable,
+install it first with `npm install --global corepack`.
 
 Start with a clean dependency installation:
 

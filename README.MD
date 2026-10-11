@@ -57,7 +57,8 @@ You can also view and explore the API interactively using the online Swagger UI:
 
 ### Environment
 
-First, please make sure you have [Node.js installed](https://nodejs.org/en/download/package-manager/) in version v22.x or above.
+Install [Node.js](https://nodejs.org/en/download/package-manager/) version 22 through 24
+inclusive. The supported range is `>=22.0.0 <25.0.0`.
 
 You can easily verify the installed Node.js version by running:
 
@@ -89,6 +90,13 @@ $ git clone https://github.com/kdybicz/dispose-me.git
 
 Or download as a `zip` file from https://github.com/kdybicz/dispose-me/archive/
 master.zip and unpack it into a folder of your choosing.
+
+Corepack is bundled with the supported Node.js versions. If `corepack --version` is
+unavailable, install it first:
+
+```bash
+npm install --global corepack
+```
 
 Enable Corepack to use the Yarn version pinned in `package.json`, then install dependencies:
 
