@@ -57,14 +57,18 @@ You can also view and explore the API interactively using the online Swagger UI:
 
 ### Environment
 
-Install [Node.js](https://nodejs.org/en/download/package-manager/) version 22 through 24
-inclusive. The supported range is `>=22.0.0 <25.0.0`.
+Install [Node.js](https://nodejs.org/en/download/package-manager/) version 24.x.
+The supported range is `>=24.0.0 <25.0.0`. Development, CI, and the application
+Lambda functions use Node.js 24.
+
+If you use nvm, run `nvm install` and `nvm use` from the project directory to use
+the version specified in `.nvmrc`.
 
 You can easily verify the installed Node.js version by running:
 
 ```
 $ node -v
-v22.16.0
+v24.21.0
 ```
 
 Additionally, you will need the latest version of [AWS CDK](https://aws.amazon.com/cdk/)

@@ -9,7 +9,7 @@
     "url": "https://github.com/kdybicz/dispose-me.git"
   },
   "engines": {
-    "node": ">=22.0.0 <25.0.0",
+    "node": ">=24.0.0 <25.0.0",
     "yarn": ">=4.18.1"
   },
   "bin": {
@@ -40,7 +40,7 @@
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "@types/mailparser": "^3.9.0",
-    "@types/node": "^22.20.5",
+    "@types/node": "^24.19.1",
     "aws-cdk": "2.1144.0",
     "aws-cdk-lib": "2.272.0",
     "aws-sdk-client-mock": "^4.1.0",
