@@ -51,9 +51,9 @@ jobs:
       uses: actions/setup-node@v6
       with:
         node-version: 22.x
-        cache: 'pnpm'
+        cache: 'yarn'
     - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      run: yarn install --immutable
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v4
       with:

@@ -13,7 +13,7 @@ Dispose Me is a simple AWS-hosted disposable email service.
 2. Create a project-dedicated AWS user for project deployment (optional).
 3. Download the code, create and fill out `.env` file - based on
    `.env.example`.
-4. Run `pnpm deploy` to install dependencies, run tests, and deploy the stack.
+4. Run `yarn deploy` to install dependencies, run tests, and deploy the stack.
 5. Have fun!
 
 
@@ -57,7 +57,8 @@ You can also view and explore the API interactively using the online Swagger UI:
 
 ### Environment
 
-First, please make sure you have [Node.js installed](https://nodejs.org/en/download/package-manager/) in version v22.x or above.
+Install [Node.js](https://nodejs.org/en/download/package-manager/) version 22 through 24
+inclusive. The supported range is `>=22.0.0 <25.0.0`.
 
 You can easily verify the installed Node.js version by running:
 
@@ -90,18 +91,29 @@ $ git clone https://github.com/kdybicz/dispose-me.git
 Or download as a `zip` file from https://github.com/kdybicz/dispose-me/archive/
 master.zip and unpack it into a folder of your choosing.
 
-Next, run `pnpm install` to install all required dependencies:
+Corepack is bundled with the supported Node.js versions. If `corepack --version` is
+unavailable, install it first:
+
+```bash
+npm install --global corepack
+```
+
+Enable Corepack to use the Yarn version pinned in `package.json`, then install dependencies:
 
 ```
 $ cd dispose-me
-$ pnpm install
+$ corepack enable
+$ yarn install --immutable
 ```
 
 Optionally, run the tests to ensure the code is running properly:
 
 ```
-$ pnpm test
+$ yarn test
 ```
+
+For dependency maintenance and audits, follow [SECURITY_UPDATES.md](SECURITY_UPDATES.md).
+Yarn uses a seven-day package age gate and disables dependency install scripts.
 
 ### AWS user
 
@@ -170,7 +182,7 @@ Refer to the `.env.example` file and create your own `.env` file. Use the
 comments inside for guidance. Once done, deploy the code to AWS by running:
 
 ```
-$ pnpm deploy
+$ yarn deploy
 ```
 
 API access key can be found in the `Terminal` output under the

@@ -1,5 +1,5 @@
 {
-  "app": "npx ts-node --prefer-ts-exts bin/dispose-me.ts",
+  "app": "yarn ts-node --prefer-ts-exts bin/dispose-me.ts",
   "watch": {
     "include": [
       "**"
@@ -11,8 +11,9 @@
       "**/*.js",
       "tsconfig.json",
       "package*.json",
-      "pnpm-lock.yaml",
-      "pnpm-workspace.yaml",
+      "yarn.lock",
+      ".yarnrc.yml",
+      ".yarn",
       "node_modules",
       "test"
     ]
