@@ -1,8 +1,11 @@
 # AGENTS.md
 
 Dispose Me — AWS-hosted disposable email service. TypeScript, AWS CDK, Express,
-Lambda, DynamoDB, S3, SES. Node.js 22 through 24 inclusive (`>=22.0.0 <25.0.0`),
+Lambda, DynamoDB, S3, SES. Node.js 24.x (`>=24.0.0 <25.0.0`),
 Yarn 4.18.1 via Corepack.
+
+Development, CI, and the application Lambda functions use Node.js 24. `.nvmrc` selects
+the latest installed Node.js 24 release via `nvm install` and `nvm use`.
 
 ## Build / Lint / Test Commands
 
@@ -123,6 +126,8 @@ Additional rules:
   export const normalizeUsername = (input: string): string => { ... };
   ```
 - Lambda handlers: `export const handler: SESHandler = async (event) => { ... }`
+  Return the result from an async handler; Lambda's Node.js 24 runtime does not support
+  callback-based handlers.
 
 ### Error Handling
 

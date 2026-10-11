@@ -48,8 +48,8 @@ export const getToken = (event: APIGatewayRequestAuthorizerEvent): string | null
   return null;
 };
 
-export const handler: APIGatewayRequestAuthorizerHandler = (event, _, callback) => {
-  callback(null, {
+export const handler: APIGatewayRequestAuthorizerHandler = async (event) => {
+  return {
     principalId: 'x-api-key',
     usageIdentifierKey: getToken(event),
     policyDocument: {
@@ -62,5 +62,5 @@ export const handler: APIGatewayRequestAuthorizerHandler = (event, _, callback) 
         },
       ],
     },
-  });
+  };
 };
