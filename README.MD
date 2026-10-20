@@ -1,3 +1,9 @@
+> [!IMPORTANT]
+> Development has moved to [Dispose Me - Cloudflare](https://github.com/kdybicz/dispose-me-cf).
+> This AWS-based repository is archived and is no longer maintained.
+> Please use the new repository for current code, documentation, issues, and pull requests.
+> The documentation below is retained as a reference for the original AWS implementation.
+
 [![CodeQL Advanced](https://github.com/kdybicz/dispose-me/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/kdybicz/dispose-me/actions/workflows/codeql-analysis.yml)
 [![Node.js CI](https://github.com/kdybicz/dispose-me/actions/workflows/tests.yml/badge.svg)](https://github.com/kdybicz/dispose-me/actions/workflows/tests.yml)
 
