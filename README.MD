@@ -1,3 +1,6 @@
+[![CodeQL Advanced](https://github.com/kdybicz/dispose-me/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/kdybicz/dispose-me/actions/workflows/codeql-analysis.yml)
+[![Node.js CI](https://github.com/kdybicz/dispose-me/actions/workflows/tests.yml/badge.svg)](https://github.com/kdybicz/dispose-me/actions/workflows/tests.yml)
+
 # Dispose Me
 
 > [!IMPORTANT]
@@ -6,10 +9,7 @@
 > Please use the new repository for current code, documentation, issues, and pull requests.
 > The documentation below is retained as a reference for the original AWS implementation.
 
-[![CodeQL Advanced](https://github.com/kdybicz/dispose-me/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/kdybicz/dispose-me/actions/workflows/codeql-analysis.yml)
-[![Node.js CI](https://github.com/kdybicz/dispose-me/actions/workflows/tests.yml/badge.svg)](https://github.com/kdybicz/dispose-me/actions/workflows/tests.yml)
-
-This repository contains the original AWS-hosted Dispose Me disposable email service.
+Dispose Me is a simple AWS-hosted disposable email service.
 
 
 ## TL;DR
